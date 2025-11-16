@@ -1,0 +1,63 @@
+[gd_scene load_steps=2 format=3 uid="uid://c7lo83al7g3gi"]
+
+[ext_resource type="Script" uid="uid://df3h45linltj4" path="res://scenes/registrar_dificultad/registrar_dificultad.gd" id="1_fhurx"]
+
+[node name="RegistrarDificultad" type="Control" node_paths=PackedStringArray("dificultad_option_button")]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_fhurx")
+dificultad_option_button = NodePath("VBoxContainer/VBoxDificultad/DificultadOptionButton")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -131.5
+offset_top = -171.5
+offset_right = 131.5
+offset_bottom = 171.5
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 10
+alignment = 1
+
+[node name="VBoxDificultad" type="VBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+
+[node name="DificultadLabel" type="Label" parent="VBoxContainer/VBoxDificultad"]
+layout_mode = 2
+text = "Dificultad"
+
+[node name="DificultadOptionButton" type="OptionButton" parent="VBoxContainer/VBoxDificultad"]
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 2
+
+[node name="VBoxGrado" type="VBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+
+[node name="GradoLabel" type="Label" parent="VBoxContainer/VBoxGrado"]
+layout_mode = 2
+text = "Grado"
+
+[node name="GradoOptionButton" type="OptionButton" parent="VBoxContainer/VBoxGrado"]
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 2
+item_count = 3
+popup/item_0/text = "Alto"
+popup/item_0/id = 0
+popup/item_1/text = "Medio"
+popup/item_1/id = 1
+popup/item_2/text = "Bajo"
+popup/item_2/id = 2
+
+[node name="EnviarDificultad" type="Button" parent="VBoxContainer"]
+custom_minimum_size = Vector2(0, 35)
+layout_mode = 2
+text = "Enviar dificultad"

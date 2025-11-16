@@ -1,0 +1,108 @@
+[gd_scene load_steps=2 format=3 uid="uid://cnsb8dsw3ev6m"]
+
+[ext_resource type="Script" uid="uid://bgbnkriogh4r8" path="res://scenes/registrar_mision/registrar_mision.gd" id="1_dher1"]
+
+[node name="RegistrarMision" type="Control" node_paths=PackedStringArray("mision_opciones", "estrellas_input", "exp_input", "intentos_input", "boton_enviar", "label_estado")]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_dher1")
+mision_opciones = NodePath("VBoxContainer/VBoxMision/MisionOptionButton")
+estrellas_input = NodePath("VBoxContainer/VBoxEstrellas/EstrellasSpin")
+exp_input = NodePath("VBoxContainer/VBoxExp/ExpSpin")
+intentos_input = NodePath("VBoxContainer/VBoxIntentos/IntentosSpin")
+boton_enviar = NodePath("VBoxContainer/EnviarMision")
+label_estado = NodePath("LabelEstado")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -131.5
+offset_top = -171.5
+offset_right = 131.5
+offset_bottom = 171.5
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 10
+alignment = 1
+
+[node name="VBoxMision" type="VBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+
+[node name="MisionLabel" type="Label" parent="VBoxContainer/VBoxMision"]
+layout_mode = 2
+text = "Mision"
+
+[node name="MisionOptionButton" type="OptionButton" parent="VBoxContainer/VBoxMision"]
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 2
+
+[node name="VBoxEstrellas" type="VBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+
+[node name="EstrellasLabel" type="Label" parent="VBoxContainer/VBoxEstrellas"]
+layout_mode = 2
+text = "Estrellas"
+
+[node name="EstrellasSpin" type="SpinBox" parent="VBoxContainer/VBoxEstrellas"]
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 2
+min_value = 1.0
+max_value = 3.0
+value = 1.0
+
+[node name="VBoxExp" type="VBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+
+[node name="ExpLabel" type="Label" parent="VBoxContainer/VBoxExp"]
+layout_mode = 2
+text = "Puntos Exp"
+
+[node name="ExpSpin" type="SpinBox" parent="VBoxContainer/VBoxExp"]
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 2
+min_value = 10.0
+max_value = 1000.0
+value = 10.0
+
+[node name="VBoxIntentos" type="VBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+
+[node name="IntentosLabel" type="Label" parent="VBoxContainer/VBoxIntentos"]
+layout_mode = 2
+text = "Intentos"
+
+[node name="IntentosSpin" type="SpinBox" parent="VBoxContainer/VBoxIntentos"]
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 2
+min_value = 1.0
+value = 1.0
+
+[node name="EnviarMision" type="Button" parent="VBoxContainer"]
+custom_minimum_size = Vector2(0, 35)
+layout_mode = 2
+text = "Enviar misión"
+
+[node name="HTTPRequest" type="HTTPRequest" parent="."]
+
+[node name="LabelEstado" type="Label" parent="."]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.5
+anchor_top = 0.809
+anchor_right = 0.5
+anchor_bottom = 0.809
+offset_left = -67.5
+offset_top = -11.231995
+offset_right = 67.5
+offset_bottom = 11.768005
+grow_horizontal = 2
+grow_vertical = 0
+text = "Estado para éxito"

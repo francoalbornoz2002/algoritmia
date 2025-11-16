@@ -210,3 +210,146 @@ func poblar_datos_login(datos_login: Dictionary) -> bool:
 	
 	print("Datos de login poblados exitosamente en la BD local.")
 	return true
+
+## Devuelve un Array de Diccionarios con todas las misiones.
+func obtener_misiones() -> Array:
+	# Hacemos la consulta
+	var success = db.query("SELECT id, nombre FROM misiones;")
+	
+	if not success:
+		print("ERROR (DBManager): No se pudieron obtener las misiones. ", db.error_message)
+		return [] # Devolver array vacío en caso de error
+	
+	# Devolvemos el resultado
+	return db.query_result
+
+
+## Devuelve un Array de Diccionarios con todas las dificultades.
+func obtener_dificultades() -> Array:
+	# Hacemos la consulta
+	var success = db.query("SELECT id, nombre FROM dificultades;")
+	
+	if not success:
+		print("ERROR (DBManager): No se pudieron obtener las dificultades. ", db.error_message)
+		return [] # Devolver array vacío en caso de error
+	
+	# Devolvemos el resultado
+	return db.query_result
+
+## Obtiene el ID del alumno actualmente logueado para enviar a la API de NestJS.
+func obtener_id_alumno_actual() -> String:
+	var exito = db.query("SELECT id FROM alumno LIMIT 1;")
+	if not exito:
+		print("ERROR (DBManager): No se pudo obtener id_alumno. ", db.error_message)
+		return ""
+	
+	# Verificamos que tengamos un resultado
+	if db.query_result.is_empty():
+		print("ERROR (DBManager): No hay ningún alumno en la BD local.")
+		return ""
+		
+	# Devolvemos el ID
+	return db.query_result[0]["id"]
+
+
+## Escribe una misión completada en la BD local.
+## Usa "INSERT OR REPLACE" para sobrescribir si ya existía (ej: la jugó offline 2 veces).
+## Marca "sincronizado" como 'false' (0).
+## También actualiza la 'ultima_actividad' del alumno.
+func registrar_mision_local(id_mision: String, estrellas: int, exp: int, intentos: int) -> bool:
+	print("DBManager: Registrando misión localmente...")
+	
+	# Obtenemos la fecha actual del sistema en formato ISO 8601
+	var fecha_actual = Time.get_datetime_string_from_system(true, true)
+	
+	# Usamos una transacción para asegurar que ambas escrituras (misión y alumno) ocurran
+	if not db.query("BEGIN TRANSACTION;"):
+		print("ERROR (DBManager): No se pudo iniciar transacción. ", db.error_message)
+		return false
+
+	# 1. Insertamos o reemplazamos la misión
+	var sql_mision = "INSERT OR REPLACE INTO misiones_completadas_local (id_mision, estrellas, exp, intentos, fecha_completado, sincronizado) VALUES (?, ?, ?, ?, ?, ?);"
+	var bindings_mision = [
+		id_mision,
+		estrellas,
+		exp,
+		intentos,
+		fecha_actual,
+		false # false (0) -> NO sincronizado
+	]
+	
+	if not db.query_with_bindings(sql_mision, bindings_mision):
+		print("ERROR (DBManager): No se pudo registrar misión local. ", db.error_message)
+		db.query("ROLLBACK;")
+		return false
+		
+	# 2. Actualizamos la última actividad del alumno
+	var sql_alumno = "UPDATE alumno SET ultima_actividad = ?;"
+	var bindings_alumno = [ fecha_actual ]
+	
+	if not db.query_with_bindings(sql_alumno, bindings_alumno):
+		print("ERROR (DBManager): No se pudo actualizar ultima_actividad. ", db.error_message)
+		db.query("ROLLBACK;")
+		return false
+
+	# 3. Si todo salió bien, cerramos la transacción
+	if not db.query("COMMIT;"):
+		print("ERROR (DBManager): No se pudo hacer COMMIT. ", db.error_message)
+		return false
+		
+	print("DBManager: Misión local registrada y ultima_actividad actualizada.")
+	return true
+
+## Marca una misión como sincronizada (sincronizado = true)
+func marcar_mision_sincronizada(id_mision: String) -> bool:
+	print("DBManager: Marcando misión como sincronizada: ", id_mision)
+	var sql = "UPDATE misiones_completadas_local SET sincronizado = true WHERE id_mision = ?;"
+	var bindings = [ id_mision ]
+	
+	if not db.query_with_bindings(sql, bindings):
+		print("ERROR (DBManager): No se pudo marcar como sincronizado. ", db.error_message)
+		return false
+	
+	return true
+
+# Devuelve un Array de Diccionarios con todas las misiones pendientes de sincronizar.
+func obtener_misiones_pendientes() -> Array:
+	# Selecciona todo de misiones_completadas_local donde sincronizado = 0 (false)
+	var exito = db.query("SELECT * FROM misiones_completadas_local WHERE sincronizado = 0;")
+	
+	if not exito:
+		print("ERROR (DBManager): No se pudieron obtener misiones pendientes. ", db.error_message)
+		return []
+	
+	# Retornamos el resultado
+	return db.query_result
+
+
+# Marca un LOTE de misiones como sincronizadas (sincronizado = true)
+# Recibe un array de IDs de misiones.
+func marcar_lote_misiones_sincronizadas(ids_misiones: Array) -> bool:
+	if ids_misiones.is_empty():
+		return true # No hay nada que hacer
+		
+	print("DBManager: Marcando %s misiones como sincronizadas..." % ids_misiones.size())
+	
+	# Usamos una transacción para esto
+	if not db.query("BEGIN TRANSACTION;"):
+		print("ERROR (DBManager): No se pudo iniciar transacción (marcar lote). ", db.error_message)
+		return false
+
+	var sql = "UPDATE misiones_completadas_local SET sincronizado = true WHERE id_mision = ?;"
+	
+	# Recorremos el array y ejecutamos un UPDATE por cada ID
+	for id_mision in ids_misiones:
+		if not db.query_with_bindings(sql, [id_mision]):
+			print("ERROR (DBManager): No se pudo marcar misión %s. " % id_mision, db.error_message)
+			db.query("ROLLBACK;") # Revertimos la transacción
+			return false
+
+	# Si todo salió bien, cerramos la transacción
+	if not db.query("COMMIT;"):
+		print("ERROR (DBManager): No se pudo hacer COMMIT (marcar lote). ", db.error_message)
+		return false
+		
+	return true
