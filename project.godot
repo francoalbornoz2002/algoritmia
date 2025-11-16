@@ -10,9 +10,14 @@ config_version=5
 
 [application]
 
-config/name="algoritmia"
+config/name="Algoritmia"
+run/main_scene="uid://d1h87sddhjkje"
 config/features=PackedStringArray("4.5", "GL Compatibility")
 config/icon="res://icon.svg"
+
+[autoload]
+
+DatabaseManager="*res://database_manager.gd"
 
 [editor_plugins]
 
