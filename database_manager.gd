@@ -353,3 +353,62 @@ func marcar_lote_misiones_sincronizadas(ids_misiones: Array) -> bool:
 		return false
 		
 	return true
+
+## Escribe una dificultad de alumno en la BD local.
+## Usa "INSERT OR REPLACE" para crear o actualizar el grado.
+## Marca "sincronizado" como 'false' (0).
+func registrar_dificultad_local(id_dificultad: String, grado: String) -> bool:
+	print("DBManager: Registrando dificultad localmente...")
+	
+	# INSERT OR REPLACE asegura que si la dificultad ya existe, solo actualiza el grado.
+	var sql = "INSERT OR REPLACE INTO dificultad_alumno_local (id_dificultad, grado, sincronizado) VALUES (?, ?, ?);"
+	var bindings = [
+		id_dificultad,
+		grado,
+		false # false (0) -> NO sincronizado
+	]
+	
+	if not db.query_with_bindings(sql, bindings):
+		print("ERROR (DBManager): No se pudo registrar dificultad local. ", db.error_message)
+		return false
+		
+	print("DBManager: Dificultad local registrada (o actualizada).")
+	return true
+
+
+## Devuelve un Array de Diccionarios con TODAS las dificultades pendientes.
+func obtener_dificultades_pendientes() -> Array:
+	var exito = db.query("SELECT * FROM dificultad_alumno_local WHERE sincronizado = 0;")
+	
+	if not exito:
+		print("ERROR (DBManager): No se pudieron obtener dificultades pendientes. ", db.error_message)
+		return []
+	
+	# Devolvemos el resultado
+	return db.query_result
+
+
+## Marca un LOTE de dificultades como sincronizadas (sincronizado = true)
+func marcar_lote_dificultades_sincronizadas(ids_dificultades: Array) -> bool:
+	if ids_dificultades.is_empty():
+		return true # No hay nada que hacer
+		
+	print("DBManager: Marcando %s dificultades como sincronizadas..." % ids_dificultades.size())
+	
+	if not db.query("BEGIN TRANSACTION;"):
+		print("ERROR (DBManager): No se pudo iniciar transacción (marcar lote dif). ", db.error_message)
+		return false
+
+	var sql = "UPDATE dificultad_alumno_local SET sincronizado = true WHERE id_dificultad = ?;"
+	
+	for id_dificultad in ids_dificultades:
+		if not db.query_with_bindings(sql, [id_dificultad]):
+			print("ERROR (DBManager): No se pudo marcar dificultad %s. " % id_dificultad, db.error_message)
+			db.query("ROLLBACK;")
+			return false
+
+	if not db.query("COMMIT;"):
+		print("ERROR (DBManager): No se pudo hacer COMMIT (marcar lote dif). ", db.error_message)
+		return false
+		
+	return true
