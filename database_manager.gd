@@ -259,8 +259,18 @@ func obtener_id_alumno_actual() -> String:
 func registrar_mision_local(id_mision: String, estrellas: int, exp: int, intentos: int) -> bool:
 	print("DBManager: Registrando misión localmente...")
 	
-	# Obtenemos la fecha actual del sistema en formato ISO 8601
-	var fecha_actual = Time.get_datetime_string_from_system(true, true)
+	# Obtenemos el diccionario de tiempo EN UTC
+	var dict_utc = Time.get_datetime_dict_from_system(true) # true = UTC
+
+	# Construimos el string ISO 8601 manualmente para asegurar la "Z"
+	var fecha_actual = "%04d-%02d-%02dT%02d:%02d:%02dZ" % [
+		dict_utc.year,
+		dict_utc.month,
+		dict_utc.day,
+		dict_utc.hour,
+		dict_utc.minute,
+		dict_utc.second
+	]
 	
 	# Usamos una transacción para asegurar que ambas escrituras (misión y alumno) ocurran
 	if not db.query("BEGIN TRANSACTION;"):
