@@ -1,0 +1,154 @@
+[gd_scene load_steps=9 format=3 uid="uid://2jepe683syd0"]
+
+[ext_resource type="Texture2D" uid="uid://b808yepro7lbj" path="res://icon.svg" id="1_64tsv"]
+[ext_resource type="Script" uid="uid://bxur2wp0du33t" path="res://scenes/mision_juego/mision_juego.gd" id="1_kmg2i"]
+[ext_resource type="Script" uid="uid://bmnei8fvcjj7b" path="res://scenes/mision_juego/debug_grilla.gd" id="2_nlnw5"]
+[ext_resource type="Script" uid="uid://b5pfn0gr0oaia" path="res://scenes/mision_juego/code_edit.gd" id="2_u8nxi"]
+[ext_resource type="Script" uid="uid://bjikulbhte535" path="res://scripts/jugador_grid.gd" id="3_v32ml"]
+[ext_resource type="Script" uid="uid://dbkn78vqq1sy4" path="res://scenes/mision_juego/ejecutor_algoritmo.gd" id="6_xnhqp"]
+
+[sub_resource type="TileSet" id="TileSet_kmg2i"]
+tile_size = Vector2i(32, 32)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_64tsv"]
+size = Vector2(64, 64)
+
+[node name="MisionJuego" type="Node2D" node_paths=PackedStringArray("tablero", "mapa_visual", "jugador", "entidades_container", "label_mision", "label_dificultad", "label_descripcion", "code_edit", "boton_ejecutar", "ejecutor", "timer_reinicio")]
+script = ExtResource("1_kmg2i")
+tablero = NodePath("ContenedorJuego/SubViewport/Tablero")
+mapa_visual = NodePath("ContenedorJuego/SubViewport/Tablero/MapaMision")
+jugador = NodePath("ContenedorJuego/SubViewport/Tablero/Entidades/Jugador")
+entidades_container = NodePath("ContenedorJuego/SubViewport/Tablero/Entidades")
+label_mision = NodePath("CapaUI/Panel/VBoxContainer/HBoxContainer/LabelMision")
+label_dificultad = NodePath("CapaUI/Panel/VBoxContainer/HBoxContainer/LabelDificultad")
+label_descripcion = NodePath("CapaUI/Panel/VBoxContainer/LabelDescripción")
+code_edit = NodePath("CapaUI/VBoxContainer/CodeEdit")
+boton_ejecutar = NodePath("CapaUI/VBoxContainer/HBoxContainer/Ejecutar")
+ejecutor = NodePath("EjecutorAlgoritmo")
+timer_reinicio = NodePath("TimerReinicio")
+
+[node name="CapaFondo" type="CanvasLayer" parent="."]
+layer = -1
+
+[node name="Fondo" type="ColorRect" parent="CapaFondo"]
+z_index = -10
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 1
+color = Color(0.1254902, 0.1254902, 0.1254902, 1)
+metadata/_edit_use_anchors_ = true
+
+[node name="CapaUI" type="CanvasLayer" parent="."]
+
+[node name="Panel" type="Panel" parent="CapaUI"]
+offset_left = 8.0
+offset_top = 8.0
+offset_right = 1144.0
+offset_bottom = 88.0
+mouse_filter = 1
+
+[node name="VBoxContainer" type="VBoxContainer" parent="CapaUI/Panel"]
+layout_mode = 0
+offset_left = 8.0
+offset_top = 8.0
+offset_right = 1128.0
+offset_bottom = 72.0
+
+[node name="HBoxContainer" type="HBoxContainer" parent="CapaUI/Panel/VBoxContainer"]
+layout_mode = 2
+
+[node name="LabelMision" type="Label" parent="CapaUI/Panel/VBoxContainer/HBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+text = "Nombre mision -"
+
+[node name="LabelDificultad" type="Label" parent="CapaUI/Panel/VBoxContainer/HBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+text = "Dificultad"
+
+[node name="LabelDescripción" type="Label" parent="CapaUI/Panel/VBoxContainer"]
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+text = "Descripción de la misión. hasta 2 lineas estaría bdsggggggggDescripción de la misión. hasta 2 lineas estaría bdsggggggggDescripción de la misión. hasta 2 lineas estaría bdsggggggggDescripción de la misión. hasta 2 lineas estaría bdsggggggggDescripción de la misión. hasta 2 lineas estaría bdsggggggggDescripción de la misión. hasta 2 lineas estaría bdsgggggggg"
+autowrap_mode = 2
+max_lines_visible = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="CapaUI"]
+anchors_preset = -1
+anchor_top = 0.15900001
+anchor_bottom = 0.15900001
+offset_left = 8.0
+offset_top = -9.032005
+offset_right = 472.0
+offset_bottom = 505.968
+grow_vertical = 2
+theme_override_constants/separation = 4
+
+[node name="CodeEdit" type="CodeEdit" parent="CapaUI/VBoxContainer"]
+custom_minimum_size = Vector2(0, 480)
+layout_mode = 2
+gutters_draw_line_numbers = true
+gutters_draw_fold_gutter = true
+script = ExtResource("2_u8nxi")
+
+[node name="HBoxContainer" type="HBoxContainer" parent="CapaUI/VBoxContainer"]
+layout_mode = 2
+alignment = 2
+
+[node name="ManualHeroe" type="Button" parent="CapaUI/VBoxContainer/HBoxContainer"]
+layout_mode = 2
+focus_mode = 1
+text = "Manual"
+
+[node name="Ejecutar" type="Button" parent="CapaUI/VBoxContainer/HBoxContainer"]
+layout_mode = 2
+focus_mode = 1
+text = "Ejecutar"
+
+[node name="ContenedorJuego" type="SubViewportContainer" parent="."]
+offset_left = 512.0
+offset_top = 96.0
+offset_right = 1120.0
+offset_bottom = 608.0
+stretch = true
+
+[node name="SubViewport" type="SubViewport" parent="ContenedorJuego"]
+handle_input_locally = false
+size = Vector2i(608, 512)
+render_target_update_mode = 4
+
+[node name="Tablero" type="Node2D" parent="ContenedorJuego/SubViewport"]
+
+[node name="DebugGrilla" type="Node2D" parent="ContenedorJuego/SubViewport/Tablero"]
+script = ExtResource("2_nlnw5")
+
+[node name="MapaMision" type="TileMapLayer" parent="ContenedorJuego/SubViewport/Tablero"]
+tile_set = SubResource("TileSet_kmg2i")
+
+[node name="Entidades" type="Node2D" parent="ContenedorJuego/SubViewport/Tablero"]
+
+[node name="Jugador" type="CharacterBody2D" parent="ContenedorJuego/SubViewport/Tablero/Entidades" node_paths=PackedStringArray("camara")]
+scale = Vector2(0.5, 0.5)
+script = ExtResource("3_v32ml")
+camara = NodePath("Camera2D")
+
+[node name="Sprite" type="Sprite2D" parent="ContenedorJuego/SubViewport/Tablero/Entidades/Jugador"]
+scale = Vector2(0.5, 0.5)
+texture = ExtResource("1_64tsv")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="ContenedorJuego/SubViewport/Tablero/Entidades/Jugador"]
+shape = SubResource("RectangleShape2D_64tsv")
+
+[node name="Camera2D" type="Camera2D" parent="ContenedorJuego/SubViewport/Tablero/Entidades/Jugador"]
+limit_smoothed = true
+position_smoothing_enabled = true
+
+[node name="EjecutorAlgoritmo" type="Node" parent="."]
+script = ExtResource("6_xnhqp")
+
+[node name="TimerReinicio" type="Timer" parent="."]

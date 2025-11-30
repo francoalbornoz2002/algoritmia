@@ -1,0 +1,48 @@
+[gd_scene load_steps=4 format=3 uid="uid://2jepe683syd0"]
+
+[ext_resource type="Texture2D" uid="uid://b808yepro7lbj" path="res://icon.svg" id="1_64tsv"]
+[ext_resource type="Script" uid="uid://b5pfn0gr0oaia" path="res://scenes/mision_juego/code_edit.gd" id="2_u8nxi"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_64tsv"]
+size = Vector2(127, 128)
+
+[node name="MisionJuego" type="Node2D"]
+
+[node name="Fondo" type="ColorRect" parent="."]
+offset_right = 1155.0
+offset_bottom = 647.0
+color = Color(0.47397572, 0.47397572, 0.47397572, 1)
+
+[node name="Tablero" type="Node2D" parent="."]
+position = Vector2(932, 304)
+
+[node name="TileMapLayer" type="TileMapLayer" parent="Tablero"]
+
+[node name="Entidades" type="Node2D" parent="."]
+
+[node name="Jugador" type="CharacterBody2D" parent="Entidades"]
+position = Vector2(632, 384)
+scale = Vector2(0.5, 0.5)
+
+[node name="Sprite2D" type="Sprite2D" parent="Entidades/Jugador"]
+texture = ExtResource("1_64tsv")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Entidades/Jugador"]
+position = Vector2(-0.5, 0)
+shape = SubResource("RectangleShape2D_64tsv")
+
+[node name="UI_Layer" type="CanvasLayer" parent="."]
+
+[node name="PanelContainer" type="PanelContainer" parent="UI_Layer"]
+offset_right = 1153.0
+offset_bottom = 90.0
+
+[node name="CodeEdit" type="CodeEdit" parent="UI_Layer"]
+offset_left = 6.0
+offset_top = 97.0
+offset_right = 422.0
+offset_bottom = 639.0
+gutters_draw_line_numbers = true
+gutters_draw_fold_gutter = true
+indent_use_spaces = true
+script = ExtResource("2_u8nxi")

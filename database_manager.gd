@@ -422,3 +422,32 @@ func marcar_lote_dificultades_sincronizadas(ids_dificultades: Array) -> bool:
 		return false
 		
 	return true
+
+# 1. Función para saber si hay un alumno registrado (Sesión iniciada)
+func existe_sesion_activa() -> bool:
+	# Simplemente buscamos si hay alguna fila en la tabla 'alumno'
+	db.query("SELECT count(*) as total FROM alumno;")
+	if db.query_result.is_empty():
+		return false
+	
+	# Si el conteo es mayor a 0, es que hay un usuario
+	var total = db.query_result[0]["total"]
+	return total > 0
+
+# 2. Modificamos esta función para NO pedir ID (toma el único que hay)
+func obtener_fecha_ultima_actividad() -> int:
+	# Seleccionamos el campo del único registro que debería existir
+	db.query("SELECT ultima_actividad FROM alumno LIMIT 1;")
+	
+	if db.query_result.is_empty():
+		return 0 
+	
+	var fecha_str = db.query_result[0]["ultima_actividad"]
+	
+	if fecha_str == null or fecha_str == "":
+		return 0
+	
+	# Parseo de fecha (String ISO a Unix Timestamp)
+	var fecha_dict = Time.get_datetime_dict_from_datetime_string(fecha_str, false)
+	var unix_time = Time.get_unix_time_from_datetime_dict(fecha_dict)
+	return unix_time

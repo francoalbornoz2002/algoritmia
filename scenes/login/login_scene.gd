@@ -15,6 +15,9 @@ const GAME_LOGIN_URL = "http://localhost:3000/api/auth/game-login"
 # 2. --- CONEXIÓN DE SEÑALES ---
 
 func _ready():
+	
+	verificar_sesion_existente()
+	
 	# Ocultamos la etiqueta de error al empezar
 	label_errores.hide()
 	
@@ -122,3 +125,17 @@ func _on_http_request_completed(result: int, response_code: int, headers: Packed
 			label_errores.text = "Error del servidor (Código: %s)" % response_code
 			
 		label_errores.show()
+
+func verificar_sesion_existente():
+	# Consultamos a la BD si ya hay un alumno
+	if DatabaseManager.existe_sesion_activa():
+		print("Sesión encontrada. Redirigiendo al Menú Principal...")
+		# CAMBIO DE ESCENA INMEDIATO
+		# Usamos call_deferred para asegurar que la escena actual termine de cargar antes de cambiar
+		call_deferred("_ir_al_menu_principal")
+	else:
+		print("No hay sesión activa. Mostrando Login.")
+		# Aquí no hacemos nada, dejamos que se muestre la interfaz de Login normal
+
+func _ir_al_menu_principal():
+	get_tree().change_scene_to_file("res://scenes/menu_principal/menu_principal.tscn")

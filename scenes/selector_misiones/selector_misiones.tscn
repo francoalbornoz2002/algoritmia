@@ -1,0 +1,77 @@
+[gd_scene load_steps=2 format=3 uid="uid://dxankpqqxjxoj"]
+
+[ext_resource type="Script" uid="uid://co2tm7sj6dom" path="res://scenes/selector_misiones/selector_misiones.gd" id="1_4grjp"]
+
+[node name="SelectorMisiones" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_4grjp")
+metadata/_edit_lock_ = true
+
+[node name="Volver" type="Button" parent="."]
+layout_mode = 0
+offset_left = 8.0
+offset_top = 8.0
+offset_right = 65.0
+offset_bottom = 39.0
+text = "Volver"
+
+[node name="MisDificultades" type="Button" parent="."]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -65.0
+offset_top = 8.0
+offset_right = -8.0
+offset_bottom = 39.0
+grow_horizontal = 0
+text = "MD"
+
+[node name="MiProgreso" type="Button" parent="."]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -129.0
+offset_top = 8.0
+offset_right = -72.0
+offset_bottom = 39.0
+grow_horizontal = 0
+text = "MP"
+
+[node name="PanelContainer" type="PanelContainer" parent="."]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -249.0
+offset_top = 8.0
+offset_right = 249.0
+offset_bottom = 48.0
+grow_horizontal = 2
+
+[node name="LabelSelector" type="Label" parent="PanelContainer"]
+layout_mode = 2
+text = "Selector de Misiones"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Mision1" type="Button" parent="."]
+layout_mode = 1
+anchors_preset = 4
+anchor_top = 0.5
+anchor_bottom = 0.5
+offset_left = 498.0
+offset_top = -25.0
+offset_right = 627.0
+offset_bottom = 25.0
+grow_vertical = 2
+theme_override_font_sizes/font_size = 30
+text = "Mision 1"
+
+[connection signal="pressed" from="Mision1" to="." method="_on_mision_1_pressed"]
