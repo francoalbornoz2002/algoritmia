@@ -53,8 +53,8 @@ func _ready():
 	
 	# 4. Cargar Misión de Prueba
 	var datos_prueba = {
-		"nombre": "Prueba de Código",
-		"descripcion": "Escribe: inicio, avanzar, derecha, avanzar, fin",
+		"nombre": "Misión de prueba",
+		"descripcion": "Recorre todo el sendero 1 hasta encontrar una moneda. Recógela, imprime la posición del valle actual y repite avanzar el número de la posición del valle. Luego, recorre todo el sendero 1 hasta el final recolectando todas las monedas e imprimiendo cuando encuentres una.",
 		"dificultad": "Fácil",
 		"pos_inicio": Vector2i(0, 0) 
 	}
@@ -122,8 +122,13 @@ func on_ejecucion_terminada(exito: bool):
 	timer_reinicio.timeout.connect(_on_reinicio_listo)
 
 func _on_jugador_game_over(mensaje):
-	# Mandamos el error a la pantalla
+	# 1. Mandamos el error a la pantalla (Consola UI)
 	agregar_mensaje("GAME OVER: " + mensaje, "ERROR")
+	
+	# 2. ¡IMPORTANTE! Matamos el script para evitar bucles infinitos
+	ejecutor.detener_ejecucion_inmediata()
+	
+	# 3. Iniciamos la secuencia de reinicio
 	on_ejecucion_terminada(false)
 
 func _on_reinicio_listo():

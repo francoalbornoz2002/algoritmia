@@ -453,7 +453,5 @@ func game_over(razon: String):
 	print("GAME OVER: ", razon)
 	esta_actuando = true 
 	
-	consola_mensaje.emit(razon, "ERROR")
-	
 	# 1. Emitir señal para que el Ejecutor sepa que falló el código
 	game_over_triggered.emit(razon) 

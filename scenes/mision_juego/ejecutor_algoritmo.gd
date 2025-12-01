@@ -115,11 +115,12 @@ func _transpilar(texto: String) -> String:
 		
 		# 4. Estructura: REPETIR (FOR)
 		if linea_limpia.begins_with("repetir "):
-			# Formato esperado: "Repetir 3" o "Repetir 3:"
+			# Formato esperado: "Repetir 3" o "Repetir posValle"
 			var partes = linea_limpia.replace(":", "").split(" ", false)
 			if partes.size() >= 2:
 				var veces = partes[1] # Esto será "3" o una variable
-				# Generamos: for _i in range(veces):
+				# Procesamos 'veces' para traducir 'posValle' -> '_p_.pos_valle()'
+				veces = _procesar_condicion(veces)
 				# Usamos '_iter_' como variable desechable para no ensuciar
 				script_body += indent_str + "for _iter_ in range(" + veces + "):\n"
 			else:
@@ -145,14 +146,14 @@ func _transpilar(texto: String) -> String:
 				script_body += indent_str + "# Error: La instrucción mapa() requiere 2 parámetros\n"
 			continue
 		
-		# 6. Imprimir
+		# 6. Estructura: IMPRIMIR
 		if linea_limpia.begins_with("imprimir(") and linea_limpia.ends_with(")"):
 			# 1. Quitamos "imprimir(" y ")"
 			var contenido = linea_limpia.trim_prefix("imprimir(").trim_suffix(")")
 			
+			contenido = _procesar_condicion(contenido)
 			# 2. Truco: Lo envolvemos en corchetes []
 			# Así GDScript lo interpretará como un Array de argumentos reales.
-			# Ejemplo: imprimir("Tengo", monedas) -> await _p_.imprimir(["Tengo", monedas])
 			var args_array = "[" + contenido + "]"
 			
 			script_body += indent_str + "await _p_.imprimir(" + args_array + ")\n"
@@ -245,3 +246,10 @@ func _finalizar_ejecucion(exito: bool):
 		
 	# 2. Notificar al controlador para que inicie la pausa/reinicio
 	controlador_nivel.on_ejecucion_terminada(exito)
+
+# Borra el script del alumno INMEDIATAMENTE.
+func detener_ejecucion_inmediata():
+	var nodo_runner = controlador_nivel.get_node_or_null("RunnerTemporal")
+	if is_instance_valid(nodo_runner):
+		nodo_runner.queue_free() # Adiós nodo, adiós bucle infinito.
+		print("--- Ejecutor: Script del alumno eliminado por seguridad ---")
