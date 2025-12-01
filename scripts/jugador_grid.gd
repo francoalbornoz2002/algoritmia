@@ -21,7 +21,7 @@ func _ready():
 	# 1. Configuración Inicial de Posición
 	pos_grid_actual = GridManager.world_to_grid(position)
 	teletransportar_a(pos_grid_actual)
-	rotation_degrees = 0 
+	rotation_degrees = 0
 	
 	# 2. --- LÍMITES DE LA CÁMARA ---
 	if camara:
@@ -92,7 +92,24 @@ func girar_derecha():
 	esta_actuando = false
 	await get_tree().create_timer(TIEMPO_PAUSA_INSTRUCCION).timeout
 
+# --- PRIMITIVAS DEL PSEUDOCÓDIGO (Mapa / Teletransporte Seguro) ---
+func intentar_teletransportar(celda_destino: Vector2i):
+	esta_actuando = true
+	
+	# 1. Validar Límites del Mapa
+	# Usamos la función estática que ya tienes en GridManager
+	if not GridManager.es_celda_valida(celda_destino):
+		# Mostramos las coordenadas en Base 1 para que el alumno entienda el error
+		var coord_user = celda_destino + Vector2i(1, 1)
+		game_over("¡Error de Coordenadas! Intentaste ir a " + str(coord_user) + " pero está fuera del mapa.")
+		return
 
+	# 2. Si es válida, usamos la función existente para movernos
+	teletransportar_a(celda_destino)
+	
+	# Pequeña pausa para mantener la consistencia del ritmo de ejecución
+	await get_tree().create_timer(TIEMPO_PAUSA_INSTRUCCION).timeout
+	esta_actuando = false
 
 # --- PRIMITIVAS DEL PSEUDOCÓDIGO (Moneda) ---
 func recoger_moneda():

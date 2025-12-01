@@ -113,7 +113,7 @@ func _transpilar(texto: String) -> String:
 			script_body += indent_str + linea_traducida + "\n"
 			continue
 		
-		# 4. Estructura: REPETIR (FOR) - ¡NUEVO!
+		# 4. Estructura: REPETIR (FOR)
 		if linea_limpia.begins_with("repetir "):
 			# Formato esperado: "Repetir 3" o "Repetir 3:"
 			var partes = linea_limpia.replace(":", "").split(" ", false)
@@ -126,7 +126,26 @@ func _transpilar(texto: String) -> String:
 				script_body += indent_str + "# Error de sintaxis en Repetir\n"
 			continue
 
-		# 5. Instrucciones Atómicas
+		# 5. Estructura: MAPA (Teletransportación)
+		if linea_limpia.begins_with("mapa(") and linea_limpia.ends_with(")"):
+			# Extraemos el contenido de los paréntesis. Ej: "mapa(2, 5)" -> "2, 5"
+			var contenido = linea_limpia.trim_prefix("mapa(").trim_suffix(")")
+			var argumentos = contenido.split(",")
+			
+			if argumentos.size() == 2:
+				# Obtenemos los valores como string para inyectarlos en el código
+				# Nota: Agregamos " - 1" para corregir de Base 1 (Usuario) a Base 0 (Godot)
+				var pos_sendero = argumentos[0].strip_edges() + " - 1"
+				var pos_valle = argumentos[1].strip_edges() + " - 1"
+				
+				# Generamos la llamada segura con await
+				script_body += indent_str + "await _p_.intentar_teletransportar(Vector2i(" + pos_sendero + ", " + pos_valle + "))\n"
+				script_body += indent_str + "await _ctrl_.get_tree().create_timer(0.2).timeout\n"
+			else:
+				script_body += indent_str + "# Error: La instrucción mapa() requiere 2 parámetros\n"
+			continue
+		
+		# 6. Instrucciones Atómicas
 		var primera_palabra = linea_limpia.split(" ", false)[0]
 		primera_palabra = primera_palabra.replace("(", "").replace(")", "")
 
