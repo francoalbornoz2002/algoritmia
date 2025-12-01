@@ -145,7 +145,20 @@ func _transpilar(texto: String) -> String:
 				script_body += indent_str + "# Error: La instrucción mapa() requiere 2 parámetros\n"
 			continue
 		
-		# 6. Instrucciones Atómicas
+		# 6. Imprimir
+		if linea_limpia.begins_with("imprimir(") and linea_limpia.ends_with(")"):
+			# 1. Quitamos "imprimir(" y ")"
+			var contenido = linea_limpia.trim_prefix("imprimir(").trim_suffix(")")
+			
+			# 2. Truco: Lo envolvemos en corchetes []
+			# Así GDScript lo interpretará como un Array de argumentos reales.
+			# Ejemplo: imprimir("Tengo", monedas) -> await _p_.imprimir(["Tengo", monedas])
+			var args_array = "[" + contenido + "]"
+			
+			script_body += indent_str + "await _p_.imprimir(" + args_array + ")\n"
+			continue
+		
+		# 7. Instrucciones Atómicas
 		var primera_palabra = linea_limpia.split(" ", false)[0]
 		primera_palabra = primera_palabra.replace("(", "").replace(")", "")
 

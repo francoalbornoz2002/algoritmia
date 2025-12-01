@@ -16,6 +16,7 @@ var inventario = { "monedas": 0, "llaves": 0 }
 
 # --- SEÑALES ---
 signal game_over_triggered(mensaje)
+signal consola_mensaje(texto, tipo)
 
 func _ready():
 	# 1. Configuración Inicial de Posición
@@ -62,6 +63,8 @@ func _input(event):
 # --- ACCIONES PRINCIPALES ---
 
 func avanzar():
+	if esta_actuando: return
+	esta_actuando = true
 	# 1. Lógica de peligro (Si hay Enemigo, Game Over)
 	if _verificar_peligro_inminente():
 		# game_over() ya fue llamado dentro de la función de verificación
@@ -72,6 +75,7 @@ func avanzar():
 	await get_tree().create_timer(TIEMPO_PAUSA_INSTRUCCION).timeout
 
 func girar_derecha():
+	if esta_actuando: return
 	esta_actuando = true
 	
 	# 1. CHEQUEO ANTES DE GIRAR
@@ -94,6 +98,7 @@ func girar_derecha():
 
 # --- PRIMITIVAS DEL PSEUDOCÓDIGO (Mapa / Teletransporte Seguro) ---
 func intentar_teletransportar(celda_destino: Vector2i):
+	if esta_actuando: return
 	esta_actuando = true
 	
 	# 1. Validar Límites del Mapa
@@ -113,6 +118,7 @@ func intentar_teletransportar(celda_destino: Vector2i):
 
 # --- PRIMITIVAS DEL PSEUDOCÓDIGO (Moneda) ---
 func recoger_moneda():
+	if esta_actuando: return
 	esta_actuando = true
 	
 	# 1. Consultamos qué hay en mi celda actual
@@ -144,6 +150,7 @@ func recoger_moneda():
 
 # --- PRIMITIVAS DEL PSEUDOCÓDIGO (Llave) ---
 func recoger_llave():
+	if esta_actuando: return
 	esta_actuando = true
 	
 	var objeto = GridManager.obtener_objeto_en_celda(pos_grid_actual)
@@ -167,6 +174,7 @@ func recoger_llave():
 
 # --- PRIMITIVAS DEL PSEUDOCÓDIGO (Cofre) ---
 func abrir_cofre():
+	if esta_actuando: return
 	esta_actuando = true
 	
 	var objeto = GridManager.obtener_objeto_en_celda(pos_grid_actual)
@@ -196,6 +204,7 @@ func abrir_cofre():
 
 # --- PRIMITIVAS DEL PSEUDOCÓDIGO (Atacar) ---
 func atacar():
+	if esta_actuando: return
 	esta_actuando = true
 	
 	# 1. Calculamos la celda que está inmediatamente en frente
@@ -218,6 +227,7 @@ func atacar():
 
 # --- PRIMITIVAS DEL PSEUDOCÓDIGO (Saltar) ---
 func saltar():
+	if esta_actuando: return
 	esta_actuando = true
 	
 	# 1. Celda que está inmediatamente en frente (el Obstáculo)
@@ -255,6 +265,7 @@ func saltar():
 
 # --- PRIMITIVAS DEL PSEUDOCÓDIGO (Activar puente) ---
 func activar_puente():
+	if esta_actuando: return
 	esta_actuando = true
 	
 	# 1. Celda en frente
@@ -291,17 +302,18 @@ func activar_puente():
 
 # --- PRIMITIVAS DEL PSEUDOCÓDIGO (Imprimir) ---
 # Usamos un argumento variable (vararg) para soportar múltiples impresiones
+# --- PRIMITIVAS DEL PSEUDOCÓDIGO (Imprimir) ---
 func imprimir(argumentos: Array):
-	var mensaje = ""
-	for arg in argumentos:
-		# Concatenamos los valores, separados por un espacio.
-		mensaje += str(arg) + " "
-	
-	# Imprimimos en consola (temporalmente)
-	print("OUTPUT: ", mensaje)
-	
-	# La primitiva de impresión no bloquea el juego
-	await get_tree().create_timer(0.05).timeout # Pequeña pausa para ver el log
+	# Unimos todos los argumentos en un solo texto
+	var texto_final = ""
+	for item in argumentos:
+		texto_final += str(item) + " "
+
+	# Lo enviamos a la UI
+	consola_mensaje.emit(texto_final, "OUTPUT")
+
+	# Pequeña pausa estética
+	await get_tree().create_timer(0.05).timeout
 
 # --- PRIMITIVAS DE SENSOR ---
 # Sensor para saber si hay un enemigo en la celda adyacente (en la dirección actual)
@@ -383,12 +395,13 @@ func mover_a_celda(celda_destino: Vector2i):
 		return
 	
 	# 2. Iniciar movimiento
-	esta_actuando = true
+	print("avanzando...")
 	pos_grid_actual = celda_destino # Actualizamos lógica ya
 	var destino_pixel = GridManager.grid_to_world(celda_destino)
 	var tween = create_tween()
 	tween.tween_property(self, "position", destino_pixel, TIEMPO_MOVIMIENTO)
 	await tween.finished
+	print("ya avanzó...")
 	esta_actuando = false
 
 func teletransportar_a(celda_destino: Vector2i):
@@ -440,8 +453,7 @@ func game_over(razon: String):
 	print("GAME OVER: ", razon)
 	esta_actuando = true 
 	
+	consola_mensaje.emit(razon, "ERROR")
+	
 	# 1. Emitir señal para que el Ejecutor sepa que falló el código
 	game_over_triggered.emit(razon) 
-	
-	# 2. No hacemos await aquí, dejamos que el Ejecutor y el Controlador se encarguen del timer y el reinicio
-	# (Quitamos el await get_tree().create_timer(1.0).timeout y el get_tree().reload_current_scene())

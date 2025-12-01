@@ -12,6 +12,7 @@ extends Node2D
 @export var label_descripcion: Label
 @export var code_edit: CodeEdit
 @export var boton_ejecutar: Button
+@export var consola_visual: RichTextLabel
 
 @export var ejecutor: Node
 @export var timer_reinicio: Timer
@@ -31,9 +32,19 @@ func _ready():
 	ejecutor.personaje = jugador
 	ejecutor.controlador_nivel = self
 	
+	if not jugador.game_over_triggered.is_connected(_on_jugador_game_over):
+		jugador.game_over_triggered.connect(_on_jugador_game_over)
+	
 	# 2. Conectar botón Ejecutar
 	if not boton_ejecutar.pressed.is_connected(_on_ejecutar_pressed):
 		boton_ejecutar.pressed.connect(_on_ejecutar_pressed)
+		
+	if not jugador.has_signal("consola_mensaje"):
+		# Esto evita errores si aún no agregaste la señal en el jugador
+		pass
+	else:
+		if not jugador.consola_mensaje.is_connected(agregar_mensaje):
+			jugador.consola_mensaje.connect(agregar_mensaje)
 	
 	# 3. Configurar Timer
 	timer_reinicio.one_shot = true
@@ -100,10 +111,6 @@ func on_ejecucion_terminada(exito: bool):
 	print("--- EJECUCIÓN FINALIZADA (Éxito: " + str(exito) + ") ---")
 	
 	ejecutando_codigo = false
-	# El botón se re-habilita DESPUÉS del timer, en la función _on_reinicio_listo
-	
-	# 1. Mostrar mensaje final (o el popup de victoria/derrota si lo tuviéramos)
-	# Por ahora, solo esperamos
 	
 	# 2. Iniciar el Timer de 3 segundos
 	print("Reiniciando en 3 segundos...")
@@ -114,6 +121,10 @@ func on_ejecucion_terminada(exito: bool):
 		timer_reinicio.timeout.disconnect(_on_reinicio_listo)
 	timer_reinicio.timeout.connect(_on_reinicio_listo)
 
+func _on_jugador_game_over(mensaje):
+	# Mandamos el error a la pantalla
+	agregar_mensaje("GAME OVER: " + mensaje, "ERROR")
+	on_ejecucion_terminada(false)
 
 func _on_reinicio_listo():
 	print("Reiniciando el estado del juego...")
@@ -143,3 +154,14 @@ func _reiniciar_estado_nivel():
 	
 	# D. Recargar la misión (esto repone objetos y al jugador)
 	cargar_mision(mision_actual)
+
+
+func agregar_mensaje(mensaje: String, tipo: String):
+	if not consola_visual: return
+
+	var color = "white"
+	if tipo == "ERROR": color = "#ff5555" # Rojo
+	if tipo == "OUTPUT": color = "#55ffff" # Cyan
+
+	# Escribimos con BBCode
+	consola_visual.append_text("[color=" + color + "]" + mensaje + "[/color]\n")

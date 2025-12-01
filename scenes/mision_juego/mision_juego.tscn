@@ -1,4 +1,4 @@
-[gd_scene load_steps=9 format=3 uid="uid://2jepe683syd0"]
+[gd_scene load_steps=10 format=3 uid="uid://2jepe683syd0"]
 
 [ext_resource type="Texture2D" uid="uid://b808yepro7lbj" path="res://icon.svg" id="1_64tsv"]
 [ext_resource type="Script" uid="uid://bxur2wp0du33t" path="res://scenes/mision_juego/mision_juego.gd" id="1_kmg2i"]
@@ -7,13 +7,16 @@
 [ext_resource type="Script" uid="uid://bjikulbhte535" path="res://scripts/jugador_grid.gd" id="3_v32ml"]
 [ext_resource type="Script" uid="uid://dbkn78vqq1sy4" path="res://scenes/mision_juego/ejecutor_algoritmo.gd" id="6_xnhqp"]
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_xnhqp"]
+bg_color = Color(0.2509804, 0.2509804, 0.2509804, 1)
+
 [sub_resource type="TileSet" id="TileSet_kmg2i"]
 tile_size = Vector2i(32, 32)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_64tsv"]
 size = Vector2(64, 64)
 
-[node name="MisionJuego" type="Node2D" node_paths=PackedStringArray("tablero", "mapa_visual", "jugador", "entidades_container", "label_mision", "label_dificultad", "label_descripcion", "code_edit", "boton_ejecutar", "ejecutor", "timer_reinicio")]
+[node name="MisionJuego" type="Node2D" node_paths=PackedStringArray("tablero", "mapa_visual", "jugador", "entidades_container", "label_mision", "label_dificultad", "label_descripcion", "code_edit", "boton_ejecutar", "consola_visual", "ejecutor", "timer_reinicio")]
 script = ExtResource("1_kmg2i")
 tablero = NodePath("ContenedorJuego/SubViewport/Tablero")
 mapa_visual = NodePath("ContenedorJuego/SubViewport/Tablero/MapaMision")
@@ -24,6 +27,7 @@ label_dificultad = NodePath("CapaUI/Panel/VBoxContainer/HBoxContainer/LabelDific
 label_descripcion = NodePath("CapaUI/Panel/VBoxContainer/LabelDescripción")
 code_edit = NodePath("CapaUI/VBoxContainer/CodeEdit")
 boton_ejecutar = NodePath("CapaUI/VBoxContainer/HBoxContainer/Ejecutar")
+consola_visual = NodePath("CapaUI/SalidaConsola")
 ejecutor = NodePath("EjecutorAlgoritmo")
 timer_reinicio = NodePath("TimerReinicio")
 
@@ -110,16 +114,24 @@ layout_mode = 2
 focus_mode = 1
 text = "Ejecutar"
 
+[node name="SalidaConsola" type="RichTextLabel" parent="CapaUI"]
+offset_left = 512.0
+offset_top = 492.0
+offset_right = 1120.0
+offset_bottom = 608.0
+theme_override_styles/normal = SubResource("StyleBoxFlat_xnhqp")
+bbcode_enabled = true
+
 [node name="ContenedorJuego" type="SubViewportContainer" parent="."]
 offset_left = 512.0
 offset_top = 96.0
 offset_right = 1120.0
-offset_bottom = 608.0
+offset_bottom = 480.0
 stretch = true
 
 [node name="SubViewport" type="SubViewport" parent="ContenedorJuego"]
 handle_input_locally = false
-size = Vector2i(608, 512)
+size = Vector2i(608, 384)
 render_target_update_mode = 4
 
 [node name="Tablero" type="Node2D" parent="ContenedorJuego/SubViewport"]
