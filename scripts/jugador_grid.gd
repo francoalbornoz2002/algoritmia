@@ -341,6 +341,22 @@ func hay_llave() -> bool:
 		return true
 	return false
 
+# Retorna el número de Sendero actual (Columna). Base 1.
+func pos_sendero() -> int:
+	return pos_grid_actual.x + 1
+
+# Retorna el número de Valle actual (Fila). Base 1.
+func pos_valle() -> int:
+	return pos_grid_actual.y + 1
+
+# Retorna verdadero si tiene al menos una moneda en el inventario
+func tengo_moneda() -> bool:
+	return inventario["monedas"] > 0
+
+# Retorna verdadero si tiene al menos una llave en el inventario
+func tengo_llave() -> bool:
+	return inventario["llaves"] > 0
+
 # --- MOVIMIENTO INTERNO Y UTILIDADES ---
 func mover_a_celda(celda_destino: Vector2i):
 	# 1. Validar límites

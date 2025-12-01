@@ -27,7 +27,11 @@ const MAPEO_SENSORES = {
 	"haypuente": "_p_.hay_puente()",
 	"haycofre": "_p_.hay_cofre()",
 	"haymoneda": "_p_.hay_moneda()",
-	"hayllave": "_p_.hay_llave()"
+	"hayllave": "_p_.hay_llave()",
+	"tengomoneda": "_p_.tengo_moneda()",
+	"tengollave": "_p_.tengo_llave()",
+	"possendero": "_p_.pos_sendero()",
+	"posvalle": "_p_.pos_valle()"
 }
 
 # --- FUNCIÓN PRINCIPAL ---
@@ -46,24 +50,21 @@ func procesar_y_ejecutar(texto_codigo: String):
 	_ejecutar_dinamicamente(codigo_gdscript)
 
 
-# --- EL TRANSPILADOR (ROBUSTO) ---
+# --- EL TRANSPILADOR ---
 func _transpilar(texto: String) -> String:
 	var lineas = texto.split("\n")
 	var script_body = ""
 	var dentro_de_algoritmo = false
 	
 	for linea in lineas:
-		# 1. Normalización: Reemplazamos 4 espacios por 1 tabulador para simplificar
-		# (Opcional, pero ayuda si el editor mezcla cosas)
+		# Normalización de tabs
 		var linea_normalizada = linea.replace("    ", "\t")
-		
-		# Limpieza básica
 		var linea_limpia = linea_normalizada.strip_edges().to_lower()
 		
 		if linea_limpia.is_empty() or linea_limpia.begins_with("--"):
 			continue
 			
-		# --- Detección de Bloques Principales ---
+		# --- Bloques Principales ---
 		if linea_limpia == "inicio":
 			dentro_de_algoritmo = true
 			script_body += "func run():\n"
@@ -77,9 +78,7 @@ func _transpilar(texto: String) -> String:
 		if not dentro_de_algoritmo:
 			continue
 		
-		# --- GESTIÓN DE INDENTACIÓN (CLAVE) ---
-		# En lugar de leer caracteres raros, contamos cuántos tabs hay al inicio
-		# asumiendo que hemos normalizado.
+		# --- Indentación ---
 		var indent_str = _obtener_indentacion_segura(linea_normalizada)
 			
 		# --- TRADUCCIÓN LÍNEA A LÍNEA ---
@@ -89,11 +88,7 @@ func _transpilar(texto: String) -> String:
 			var linea_traducida = linea_limpia.replace("si ", "if ")
 			linea_traducida = linea_traducida.replace(" entonces:", ":")
 			linea_traducida = linea_traducida.replace(" entonces", ":")
-			linea_traducida = linea_traducida.replace("~", " not ")
-			
-			for sensor in MAPEO_SENSORES:
-				if sensor in linea_traducida:
-					linea_traducida = linea_traducida.replace(sensor, MAPEO_SENSORES[sensor])
+			linea_traducida = _procesar_condicion(linea_traducida)
 			
 			script_body += indent_str + linea_traducida + "\n"
 			continue
@@ -103,39 +98,79 @@ func _transpilar(texto: String) -> String:
 			script_body += indent_str + "else:\n"
 			continue
 
-		# 3. Instrucciones Atómicas (Acciones)
+		# 3. Estructura: MIENTRAS (WHILE) 
+		if linea_limpia.begins_with("mientras "):
+			# Traducir 'mientras' -> 'while'
+			var linea_traducida = linea_limpia.replace("mientras ", "while ")
+			
+			# Traducir 'hacer' -> ':'
+			linea_traducida = linea_traducida.replace(" hacer:", ":")
+			linea_traducida = linea_traducida.replace(" hacer", ":")
+			
+			# Procesar sensores y operadores lógicos
+			linea_traducida = _procesar_condicion(linea_traducida)
+			
+			script_body += indent_str + linea_traducida + "\n"
+			continue
+		
+		# 4. Estructura: REPETIR (FOR) - ¡NUEVO!
+		if linea_limpia.begins_with("repetir "):
+			# Formato esperado: "Repetir 3" o "Repetir 3:"
+			var partes = linea_limpia.replace(":", "").split(" ", false)
+			if partes.size() >= 2:
+				var veces = partes[1] # Esto será "3" o una variable
+				# Generamos: for _i in range(veces):
+				# Usamos '_iter_' como variable desechable para no ensuciar
+				script_body += indent_str + "for _iter_ in range(" + veces + "):\n"
+			else:
+				script_body += indent_str + "# Error de sintaxis en Repetir\n"
+			continue
+
+		# 5. Instrucciones Atómicas
 		var primera_palabra = linea_limpia.split(" ", false)[0]
 		primera_palabra = primera_palabra.replace("(", "").replace(")", "")
 
 		if COMANDOS_ATOMICOS.has(primera_palabra):
 			script_body += indent_str + COMANDOS_ATOMICOS[primera_palabra] + "\n"
 		else:
-			# Comentamos lo desconocido
 			script_body += indent_str + "# Desconocido: " + linea_limpia + "\n"
 	
 	if script_body == "": return ""
 		
-	# Envolvemos
+	# Envolver script
 	var script_final = "extends Node\n"
 	script_final += "var _p_: Node\n"
 	script_final += "var _ctrl_: Node\n"
-	# Variables globales placeholder
 	script_final += "\n" 
 	script_final += script_body
 	
 	print("--- TRADUCCIÓN ---\n", script_final)
 	return script_final
 
-# --- HELPER DE INDENTACIÓN (NUEVO Y SEGURO) ---
+# --- HELPER: PROCESAR CONDICIÓN ---
+func _procesar_condicion(linea: String) -> String:
+	var resultado = linea
+	
+	# Operadores Lógicos
+	resultado = resultado.replace("~", " not ")
+	# 'and' y 'or' ya son válidos en GDScript
+	
+	# Reemplazo de Sensores
+	for sensor in MAPEO_SENSORES:
+		if sensor in resultado:
+			resultado = resultado.replace(sensor, MAPEO_SENSORES[sensor])
+			
+	return resultado
+
+# --- HELPER: OBTENER INDENTACIÓN ---
 func _obtener_indentacion_segura(linea: String) -> String:
 	var indent = ""
 	for caracter in linea:
 		if caracter == "\t":
 			indent += "\t"
 		elif caracter == " ":
-			# Si encontramos un espacio suelto al principio, lo tratamos con cuidado.
-			# Idealmente el replace("    ", "\t") ya arregló esto, pero por si acaso:
-			pass 
+			# Espacios simples se ignoran en el conteo de indentación si ya normalizamos
+			pass
 		else:
 			break
 	return indent

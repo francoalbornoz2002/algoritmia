@@ -64,8 +64,9 @@ func cargar_mision(datos: Dictionary):
 	
 	# --- Escenario de Prueba ---
 	# Colocamos algunos elementos para interactuar
-	spawn_elemento(Vector2i(0, 1), ElementoTablero.Tipo.MONEDA)
-	spawn_elemento(Vector2i(0, 3), ElementoTablero.Tipo.ENEMIGO)
+	spawn_elemento(Vector2i(0, 8), ElementoTablero.Tipo.MONEDA)
+	spawn_elemento(Vector2i(0, 20), ElementoTablero.Tipo.MONEDA)
+	spawn_elemento(Vector2i(0, 24), ElementoTablero.Tipo.MONEDA)
 	
 	
 

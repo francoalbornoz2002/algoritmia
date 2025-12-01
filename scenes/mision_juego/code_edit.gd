@@ -42,6 +42,10 @@ func _ready():
 	highlighter.add_keyword_color("hayEnemigo", color_sensor)
 	highlighter.add_keyword_color("hayObstaculo", color_sensor)
 	highlighter.add_keyword_color("hayPuente", color_sensor)
+	highlighter.add_keyword_color("posSendero", color_sensor)
+	highlighter.add_keyword_color("posValle", color_sensor)
+	highlighter.add_keyword_color("tengoMoneda", color_sensor)
+	highlighter.add_keyword_color("tengoLlave", color_sensor)
 
 	# 4. Comentarios - Color Gris
 	highlighter.add_color_region("#", "", Color("6e6e6e"), true) # True = hasta fin de linea
