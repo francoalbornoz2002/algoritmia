@@ -70,14 +70,9 @@ func _transpilar(texto: String) -> String:
 	for linea in lineas:
 		# 1. Normalización
 		var linea_normalizada = linea.replace("    ", "\t")
-		
-		# 2. Protección de Strings (Ocultamos textos entre comillas)
 		var linea_protegida = _ocultar_strings(linea_normalizada)
-		
-		# 3. Quitar comentarios (Ya es seguro porque los strings están ocultos)
 		var linea_sin_comentarios = linea_protegida.split("--")[0]
 		
-		# 4. Obtener código limpio sin indentación para analizar
 		var source = linea_sin_comentarios.strip_edges()
 		var linea_lower = source.to_lower()
 		
@@ -101,7 +96,7 @@ func _transpilar(texto: String) -> String:
 		var indent = _obtener_indentacion_segura(linea_normalizada)
 		var codigo_generado = ""
 		
-		# 1. DECLARACIÓN (var x: tipo)
+		# 1. DECLARACIÓN
 		if linea_lower.begins_with("var "):
 			var partes = source.split(":") 
 			if partes.size() > 0:
@@ -116,11 +111,9 @@ func _transpilar(texto: String) -> String:
 		# 2. ESTRUCTURAS DE CONTROL
 		if linea_lower.begins_with("si "):
 			var l = _inyectar_referencias(source)
-			# Reemplazos ordenados para evitar "::"
+			l = _procesar_matematicas_seguras(l) # Seguridad matemática
 			l = l.replace("Si ", "if ").replace("si ", "if ")
-			# Primero reemplazamos la versión con dos puntos, luego la sin dos puntos
-			l = l.replace(" entonces:", ":") 
-			l = l.replace(" entonces", ":")
+			l = l.replace(" entonces:", ":").replace(" entonces", ":")
 			l = _procesar_condicion(l)
 			codigo_generado = indent + l
 			
@@ -129,10 +122,9 @@ func _transpilar(texto: String) -> String:
 			
 		elif linea_lower.begins_with("mientras "):
 			var l = _inyectar_referencias(source)
+			l = _procesar_matematicas_seguras(l)
 			l = l.replace("Mientras ", "while ").replace("mientras ", "while ")
-			# Reemplazos ordenados para evitar "::"
-			l = l.replace(" hacer:", ":")
-			l = l.replace(" hacer", ":")
+			l = l.replace(" hacer:", ":").replace(" hacer", ":")
 			l = _procesar_condicion(l)
 			codigo_generado = indent + l
 			
@@ -140,6 +132,7 @@ func _transpilar(texto: String) -> String:
 			var partes = source.replace(":", "").split(" ", false)
 			if partes.size() >= 2:
 				var veces = _inyectar_referencias(partes[1])
+				veces = _procesar_matematicas_seguras(veces)
 				veces = _procesar_condicion(veces)
 				codigo_generado = indent + "for _iter_ in range(" + veces + "):"
 
@@ -147,17 +140,17 @@ func _transpilar(texto: String) -> String:
 		elif linea_lower.begins_with("mapa(") and linea_lower.ends_with(")"):
 			var args = source.trim_prefix("mapa(").trim_suffix(")").split(",")
 			if args.size() == 2:
-				var s = _procesar_condicion(_inyectar_referencias(args[0])) + " - 1"
-				var v = _procesar_condicion(_inyectar_referencias(args[1])) + " - 1"
+				var s = _procesar_condicion(_procesar_matematicas_seguras(_inyectar_referencias(args[0]))) + " - 1"
+				var v = _procesar_condicion(_procesar_matematicas_seguras(_inyectar_referencias(args[1]))) + " - 1"
 				codigo_generado = indent + "if not await _p_.intentar_teletransportar(Vector2i(" + s + ", " + v + ")): return"
 
 		elif linea_lower.begins_with("imprimir(") and linea_lower.ends_with(")"):
-			# Extraemos el contenido (que puede ser __STR_0__)
 			var idx1 = source.find("(")
 			var idx2 = source.rfind(")")
 			var contenido = source.substr(idx1+1, idx2-idx1-1)
 			
 			contenido = _inyectar_referencias(contenido)
+			contenido = _procesar_matematicas_seguras(contenido)
 			contenido = _procesar_condicion(contenido)
 			
 			codigo_generado = indent + "await _p_.imprimir([" + contenido + "])"
@@ -165,7 +158,8 @@ func _transpilar(texto: String) -> String:
 		# 4. ASIGNACIONES
 		elif ":=" in linea_lower or ("=" in linea_lower and not "(" in linea_lower):
 			var l = _inyectar_referencias(source)
-			l = l.replace(":=", "=").replace(" mod ", " % ")
+			l = _procesar_matematicas_seguras(l)
+			l = l.replace(":=", "=")
 			l = l.replace("++", ".v += 1").replace("--", ".v -= 1") 
 			codigo_generado = indent + _procesar_condicion(l)
 
@@ -182,10 +176,11 @@ func _transpilar(texto: String) -> String:
 				
 			else:
 				var l = _inyectar_referencias(source)
+				l = _procesar_matematicas_seguras(l)
 				l = l.replace("++", ".v += 1").replace("--", ".v -= 1")
 				codigo_generado = indent + l
 
-		# AL FINAL: Restauramos strings originales
+		# AL FINAL: Restauramos strings
 		codigo_generado = _restaurar_strings(codigo_generado)
 		
 		if zona == "MAIN": main_code += codigo_generado + "\n"
@@ -197,6 +192,23 @@ func _transpilar(texto: String) -> String:
 	script += "var _p_: Node\n"
 	script += "var _ctrl_: Node\n\n"
 	script += "class Ref:\n\tvar v\n\tfunc _init(val=null): v = val\n\n"
+	
+	# --- FUNCIONES DE SEGURIDAD CORREGIDAS (CON FREEZE) ---
+	script += "func _div(a, b):\n"
+	script += "\tif b == 0:\n"
+	script += "\t\t_ctrl_._on_jugador_game_over(\"Error Matemático: División por cero\")\n"
+	script += "\t\tawait _ctrl_.get_tree().create_timer(10.0).timeout\n" # ¡PAUSA ETERNA!
+	script += "\t\treturn 0\n"
+	script += "\treturn a / b\n\n"
+
+	script += "func _mod(a, b):\n"
+	script += "\tif b == 0:\n"
+	script += "\t\t_ctrl_._on_jugador_game_over(\"Error Matemático: Módulo por cero\")\n"
+	script += "\t\tawait _ctrl_.get_tree().create_timer(10.0).timeout\n" # ¡PAUSA ETERNA!
+	script += "\t\treturn 0\n"
+	script += "\treturn a % b\n\n"
+	# ------------------------------------------
+
 	script += "# VARS\n" + vars_globales_code + "\n"
 	script += "# FUNCS\n" + funciones_code + "\n"
 	script += "# MAIN\n" + main_code
@@ -206,11 +218,44 @@ func _transpilar(texto: String) -> String:
 
 # --- HELPERS ---
 
+func _procesar_matematicas_seguras(linea: String) -> String:
+	var regex_mod = RegEx.new()
+	regex_mod.compile("\\s+mod\\s+")
+	var res = regex_mod.sub(linea, " % ", true)
+
+	var regex_div = RegEx.new()
+	regex_div.compile("([a-zA-Z0-9_.]+(?:\\.v)?)\\s*([/%])\\s*([a-zA-Z0-9_.]+(?:\\.v)?)")
+	
+	var max_iteraciones = 10 
+	var iter = 0
+	
+	while iter < max_iteraciones:
+		var match_result = regex_div.search(res)
+		if not match_result:
+			break 
+			
+		var todo = match_result.get_string()
+		var op1 = match_result.get_string(1)
+		var operador = match_result.get_string(2)
+		var op2 = match_result.get_string(3)
+		
+		# --- CORRECCIÓN AQUÍ: AGREGAMOS AWAIT ---
+		var reemplazo = ""
+		if operador == "/":
+			reemplazo = "await _div(" + op1 + ", " + op2 + ")"
+		else:
+			reemplazo = "await _mod(" + op1 + ", " + op2 + ")"
+			
+		res = res.replace(todo, reemplazo)
+		iter += 1
+		
+	return res
+
 func _ocultar_strings(texto: String) -> String:
 	_string_cache.clear()
 	_string_idx = 0
 	var regex = RegEx.new()
-	regex.compile("\"([^\"]*)\"") # Regex simple para textos entre comillas
+	regex.compile("\"([^\"]*)\"") 
 	
 	var resultados = regex.search_all(texto)
 	var texto_seguro = texto
@@ -247,11 +292,7 @@ func _procesar_llamada_procedimiento(linea: String) -> String:
 	var idx2 = linea.rfind(")")
 	if idx1 == -1 or idx2 == -1: return linea
 	
-	# --- CORRECCIÓN AQUÍ ---
-	# Convertimos el nombre a minúsculas (.to_lower()) para coincidir con la definición
 	var nombre_func = linea.substr(0, idx1).strip_edges().to_lower()
-	# -----------------------
-
 	var args_raw = linea.substr(idx1+1, idx2-idx1-1).split(",")
 	
 	var args_procesados = []
@@ -262,8 +303,8 @@ func _procesar_llamada_procedimiento(linea: String) -> String:
 		if arg in variables_registradas:
 			args_procesados.append(arg)
 		else:
-			# Procesamos lógica dentro del argumento (variables en formulas)
 			var arg_valor = _inyectar_referencias(arg)
+			arg_valor = _procesar_matematicas_seguras(arg_valor)
 			args_procesados.append("Ref.new(" + arg_valor + ")")
 			
 	return nombre_func + "(" + ", ".join(args_procesados) + ")"
