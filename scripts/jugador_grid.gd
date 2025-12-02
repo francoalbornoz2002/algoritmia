@@ -73,6 +73,7 @@ func avanzar():
 	var celda_destino = pos_grid_actual + direccion_actual
 	await mover_a_celda(celda_destino)
 	await get_tree().create_timer(TIEMPO_PAUSA_INSTRUCCION).timeout
+	return true
 
 func girar_derecha():
 	if esta_actuando: return
@@ -115,6 +116,7 @@ func intentar_teletransportar(celda_destino: Vector2i):
 	# Pequeña pausa para mantener la consistencia del ritmo de ejecución
 	await get_tree().create_timer(TIEMPO_PAUSA_INSTRUCCION).timeout
 	esta_actuando = false
+	return true
 
 # --- PRIMITIVAS DEL PSEUDOCÓDIGO (Moneda) ---
 func recoger_moneda():
@@ -262,6 +264,7 @@ func saltar():
 	pos_grid_actual = celda_destino
 	await tween.finished # Esperar animación
 	esta_actuando = false
+	return true
 
 # --- PRIMITIVAS DEL PSEUDOCÓDIGO (Activar puente) ---
 func activar_puente():
@@ -300,8 +303,6 @@ func activar_puente():
 	await get_tree().create_timer(TIEMPO_ACCION).timeout
 	esta_actuando = false
 
-# --- PRIMITIVAS DEL PSEUDOCÓDIGO (Imprimir) ---
-# Usamos un argumento variable (vararg) para soportar múltiples impresiones
 # --- PRIMITIVAS DEL PSEUDOCÓDIGO (Imprimir) ---
 func imprimir(argumentos: Array):
 	# Unimos todos los argumentos en un solo texto

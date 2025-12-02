@@ -1,17 +1,14 @@
 class_name EjecutorAlgoritmo extends Node
 
 # --- Referencias ---
-# Se las asignará el controlador principal (mision_juego.gd)
 var personaje: CharacterBody2D 
 var controlador_nivel: Node2D
 
 # --- Mapeo de Instrucciones ---
-# Diccionario que traduce "Palabra del Alumno" -> "Código GDScript"
-# Nota: _p_ es el nombre interno que usaremos para referirnos al personaje en el script generado.
 const COMANDOS_ATOMICOS = {
-	"avanzar": "await _p_.avanzar()",
+	"avanzar": "if not await _p_.avanzar(): return",
 	"derecha": "await _p_.girar_derecha()",
-	"saltar": "await _p_.saltar()",
+	"saltar": "if not await _p_.saltar(): return",
 	"atacar": "await _p_.atacar()",
 	"recogermoneda": "await _p_.recoger_moneda()",
 	"recogerllave": "await _p_.recoger_llave()",
@@ -19,8 +16,6 @@ const COMANDOS_ATOMICOS = {
 	"activarpuente": "await _p_.activar_puente()"
 }
 
-# --- Mapeo de SENSORES (Síncronos / Devuelven bool) ---
-# Se usan dentro de los condicionales "Si ..."
 const MAPEO_SENSORES = {
 	"hayenemigo": "_p_.hay_enemigo()",
 	"hayobstaculo": "_p_.hay_obstaculo()",
@@ -34,255 +29,298 @@ const MAPEO_SENSORES = {
 	"posvalle": "_p_.pos_valle()"
 }
 
+# --- ESTADO DEL TRANSPILADOR ---
+var variables_registradas: Array[String] = []
+var _string_cache = {} 
+var _string_idx = 0
+
 # --- FUNCIÓN PRINCIPAL ---
-# Esta es la que llamaremos cuando se pulse el botón "EJECUTAR"
 func procesar_y_ejecutar(texto_codigo: String):
-	
-	# 1. Traducir el Pseudocódigo a GDScript
+	variables_registradas.clear()
 	var codigo_gdscript = _transpilar(texto_codigo)
 	
 	if codigo_gdscript == "":
-		print("Error: No se pudo generar código válido (¿Falta Inicio/Fin?).")
+		controlador_nivel.agregar_mensaje_consola("Error: Código vacío o sin Inicio/Fin", "ERROR")
 		_finalizar_ejecucion(false)
 		return
 
-	# 2. Compilar y Ejecutar dinámicamente
 	_ejecutar_dinamicamente(codigo_gdscript)
+
+func detener_ejecucion_inmediata():
+	var nodo_runner = controlador_nivel.get_node_or_null("RunnerTemporal")
+	if is_instance_valid(nodo_runner):
+		nodo_runner.queue_free()
+		print("--- Ejecutor: Script eliminado por seguridad ---")
+
+func _finalizar_ejecucion(exito: bool):
+	var nodo_runner = controlador_nivel.get_node_or_null("RunnerTemporal")
+	if is_instance_valid(nodo_runner):
+		nodo_runner.queue_free()
+	controlador_nivel.on_ejecucion_terminada(exito)
 
 # --- EL TRANSPILADOR ---
 func _transpilar(texto: String) -> String:
 	var lineas = texto.split("\n")
 	
-	# Separamos el código en dos partes: Variables Globales y Cuerpo de la Función
-	var variables_globales_code = ""
-	var cuerpo_funcion_code = ""
-	
-	var dentro_de_algoritmo = false
+	var vars_globales_code = ""
+	var funciones_code = ""
+	var main_code = ""
+	var zona = "GLOBAL"
 	
 	for linea in lineas:
 		# 1. Normalización
 		var linea_normalizada = linea.replace("    ", "\t")
-		# Quitamos comentarios (--) para procesar
-		var linea_sin_comentarios = linea_normalizada.split("--")[0]
-		var linea_limpia = linea_sin_comentarios.strip_edges().to_lower() # Para detección
 		
-		# Ignorar líneas vacías
-		if linea_limpia.is_empty():
+		# 2. Protección de Strings (Ocultamos textos entre comillas)
+		var linea_protegida = _ocultar_strings(linea_normalizada)
+		
+		# 3. Quitar comentarios (Ya es seguro porque los strings están ocultos)
+		var linea_sin_comentarios = linea_protegida.split("--")[0]
+		
+		# 4. Obtener código limpio sin indentación para analizar
+		var source = linea_sin_comentarios.strip_edges()
+		var linea_lower = source.to_lower()
+		
+		if source.is_empty(): continue
+		
+		# --- ZONAS ---
+		if linea_lower == "inicio":
+			zona = "MAIN"
+			main_code += "func run():\n"
 			continue
-			
-		# --- DETECCIÓN DE BLOQUES ---
-		if linea_limpia == "inicio":
-			dentro_de_algoritmo = true
-			cuerpo_funcion_code += "func run():\n"
+		if linea_lower == "fin":
+			if zona == "MAIN": main_code += "\t_ctrl_.on_ejecucion_terminada(true)\n"
+			zona = "GLOBAL"
 			continue
-			
-		if linea_limpia == "fin":
-			dentro_de_algoritmo = false
-			cuerpo_funcion_code += "\t_ctrl_.on_ejecucion_terminada(true)\n"
-			break 
-		
-		# --- TRADUCCIÓN ---
-		
-		# A) ZONA DE VARIABLES GLOBALES (Antes del Inicio)
-		if not dentro_de_algoritmo:
-			# Detectar: var nombre: tipo
-			if linea_limpia.begins_with("var "):
-				# Ejemplo: var miPuntaje: entero
-				# Queremos: var miPuntaje = null
-				
-				# 1. Extraer nombre y tipo
-				var partes = linea_limpia.split(":")
-				if partes.size() > 0:
-					var declaracion = partes[0] # "var mipuntaje"
-					var nombre_var = declaracion.replace("var ", "").strip_edges()
-					
-					# 2. Generar código GDScript (Inicializado en null para detectar errores)
-					variables_globales_code += "var " + nombre_var + " = null\n"
-				continue
+		if linea_lower.begins_with("proceso "):
+			zona = "PROCESO"
+			funciones_code += _procesar_cabecera_proceso(source) + "\n"
+			continue
 
-		# B) ZONA DEL ALGORITMO (Dentro de Inicio...Fin)
+		# --- PROCESAMIENTO ---
+		var indent = _obtener_indentacion_segura(linea_normalizada)
+		var codigo_generado = ""
+		
+		# 1. DECLARACIÓN (var x: tipo)
+		if linea_lower.begins_with("var "):
+			var partes = source.split(":") 
+			if partes.size() > 0:
+				var nombre = partes[0].replace("var ", "").replace("VAR ", "").strip_edges()
+				variables_registradas.append(nombre)
+				var decl = "var " + nombre + " = Ref.new(null)"
+				if zona == "GLOBAL": vars_globales_code += decl + "\n"
+				elif zona == "MAIN": main_code += indent + decl + "\n"
+				elif zona == "PROCESO": funciones_code += indent + decl + "\n"
+			continue
+
+		# 2. ESTRUCTURAS DE CONTROL
+		if linea_lower.begins_with("si "):
+			var l = _inyectar_referencias(source)
+			# Reemplazos ordenados para evitar "::"
+			l = l.replace("Si ", "if ").replace("si ", "if ")
+			# Primero reemplazamos la versión con dos puntos, luego la sin dos puntos
+			l = l.replace(" entonces:", ":") 
+			l = l.replace(" entonces", ":")
+			l = _procesar_condicion(l)
+			codigo_generado = indent + l
+			
+		elif linea_lower == "sino" or linea_lower == "sino:":
+			codigo_generado = indent + "else:"
+			
+		elif linea_lower.begins_with("mientras "):
+			var l = _inyectar_referencias(source)
+			l = l.replace("Mientras ", "while ").replace("mientras ", "while ")
+			# Reemplazos ordenados para evitar "::"
+			l = l.replace(" hacer:", ":")
+			l = l.replace(" hacer", ":")
+			l = _procesar_condicion(l)
+			codigo_generado = indent + l
+			
+		elif linea_lower.begins_with("repetir "):
+			var partes = source.replace(":", "").split(" ", false)
+			if partes.size() >= 2:
+				var veces = _inyectar_referencias(partes[1])
+				veces = _procesar_condicion(veces)
+				codigo_generado = indent + "for _iter_ in range(" + veces + "):"
+
+		# 3. PRIMITIVAS
+		elif linea_lower.begins_with("mapa(") and linea_lower.ends_with(")"):
+			var args = source.trim_prefix("mapa(").trim_suffix(")").split(",")
+			if args.size() == 2:
+				var s = _procesar_condicion(_inyectar_referencias(args[0])) + " - 1"
+				var v = _procesar_condicion(_inyectar_referencias(args[1])) + " - 1"
+				codigo_generado = indent + "if not await _p_.intentar_teletransportar(Vector2i(" + s + ", " + v + ")): return"
+
+		elif linea_lower.begins_with("imprimir(") and linea_lower.ends_with(")"):
+			# Extraemos el contenido (que puede ser __STR_0__)
+			var idx1 = source.find("(")
+			var idx2 = source.rfind(")")
+			var contenido = source.substr(idx1+1, idx2-idx1-1)
+			
+			contenido = _inyectar_referencias(contenido)
+			contenido = _procesar_condicion(contenido)
+			
+			codigo_generado = indent + "await _p_.imprimir([" + contenido + "])"
+
+		# 4. ASIGNACIONES
+		elif ":=" in linea_lower or ("=" in linea_lower and not "(" in linea_lower):
+			var l = _inyectar_referencias(source)
+			l = l.replace(":=", "=").replace(" mod ", " % ")
+			l = l.replace("++", ".v += 1").replace("--", ".v -= 1") 
+			codigo_generado = indent + _procesar_condicion(l)
+
+		# 5. LLAMADAS Y ATÓMICOS
 		else:
-			# Indentación original
-			var indent_str = _obtener_indentacion_segura(linea_normalizada)
-			var linea_procesada = linea_limpia # Usaremos esta para lógica
+			var tokens = linea_lower.split(" ", false)
+			var primera = tokens[0].replace("(", "").replace(")", "")
 			
-			# --- TRADUCCIONES DE SINTAXIS (ASIGNACIONES Y OPERADORES) ---
-			# 0. Declaración de Variables Locales (var nombre: tipo)
-			if linea_procesada.begins_with("var "):
-				var partes = linea_procesada.split(":")
-				if partes.size() > 0:
-					var declaracion = partes[0]
-					var nombre_var = declaracion.replace("var ", "").strip_edges()
-					# Generamos var local inicializada en null
-					cuerpo_funcion_code += indent_str + "var " + nombre_var + " = null\n"
-				continue
-			
-			# 1. Asignación (:=) -> (=)
-			if ":=" in linea_procesada:
-				linea_procesada = linea_procesada.replace(":=", "=")
-			
-			# 2. Operador Módulo (mod) -> (%)
-			# Usamos regex o replace simple con espacios para no romper palabras como "modo"
-			linea_procesada = linea_procesada.replace(" mod ", " % ")
-			
-			# 3. Incremento/Decremento (++, --) -> (+= 1, -= 1)
-			if "++" in linea_procesada:
-				linea_procesada = linea_procesada.replace("++", " += 1")
-			if "--" in linea_procesada:
-				linea_procesada = linea_procesada.replace("--", " -= 1")
-
-			# --- ESTRUCTURAS DE CONTROL ---
-			
-			# Si (If)
-			if linea_procesada.begins_with("si "):
-				var linea_trad = linea_procesada.replace("si ", "if ")
-				linea_trad = linea_trad.replace(" entonces:", ":").replace(" entonces", ":")
-				linea_trad = _procesar_condicion(linea_trad)
-				cuerpo_funcion_code += indent_str + linea_trad + "\n"
-				continue
+			if COMANDOS_ATOMICOS.has(primera):
+				codigo_generado = indent + COMANDOS_ATOMICOS[primera]
 				
-			# Sino (Else)
-			if linea_procesada == "sino" or linea_procesada == "sino:":
-				cuerpo_funcion_code += indent_str + "else:\n"
-				continue
-
-			# Mientras (While)
-			if linea_procesada.begins_with("mientras "):
-				var linea_trad = linea_procesada.replace("mientras ", "while ")
-				linea_trad = linea_trad.replace(" hacer:", ":").replace(" hacer", ":")
-				linea_trad = _procesar_condicion(linea_trad)
-				cuerpo_funcion_code += indent_str + linea_trad + "\n"
-				continue
-			
-			# Repetir (For)
-			if linea_procesada.begins_with("repetir "):
-				var partes = linea_procesada.replace(":", "").split(" ", false)
-				if partes.size() >= 2:
-					var veces = _procesar_condicion(partes[1])
-					cuerpo_funcion_code += indent_str + "for _iter_ in range(" + veces + "):\n"
-				continue
-
-			# Mapa()
-			if linea_procesada.begins_with("mapa(") and linea_procesada.ends_with(")"):
-				var contenido = linea_procesada.trim_prefix("mapa(").trim_suffix(")")
-				var argumentos = contenido.split(",")
-				if argumentos.size() == 2:
-					var pos_sendero = _procesar_condicion(argumentos[0]) + " - 1"
-					var pos_valle = _procesar_condicion(argumentos[1]) + " - 1"
-					cuerpo_funcion_code += indent_str + "if not await _p_.intentar_teletransportar(Vector2i(" + pos_sendero + ", " + pos_valle + ")): return\n"
-				continue
-
-			# Imprimir()
-			if linea_procesada.begins_with("imprimir(") and linea_procesada.ends_with(")"):
-				var contenido = linea_procesada.trim_prefix("imprimir(").trim_suffix(")")
-				contenido = _procesar_condicion(contenido)
-				cuerpo_funcion_code += indent_str + "await _p_.imprimir([" + contenido + "])\n"
-				continue
+			elif "(" in linea_lower:
+				codigo_generado = indent + "await " + _procesar_llamada_procedimiento(source)
 				
-			# Instrucciones Atómicas
-			var primera_palabra = linea_procesada.split(" ", false)[0].replace("(", "").replace(")", "")
-			if COMANDOS_ATOMICOS.has(primera_palabra):
-				cuerpo_funcion_code += indent_str + COMANDOS_ATOMICOS[primera_palabra] + "\n"
-				continue
-			
-			# --- CASO POR DEFECTO: ASIGNACIONES MATEMÁTICAS ---
-			# Si no es ninguna estructura reservada, asumimos que es una operación matemática
-			# Ej: miVariable = 5 + 2
-			# Como ya reemplazamos := por =, simplemente pasamos la línea procesada
-			# Pero debemos asegurarnos de procesar sensores en la parte derecha de la asignación
-			
-			if "=" in linea_procesada or "+=" in linea_procesada or "-=" in linea_procesada:
-				# Procesamos para traducir sensores/variables globales si las hubiera
-				linea_procesada = _procesar_condicion(linea_procesada)
-				cuerpo_funcion_code += indent_str + linea_procesada + "\n"
-				continue
+			else:
+				var l = _inyectar_referencias(source)
+				l = l.replace("++", ".v += 1").replace("--", ".v -= 1")
+				codigo_generado = indent + l
 
-	if cuerpo_funcion_code == "": return ""
+		# AL FINAL: Restauramos strings originales
+		codigo_generado = _restaurar_strings(codigo_generado)
 		
-	# Envolver script final
-	var script_final = "extends Node\n"
-	script_final += "var _p_: Node\n"
-	script_final += "var _ctrl_: Node\n"
-	script_final += "\n"
-	script_final += "# --- VARIABLES GLOBALES DEL ALUMNO ---\n"
-	script_final += variables_globales_code
-	script_final += "\n" 
-	script_final += "# --- ALGORITMO PRINCIPAL ---\n"
-	script_final += cuerpo_funcion_code
+		if zona == "MAIN": main_code += codigo_generado + "\n"
+		elif zona == "PROCESO": funciones_code += codigo_generado + "\n"
 	
-	print("--- TRADUCCIÓN ---\n", script_final)
-	return script_final
+	if main_code == "": return ""
 
-# --- HELPER: PROCESAR CONDICIÓN ---
-func _procesar_condicion(linea: String) -> String:
-	var resultado = linea
+	var script = "extends Node\n"
+	script += "var _p_: Node\n"
+	script += "var _ctrl_: Node\n\n"
+	script += "class Ref:\n\tvar v\n\tfunc _init(val=null): v = val\n\n"
+	script += "# VARS\n" + vars_globales_code + "\n"
+	script += "# FUNCS\n" + funciones_code + "\n"
+	script += "# MAIN\n" + main_code
 	
-	# Operadores Lógicos
-	resultado = resultado.replace("~", " not ")
-	# 'and' y 'or' ya son válidos en GDScript
+	print("--- TRADUCCIÓN ---\n", script)
+	return script
+
+# --- HELPERS ---
+
+func _ocultar_strings(texto: String) -> String:
+	_string_cache.clear()
+	_string_idx = 0
+	var regex = RegEx.new()
+	regex.compile("\"([^\"]*)\"") # Regex simple para textos entre comillas
 	
-	# Reemplazo de Sensores
-	for sensor in MAPEO_SENSORES:
-		if sensor in resultado:
-			resultado = resultado.replace(sensor, MAPEO_SENSORES[sensor])
+	var resultados = regex.search_all(texto)
+	var texto_seguro = texto
+	
+	for i in range(resultados.size() - 1, -1, -1):
+		var match_result = resultados[i]
+		var string_original = match_result.get_string()
+		var placeholder = "__STR_" + str(_string_idx) + "__"
+		_string_cache[placeholder] = string_original
+		_string_idx += 1
+		
+		texto_seguro = texto_seguro.erase(match_result.get_start(), string_original.length())
+		texto_seguro = texto_seguro.insert(match_result.get_start(), placeholder)
+		
+	return texto_seguro
+
+func _restaurar_strings(texto: String) -> String:
+	var texto_final = texto
+	for placeholder in _string_cache:
+		texto_final = texto_final.replace(placeholder, _string_cache[placeholder])
+	return texto_final
+
+func _inyectar_referencias(linea: String) -> String:
+	var res = linea
+	var regex = RegEx.new()
+	for variable in variables_registradas:
+		regex.compile("\\b" + variable + "\\b") 
+		if ".v" in res and (variable + ".v") in res: continue
+		res = regex.sub(res, variable + ".v", true)
+	return res
+
+func _procesar_llamada_procedimiento(linea: String) -> String:
+	var idx1 = linea.find("(")
+	var idx2 = linea.rfind(")")
+	if idx1 == -1 or idx2 == -1: return linea
+	
+	# --- CORRECCIÓN AQUÍ ---
+	# Convertimos el nombre a minúsculas (.to_lower()) para coincidir con la definición
+	var nombre_func = linea.substr(0, idx1).strip_edges().to_lower()
+	# -----------------------
+
+	var args_raw = linea.substr(idx1+1, idx2-idx1-1).split(",")
+	
+	var args_procesados = []
+	for arg in args_raw:
+		arg = arg.strip_edges()
+		if arg.is_empty(): continue
+		
+		if arg in variables_registradas:
+			args_procesados.append(arg)
+		else:
+			# Procesamos lógica dentro del argumento (variables en formulas)
+			var arg_valor = _inyectar_referencias(arg)
+			args_procesados.append("Ref.new(" + arg_valor + ")")
 			
-	return resultado
+	return nombre_func + "(" + ", ".join(args_procesados) + ")"
 
-# --- HELPER: OBTENER INDENTACIÓN ---
+func _procesar_cabecera_proceso(linea_raw: String) -> String:
+	var linea = linea_raw.strip_edges().replace("proceso ", "func ")
+	var idx_paren = linea.find("(")
+	var nombre_func = linea.substr(5, idx_paren - 5).strip_edges().to_lower()
+	
+	var contenido_params = linea.substr(idx_paren + 1, linea.rfind(")") - idx_paren - 1)
+	var lista_params = contenido_params.split(",")
+	
+	var params_gd = []
+	var codigo_clonacion = ""
+	
+	for p in lista_params:
+		p = p.strip_edges()
+		if p.is_empty(): continue
+		var partes = p.split(" ") 
+		var modo = partes[0].to_upper()
+		var nombre_param = partes[1].replace(":", "")
+		
+		variables_registradas.append(nombre_param)
+		params_gd.append(nombre_param)
+		
+		if modo == "E":
+			codigo_clonacion += "\t" + nombre_param + " = Ref.new(" + nombre_param + ".v)\n"
+			
+	return "func " + nombre_func + "(" + ", ".join(params_gd) + "):\n" + codigo_clonacion
+
+func _procesar_condicion(linea: String) -> String:
+	var res = linea.replace("~", " not ")
+	for sensor in MAPEO_SENSORES:
+		if sensor in res:
+			res = res.replace(sensor, MAPEO_SENSORES[sensor])
+	return res
+
 func _obtener_indentacion_segura(linea: String) -> String:
 	var indent = ""
-	for caracter in linea:
-		if caracter == "\t":
-			indent += "\t"
-		elif caracter == " ":
-			# Espacios simples se ignoran en el conteo de indentación si ya normalizamos
-			pass
-		else:
-			break
+	for c in linea:
+		if c == "\t": indent += "\t"
+		else: break
 	return indent
 
-# --- EL EJECUTOR (Compilador) ---
-func _ejecutar_dinamicamente(codigo_fuente: String):
-	# 1. Crear un objeto GDScript nuevo
-	var script_dinamico = GDScript.new()
-	script_dinamico.source_code = codigo_fuente
-	
-	# 2. Recargar (Compilar)
-	var error = script_dinamico.reload()
-	if error != OK:
-		print("Error sintaxis GDScript generado: ", error)
+func _ejecutar_dinamicamente(codigo: String):
+	var script = GDScript.new()
+	script.source_code = codigo
+	var err = script.reload()
+	if err != OK:
+		controlador_nivel.agregar_mensaje_consola("Error interno Parser: " + str(err), "ERROR")
 		_finalizar_ejecucion(false)
 		return
 		
-	# 3. Instanciar el script como un Nodo temporal
-	var nodo_runner = Node.new()
-	nodo_runner.name = "RunnerTemporal"
-	nodo_runner.set_script(script_dinamico)
-	
-	# 4. Inyectar las referencias (¡Magia!)
-	nodo_runner._p_ = personaje
-	nodo_runner._ctrl_ = controlador_nivel
-	
-	# 5. Añadir a la escena y correr
-	controlador_nivel.add_child(nodo_runner)
-	
-	# Llamamos a la función 'run' que escribimos en el string
-	nodo_runner.call_deferred("run")
-
-
-# --- FUNCIÓN DE TÉRMINO ---
-func _finalizar_ejecucion(exito: bool):
-	# 1. Limpieza del nodo temporal
-	var nodo_runner = controlador_nivel.get_node("RunnerTemporal")
-	if is_instance_valid(nodo_runner):
-		nodo_runner.queue_free()
-		
-	# 2. Notificar al controlador para que inicie la pausa/reinicio
-	controlador_nivel.on_ejecucion_terminada(exito)
-
-# Borra el script del alumno INMEDIATAMENTE.
-func detener_ejecucion_inmediata():
-	var nodo_runner = controlador_nivel.get_node_or_null("RunnerTemporal")
-	if is_instance_valid(nodo_runner):
-		nodo_runner.queue_free() # Adiós nodo, adiós bucle infinito.
-		print("--- Ejecutor: Script del alumno eliminado por seguridad ---")
+	var nodo = Node.new()
+	nodo.name = "RunnerTemporal"
+	nodo.set_script(script)
+	nodo._p_ = personaje
+	nodo._ctrl_ = controlador_nivel
+	controlador_nivel.add_child(nodo)
+	nodo.call_deferred("run")

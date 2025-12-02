@@ -96,6 +96,7 @@ theme_override_constants/separation = 4
 [node name="CodeEdit" type="CodeEdit" parent="CapaUI/VBoxContainer"]
 custom_minimum_size = Vector2(0, 480)
 layout_mode = 2
+theme_override_font_sizes/font_size = 12
 gutters_draw_line_numbers = true
 gutters_draw_fold_gutter = true
 script = ExtResource("2_u8nxi")
