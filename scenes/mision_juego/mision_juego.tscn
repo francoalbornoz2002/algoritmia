@@ -120,8 +120,11 @@ offset_left = 512.0
 offset_top = 492.0
 offset_right = 1120.0
 offset_bottom = 608.0
+focus_mode = 2
 theme_override_styles/normal = SubResource("StyleBoxFlat_xnhqp")
 bbcode_enabled = true
+scroll_following = true
+selection_enabled = true
 
 [node name="ContenedorJuego" type="SubViewportContainer" parent="."]
 offset_left = 512.0

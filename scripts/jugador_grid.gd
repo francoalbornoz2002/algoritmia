@@ -67,7 +67,7 @@ func avanzar():
 	esta_actuando = true
 	# 1. Lógica de peligro (Si hay Enemigo, Game Over)
 	if _verificar_peligro_inminente():
-		# game_over() ya fue llamado dentro de la función de verificación
+		await _esperar_muerte()
 		return
 		
 	var celda_destino = pos_grid_actual + direccion_actual
@@ -108,6 +108,7 @@ func intentar_teletransportar(celda_destino: Vector2i):
 		# Mostramos las coordenadas en Base 1 para que el alumno entienda el error
 		var coord_user = celda_destino + Vector2i(1, 1)
 		game_over("¡Error de Coordenadas! Intentaste ir a " + str(coord_user) + " pero está fuera del mapa.")
+		await _esperar_muerte()
 		return
 
 	# 2. Si es válida, usamos la función existente para movernos
@@ -129,11 +130,13 @@ func recoger_moneda():
 	# 2. Validaciones (Game Over)
 	if objeto == null:
 		game_over("Intentaste recoger una moneda, pero aquí no hay nada.")
+		await _esperar_muerte()
 		return
 	
 	if objeto.tipo != ElementoTablero.Tipo.MONEDA:
 		var nombre_real = ElementoTablero.obtener_nombre_tipo(objeto.tipo)
 		game_over("Intentaste recoger una moneda, pero aquí hay un " + nombre_real + ".")
+		await _esperar_muerte()
 		return
 	
 	# 3. Éxito: Recoger
@@ -159,11 +162,13 @@ func recoger_llave():
 	
 	if objeto == null:
 		game_over("Intentaste recoger una llave, pero aquí no hay nada.")
+		await _esperar_muerte()
 		return
 	
 	if objeto.tipo != ElementoTablero.Tipo.LLAVE:
 		var nombre_real = ElementoTablero.obtener_nombre_tipo(objeto.tipo)
 		game_over("Intentaste recoger una llave, pero aquí hay un " + nombre_real + ".")
+		await _esperar_muerte()
 		return
 	
 	print("¡Llave recogida! Llaves totales: ", inventario["llaves"] + 1)
@@ -186,11 +191,13 @@ func abrir_cofre():
 		var nombre_real = ""
 		if objeto: nombre_real = ElementoTablero.obtener_nombre_tipo(objeto.tipo)
 		game_over("Intentaste abrir un cofre, pero aquí hay un " + nombre_real + ".")
+		await _esperar_muerte()
 		return
 	
 	# VALIDACIÓN 2: ¿Tienes Llave?
 	if inventario["llaves"] <= 0:
 		game_over("Intentaste abrir el cofre, ¡pero no tienes una llave!")
+		await _esperar_muerte()
 		return
 		
 	# Éxito: Abrir
@@ -216,6 +223,7 @@ func atacar():
 	# 2. Validar
 	if objeto == null or objeto.tipo != ElementoTablero.Tipo.ENEMIGO:
 		game_over("Intentaste atacar, pero no hay enemigo en frente. Error de lógica SL-03.")
+		await _esperar_muerte()
 		return
 	
 	# 3. Éxito: Eliminar Enemigo
@@ -239,6 +247,7 @@ func saltar():
 	# 2. Validar
 	if obstaculo == null or obstaculo.tipo != ElementoTablero.Tipo.OBSTACULO:
 		game_over("Intentaste saltar, pero no hay un obstáculo en frente. Error de lógica SL-03.")
+		await _esperar_muerte()
 		return
 		
 	# 3. Celda de aterrizaje (salta 2 casillas)
@@ -247,6 +256,7 @@ func saltar():
 	# Validar que el aterrizaje sea válido
 	if not GridManager.es_celda_valida(celda_destino):
 		game_over("¡Salto inválido! Fuera del mapa.")
+		await _esperar_muerte()
 		return
 
 	# 4. Éxito: Movimiento de Salto (Tween complejo que simule salto)
@@ -281,18 +291,20 @@ func activar_puente():
 		var nombre_real = ""
 		if objeto: nombre_real = ElementoTablero.obtener_nombre_tipo(objeto.tipo)
 		game_over("Intentaste activar el puente, pero aquí no hay un puente o es un " + nombre_real + ".")
+		await _esperar_muerte()
 		return
 
 	# VALIDACIÓN 2: ¿Está ya activo? (No es Game Over, solo un aviso)
 	if objeto.esta_activo:
 		print("Puente ya activo, no es necesario gastar moneda.")
-		await get_tree().create_timer(0.3).timeout
+		await get_tree().create_timer(TIEMPO_ACCION).timeout
 		esta_actuando = false
 		return
 		
 	# VALIDACIÓN 3: ¿Tienes Moneda? (Game Over si no hay)
 	if inventario["monedas"] <= 0:
 		game_over("¡No tienes monedas para activar el puente!")
+		await _esperar_muerte()
 		return
 		
 	# Éxito: Activar Puente
@@ -314,7 +326,7 @@ func imprimir(argumentos: Array):
 	consola_mensaje.emit(texto_final, "OUTPUT")
 
 	# Pequeña pausa estética
-	await get_tree().create_timer(0.05).timeout
+	await get_tree().create_timer(TIEMPO_ACCION).timeout
 
 # --- PRIMITIVAS DE SENSOR ---
 # Sensor para saber si hay un enemigo en la celda adyacente (en la dirección actual)
@@ -393,6 +405,7 @@ func mover_a_celda(celda_destino: Vector2i):
 	if not GridManager.es_celda_valida(celda_destino):
 		# Llamamos a game_over y luego retornamos.
 		game_over("¡Choque con el límite del mapa! Error de secuencia.")
+		await _esperar_muerte()
 		return
 	
 	# 2. Iniciar movimiento
@@ -456,3 +469,8 @@ func game_over(razon: String):
 	
 	# 1. Emitir señal para que el Ejecutor sepa que falló el código
 	game_over_triggered.emit(razon) 
+
+# Función para congelar la ejecución mientras esperamos que el controlador reinicie el nivel
+func _esperar_muerte():
+	# Esperamos 10 segundos (tiempo de sobra para que queue_free elimine el nodo)
+	await get_tree().create_timer(10.0).timeout

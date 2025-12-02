@@ -74,10 +74,22 @@ func cargar_mision(datos: Dictionary):
 	jugador.teletransportar_a(datos["pos_inicio"])
 	
 	# --- Escenario de Prueba ---
-	# Colocamos algunos elementos para interactuar
-	spawn_elemento(Vector2i(0, 8), ElementoTablero.Tipo.MONEDA)
-	spawn_elemento(Vector2i(0, 20), ElementoTablero.Tipo.MONEDA)
-	spawn_elemento(Vector2i(0, 24), ElementoTablero.Tipo.MONEDA)
+	# Colocamos elementos estratégicos para probar todas las primitivas
+	
+	# Sendero 1: Monedas y Enemigo
+	spawn_elemento(Vector2i(0, 2), ElementoTablero.Tipo.MONEDA)
+	spawn_elemento(Vector2i(0, 3), ElementoTablero.Tipo.ENEMIGO) # Para probar atacar
+	spawn_elemento(Vector2i(0, 5), ElementoTablero.Tipo.MONEDA)
+	
+	# Sendero 2: Llave y Obstáculo
+	spawn_elemento(Vector2i(1, 2), ElementoTablero.Tipo.LLAVE)
+	spawn_elemento(Vector2i(1, 4), ElementoTablero.Tipo.OBSTACULO) # Para probar saltar
+	
+	# Sendero 3: Puente y Cofre
+	spawn_elemento(Vector2i(2, 3), ElementoTablero.Tipo.PUENTE) # Requiere moneda
+	spawn_elemento(Vector2i(2, 5), ElementoTablero.Tipo.COFRE)  # Requiere llave
+	
+	# Límites y zonas vacías para probar movimiento libre
 	
 	
 
