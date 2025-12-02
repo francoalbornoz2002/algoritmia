@@ -63,6 +63,7 @@ func _transpilar(texto: String) -> String:
 	var lineas = texto.split("\n")
 	
 	var vars_globales_code = ""
+	var vars_globales_init_code = "" # NUEVO: Código para inicializar globales en _ready
 	var funciones_code = ""
 	var main_code = ""
 	var zona = "GLOBAL"
@@ -100,18 +101,36 @@ func _transpilar(texto: String) -> String:
 		if linea_lower.begins_with("var "):
 			var partes = source.split(":") 
 			if partes.size() > 0:
-				var nombre = partes[0].replace("var ", "").replace("VAR ", "").strip_edges()
+				var nombre_raw = partes[0].strip_edges() 
+				var nombre = ""
+				if nombre_raw.to_lower().begins_with("var "):
+					nombre = nombre_raw.substr(4).strip_edges()
+				else:
+					nombre = nombre_raw
+				
+				var tipo = "entero"
+				if partes.size() > 1:
+					tipo = partes[1].strip_edges().to_lower()
+				
 				variables_registradas.append(nombre)
-				var decl = "var " + nombre + " = Ref.new(null)"
-				if zona == "GLOBAL": vars_globales_code += decl + "\n"
-				elif zona == "MAIN": main_code += indent + decl + "\n"
-				elif zona == "PROCESO": funciones_code += indent + decl + "\n"
+				
+				# Construimos la parte derecha de la inicialización
+				var init_str = "Ref.new('" + tipo + "', _ctrl_, null)"
+				
+				if zona == "GLOBAL":
+					# GLOBAL: Separamos declaración de inicialización
+					vars_globales_code += "var " + nombre + "\n"
+					vars_globales_init_code += "\t" + nombre + " = " + init_str + "\n"
+				elif zona == "MAIN": 
+					main_code += indent + "var " + nombre + " = " + init_str + "\n"
+				elif zona == "PROCESO": 
+					funciones_code += indent + "var " + nombre + " = " + init_str + "\n"
 			continue
 
 		# 2. ESTRUCTURAS DE CONTROL
 		if linea_lower.begins_with("si "):
 			var l = _inyectar_referencias(source)
-			l = _procesar_matematicas_seguras(l) # Seguridad matemática
+			l = _procesar_matematicas_seguras(l)
 			l = l.replace("Si ", "if ").replace("si ", "if ")
 			l = l.replace(" entonces:", ":").replace(" entonces", ":")
 			l = _procesar_condicion(l)
@@ -157,11 +176,21 @@ func _transpilar(texto: String) -> String:
 
 		# 4. ASIGNACIONES
 		elif ":=" in linea_lower or ("=" in linea_lower and not "(" in linea_lower):
-			var l = _inyectar_referencias(source)
-			l = _procesar_matematicas_seguras(l)
-			l = l.replace(":=", "=")
-			l = l.replace("++", ".v += 1").replace("--", ".v -= 1") 
-			codigo_generado = indent + _procesar_condicion(l)
+			var sep = ":=" if ":=" in source else "="
+			var partes_asig = source.split(sep)
+			var lhs_raw = partes_asig[0].strip_edges()
+			var rhs_raw = partes_asig[1].strip_edges()
+			
+			if lhs_raw in variables_registradas:
+				var rhs = _inyectar_referencias(rhs_raw)
+				rhs = _procesar_matematicas_seguras(rhs)
+				rhs = _procesar_condicion(rhs)
+				codigo_generado = indent + "await " + lhs_raw + ".set_val(" + rhs + ")"
+			else:
+				var l = _inyectar_referencias(source)
+				l = _procesar_matematicas_seguras(l)
+				l = l.replace(":=", "=")
+				codigo_generado = indent + _procesar_condicion(l)
 
 		# 5. LLAMADAS Y ATÓMICOS
 		else:
@@ -174,10 +203,23 @@ func _transpilar(texto: String) -> String:
 			elif "(" in linea_lower:
 				codigo_generado = indent + "await " + _procesar_llamada_procedimiento(source)
 				
+			elif "++" in linea_lower or "--" in linea_lower:
+				var l = source
+				for v in variables_registradas:
+					if v + "++" in l:
+						l = "await " + v + ".set_val(" + v + ".v + 1)"
+						break
+					elif v + "--" in l:
+						l = "await " + v + ".set_val(" + v + ".v - 1)"
+						break
+				if l == source:
+					l = _inyectar_referencias(l)
+					l = l.replace("++", ".v += 1").replace("--", ".v -= 1")
+				codigo_generado = indent + l
+				
 			else:
 				var l = _inyectar_referencias(source)
 				l = _procesar_matematicas_seguras(l)
-				l = l.replace("++", ".v += 1").replace("--", ".v -= 1")
 				codigo_generado = indent + l
 
 		# AL FINAL: Restauramos strings
@@ -191,25 +233,42 @@ func _transpilar(texto: String) -> String:
 	var script = "extends Node\n"
 	script += "var _p_: Node\n"
 	script += "var _ctrl_: Node\n\n"
-	script += "class Ref:\n\tvar v\n\tfunc _init(val=null): v = val\n\n"
 	
-	# --- FUNCIONES DE SEGURIDAD CORREGIDAS (CON FREEZE) ---
+	script += "class Ref:\n"
+	script += "\tvar v\n"
+	script += "\tvar t\n"
+	script += "\tvar c\n"
+	script += "\tfunc _init(type, ctrl, val=null):\n"
+	script += "\t\tv = val\n"
+	script += "\t\tt = type\n"
+	script += "\t\tc = ctrl\n"
+	script += "\tfunc set_val(val):\n"
+	script += "\t\tif t == 'entero' and typeof(val) == TYPE_FLOAT:\n"
+	script += "\t\t\tif val != int(val):\n" 
+	script += "\t\t\t\tc._on_jugador_game_over('Error de Tipo: No se puede asignar Real (' + str(val) + ') a Entero.')\n"
+	script += "\t\t\t\tawait c.get_tree().create_timer(10.0).timeout\n"
+	script += "\t\t\t\treturn\n"
+	script += "\t\t\tval = int(val)\n" 
+	script += "\t\tv = val\n\n"
+	
 	script += "func _div(a, b):\n"
 	script += "\tif b == 0:\n"
 	script += "\t\t_ctrl_._on_jugador_game_over(\"Error Matemático: División por cero\")\n"
-	script += "\t\tawait _ctrl_.get_tree().create_timer(10.0).timeout\n" # ¡PAUSA ETERNA!
+	script += "\t\tawait _ctrl_.get_tree().create_timer(10.0).timeout\n"
 	script += "\t\treturn 0\n"
 	script += "\treturn a / b\n\n"
 
 	script += "func _mod(a, b):\n"
 	script += "\tif b == 0:\n"
 	script += "\t\t_ctrl_._on_jugador_game_over(\"Error Matemático: Módulo por cero\")\n"
-	script += "\t\tawait _ctrl_.get_tree().create_timer(10.0).timeout\n" # ¡PAUSA ETERNA!
+	script += "\t\tawait _ctrl_.get_tree().create_timer(10.0).timeout\n"
 	script += "\t\treturn 0\n"
 	script += "\treturn a % b\n\n"
-	# ------------------------------------------
 
-	script += "# VARS\n" + vars_globales_code + "\n"
+	script += "# VARS GLOBALES\n" + vars_globales_code + "\n"
+	# --- NUEVO: Init en _ready ---
+	script += "func _ready():\n" + vars_globales_init_code + "\n"
+	
 	script += "# FUNCS\n" + funciones_code + "\n"
 	script += "# MAIN\n" + main_code
 	
@@ -239,7 +298,6 @@ func _procesar_matematicas_seguras(linea: String) -> String:
 		var operador = match_result.get_string(2)
 		var op2 = match_result.get_string(3)
 		
-		# --- CORRECCIÓN AQUÍ: AGREGAMOS AWAIT ---
 		var reemplazo = ""
 		if operador == "/":
 			reemplazo = "await _div(" + op1 + ", " + op2 + ")"
@@ -305,7 +363,7 @@ func _procesar_llamada_procedimiento(linea: String) -> String:
 		else:
 			var arg_valor = _inyectar_referencias(arg)
 			arg_valor = _procesar_matematicas_seguras(arg_valor)
-			args_procesados.append("Ref.new(" + arg_valor + ")")
+			args_procesados.append("Ref.new('temp', _ctrl_, " + arg_valor + ")")
 			
 	return nombre_func + "(" + ", ".join(args_procesados) + ")"
 
@@ -326,12 +384,15 @@ func _procesar_cabecera_proceso(linea_raw: String) -> String:
 		var partes = p.split(" ") 
 		var modo = partes[0].to_upper()
 		var nombre_param = partes[1].replace(":", "")
+		var tipo = "entero"
+		if partes.size() > 2:
+			tipo = partes[2].to_lower()
 		
 		variables_registradas.append(nombre_param)
 		params_gd.append(nombre_param)
 		
 		if modo == "E":
-			codigo_clonacion += "\t" + nombre_param + " = Ref.new(" + nombre_param + ".v)\n"
+			codigo_clonacion += "\t" + nombre_param + " = Ref.new('" + tipo + "', _ctrl_, " + nombre_param + ".v)\n"
 			
 	return "func " + nombre_func + "(" + ", ".join(params_gd) + "):\n" + codigo_clonacion
 
