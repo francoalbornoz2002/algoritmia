@@ -9,59 +9,59 @@ const DB_PATH = "user://algoritmia_game.db"
 # 3. Script SQL de creación de tablas
 const CREATE_TABLES_SQL = """
 CREATE TABLE IF NOT EXISTS "alumno" (
-    "id" TEXT NOT NULL UNIQUE,
-    "nombre" TEXT NOT NULL,
-    "apellido" TEXT NOT NULL,
-    "genero" TEXT NOT NULL,
-    "ultima_actividad" TEXT,
-    PRIMARY KEY ("id")
+	"id" TEXT NOT NULL UNIQUE,
+	"nombre" TEXT NOT NULL,
+	"apellido" TEXT NOT NULL,
+	"genero" TEXT NOT NULL,
+	"ultima_actividad" TEXT,
+	PRIMARY KEY ("id")
 );
 
 CREATE TABLE IF NOT EXISTS "misiones" (
-    "id" TEXT NOT NULL UNIQUE,
-    "nombre" TEXT NOT NULL UNIQUE,
-    "descripcion" TEXT NOT NULL UNIQUE,
-    "dificultad_mision" TEXT NOT NULL,
-    PRIMARY KEY ("id")
+	"id" TEXT NOT NULL UNIQUE,
+	"nombre" TEXT NOT NULL UNIQUE,
+	"descripcion" TEXT NOT NULL UNIQUE,
+	"dificultad_mision" TEXT NOT NULL,
+	PRIMARY KEY ("id")
 );
 
 CREATE TABLE IF NOT EXISTS "misiones_especiales_local" (
-    "id" TEXT NOT NULL UNIQUE,
-    "nombre" TEXT NOT NULL,
-    "descripcion" TEXT NOT NULL,
-    "estrellas" INTEGER NOT NULL,
-    "exp" INTEGER NOT NULL,
-    "intentos" INTEGER NOT NULL,
-    "fecha_completado" TEXT NOT NULL,
-    "sincronizado" BOOLEAN NOT NULL DEFAULT false,
-    PRIMARY KEY ("id")
+	"id" TEXT NOT NULL UNIQUE,
+	"nombre" TEXT NOT NULL,
+	"descripcion" TEXT NOT NULL,
+	"estrellas" INTEGER NOT NULL,
+	"exp" INTEGER NOT NULL,
+	"intentos" INTEGER NOT NULL,
+	"fecha_completado" TEXT NOT NULL,
+	"sincronizado" BOOLEAN NOT NULL DEFAULT false,
+	PRIMARY KEY ("id")
 );
 
 CREATE TABLE IF NOT EXISTS "misiones_completadas_local" (
-    "id_mision" TEXT NOT NULL UNIQUE,
-    "estrellas" INTEGER NOT NULL,
-    "exp" INTEGER NOT NULL,
-    "intentos" INTEGER NOT NULL,
-    "fecha_completado" TEXT NOT NULL,
-    "sincronizado" BOOLEAN NOT NULL DEFAULT false,
-    PRIMARY KEY ("id_mision"),
-    FOREIGN KEY ("id_mision") REFERENCES "misiones" ("id") ON UPDATE NO ACTION ON DELETE NO ACTION
+	"id_mision" TEXT NOT NULL UNIQUE,
+	"estrellas" INTEGER NOT NULL,
+	"exp" INTEGER NOT NULL,
+	"intentos" INTEGER NOT NULL,
+	"fecha_completado" TEXT NOT NULL,
+	"sincronizado" BOOLEAN NOT NULL DEFAULT false,
+	PRIMARY KEY ("id_mision"),
+	FOREIGN KEY ("id_mision") REFERENCES "misiones" ("id") ON UPDATE NO ACTION ON DELETE NO ACTION
 );
 
 CREATE TABLE IF NOT EXISTS "dificultades" (
-    "id" TEXT NOT NULL UNIQUE,
-    "nombre" TEXT NOT NULL,
-    "descripcion" TEXT NOT NULL,
-    "tema" TEXT NOT NULL,
-    PRIMARY KEY ("id")
+	"id" TEXT NOT NULL UNIQUE,
+	"nombre" TEXT NOT NULL,
+	"descripcion" TEXT NOT NULL,
+	"tema" TEXT NOT NULL,
+	PRIMARY KEY ("id")
 );
 
 CREATE TABLE IF NOT EXISTS "dificultad_alumno_local" (
-    "id_dificultad" TEXT NOT NULL UNIQUE,
-    "grado" TEXT NOT NULL,
-    "sincronizado" BOOLEAN NOT NULL DEFAULT false,
-    PRIMARY KEY ("id_dificultad"),
-    FOREIGN KEY ("id_dificultad") REFERENCES "dificultades" ("id") ON UPDATE NO ACTION ON DELETE NO ACTION
+	"id_dificultad" TEXT NOT NULL UNIQUE,
+	"grado" TEXT NOT NULL,
+	"sincronizado" BOOLEAN NOT NULL DEFAULT false,
+	PRIMARY KEY ("id_dificultad"),
+	FOREIGN KEY ("id_dificultad") REFERENCES "dificultades" ("id") ON UPDATE NO ACTION ON DELETE NO ACTION
 );
 
 """

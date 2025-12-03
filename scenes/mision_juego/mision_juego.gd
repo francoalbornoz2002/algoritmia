@@ -42,8 +42,8 @@ func _ready():
 		boton_ejecutar.pressed.connect(_on_ejecutar_pressed)
 	
 	timer_reinicio.one_shot = true
-	if not timer_reinicio.timeout.is_connected(_on_reinicio_listo):
-		timer_reinicio.timeout.connect(_on_reinicio_listo)
+	if not timer_reinicio.timeout.is_connected(_on_reiniciar_mision):
+		timer_reinicio.timeout.connect(_on_reiniciar_mision)
 		
 	if not jugador.game_over_triggered.is_connected(_on_jugador_game_over):
 		jugador.game_over_triggered.connect(_on_jugador_game_over)
@@ -71,25 +71,35 @@ func cargar_mision(definicion: DefinicionMision):
 	_preparar_caso_prueba(0)
 
 func _cargar_mision_prueba():
-	# Creamos una misión en código para probar el sistema sin archivos externos por ahora
-	var caso1 = CasoPruebaMision.new()
-	caso1.inicio_jugador = Vector2i(0, 0)
-	caso1.agregar_elemento(ElementoTablero.Tipo.MONEDA, Vector2i(0, 2))
-	caso1.agregar_condicion(CondicionMision.Recolectar.new("monedas", 1))
+	## Creamos una misión en código para probar el sistema sin archivos externos por ahora
+	#var caso1 = CasoPruebaMision.new()
+	#caso1.inicio_jugador = Vector2i(0, 0)
+	#caso1.agregar_elemento(ElementoTablero.Tipo.MONEDA, Vector2i(0, 2))
+	#caso1.agregar_condicion(CondicionMision.Recolectar.new("monedas", 1))
+	#
+	#var caso2 = CasoPruebaMision.new()
+	#caso2.inicio_jugador = Vector2i(0, 0) # Mismo inicio
+	#caso2.agregar_elemento(ElementoTablero.Tipo.MONEDA, Vector2i(0, 4)) # Moneda más lejos
+	#caso2.agregar_condicion(CondicionMision.Recolectar.new("monedas", 1))
+	#
+	#var mision = DefinicionMision.new()
+	#mision.titulo = "Prueba de Tests Automáticos"
+	#mision.descripcion = "Recoge la moneda. Tu código debe funcionar sin importar dónde esté."
+	## Agregamos los casos al array tipado existente
+	#mision.casos_de_prueba.append(caso1)
+	#mision.casos_de_prueba.append(caso2)
+	#
+	#cargar_mision(mision)
+	randomize() # Importante para que sea aleatorio cada vez que abras el juego
 	
-	var caso2 = CasoPruebaMision.new()
-	caso2.inicio_jugador = Vector2i(0, 0) # Mismo inicio
-	caso2.agregar_elemento(ElementoTablero.Tipo.MONEDA, Vector2i(0, 4)) # Moneda más lejos
-	caso2.agregar_condicion(CondicionMision.Recolectar.new("monedas", 1))
+	print("--- SIMULANDO DETECCIÓN DE INACTIVIDAD ---")
+	print("Generando misión especial procedimental...")
 	
-	var mision = DefinicionMision.new()
-	mision.titulo = "Prueba de Tests Automáticos"
-	mision.descripcion = "Recoge la moneda. Tu código debe funcionar sin importar dónde esté."
-	# Agregamos los casos al array tipado existente
-	mision.casos_de_prueba.append(caso1)
-	mision.casos_de_prueba.append(caso2)
+	# Generamos una misión especial (de prueba)
+	var mision_generada = GeneradorMisiones.generar_mision_especial()
 	
-	cargar_mision(mision)
+	print("Misión generada: ", mision_generada.titulo)
+	cargar_mision(mision_generada)
 
 func _preparar_caso_prueba(indice: int):
 	if mision_actual_def == null or indice >= mision_actual_def.casos_de_prueba.size():
@@ -263,8 +273,9 @@ func agregar_mensaje_consola(mensaje: String, tipo: String = "NORMAL"):
 	await get_tree().process_frame
 	consola_visual.scroll_to_line(consola_visual.get_line_count())
 
-func _on_reinicio_listo():
-	print("Reiniciando para reintento...")
+func _on_reiniciar_mision():
+	print("Reiniciando misión para reintento...")
+	agregar_mensaje_consola("Reiniciando misión para reintento...", "SISTEMA")
 	boton_ejecutar.disabled = false 
 	# Volvemos a mostrar el caso 0 para que el alumno piense
 	_preparar_caso_prueba(0)

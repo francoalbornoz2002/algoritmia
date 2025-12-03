@@ -5,7 +5,7 @@ class_name CondicionMision extends Resource
 
 # Función base que debe sobreescribirse
 # Recibe el estado final para evaluar si se cumplió
-func verificar(jugador: JugadorGrid, grid: GridManager, consola_logs: Array) -> bool:
+func verificar(jugador: JugadorGrid, grid, consola_logs: Array) -> bool:
 	return false
 
 # --- SUBCLASES ---
@@ -13,11 +13,11 @@ func verificar(jugador: JugadorGrid, grid: GridManager, consola_logs: Array) -> 
 # 1. Condición: Llegar a una posición específica (Base 0 interna)
 class LlegarA extends CondicionMision:
 	@export var objetivo: Vector2i
-	
+		
 	func _init(pos: Vector2i = Vector2i.ZERO):
 		objetivo = pos
 		descripcion = "Llegar a posición interna " + str(pos)
-
+	
 	func verificar(jugador: JugadorGrid, _grid, _logs) -> bool:
 		return jugador.pos_grid_actual == objetivo
 
@@ -39,9 +39,8 @@ class EliminarEnemigos extends CondicionMision:
 	func _init():
 		descripcion = "Eliminar todos los enemigos"
 
-	func verificar(_jugador, grid: GridManager, _logs) -> bool:
-		# Requiere que GridManager tenga la función obtener_todos_los_objetos()
-		# Lo implementaremos en el siguiente paso
+	func verificar(_jugador, grid, _logs) -> bool:
+		# 'grid' es la clase estática GridManager
 		var objetos = grid.obtener_todos_los_objetos() 
 		for obj in objetos:
 			if obj.tipo == ElementoTablero.Tipo.ENEMIGO:
