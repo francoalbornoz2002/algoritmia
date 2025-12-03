@@ -19,6 +19,7 @@ extends Node2D
 
 # Estado del juego
 var ejecutando_codigo: bool = false
+var sandbox: bool = false
 var juego_fallido: bool = false # Bandera para abortar secuencia si hay Game Over
 
 # --- SISTEMA DE MISIONES ---
@@ -51,7 +52,10 @@ func _ready():
 		jugador.consola_mensaje_enviado.connect(agregar_mensaje_consola)
 	
 	# 3. Cargar Misión de Prueba (Temporal, luego vendrá del menú)
-	_cargar_mision_prueba()
+	if sandbox:
+		jugador.teletransportar_a(Vector2i(0, 0))
+	else:
+		_cargar_mision_prueba()
 
 # --- CARGA DE MISIÓN ---
 
@@ -164,7 +168,17 @@ func on_ejecucion_terminada(exito: bool):
 		# Falló por error de sintaxis o runtime error
 		_manejar_fallo("Error de ejecución en el script.")
 		return
-
+	
+	if sandbox:
+		print("--- EJECUCIÓN SANDBOX FINALIZADA (Éxito: " + str(exito) + ") ---")
+		agregar_mensaje_consola("Ejecución sandbox finalizada con éxito", "SISTEMA")
+		ejecutando_codigo = false
+		# 2. Iniciar el Timer de 3 segundos
+		print("Reiniciando en 3 segundos...")
+		agregar_mensaje_consola("Reiniciando en 3 segundos...", "SISTEMA")
+		timer_reinicio.start(3.0)
+		return
+	
 	# Si el script terminó bien, VERIFICAMOS LAS CONDICIONES DE VICTORIA
 	print("Script finalizado. Verificando condiciones del caso ", caso_actual_idx + 1)
 	
