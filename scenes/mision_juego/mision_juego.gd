@@ -19,7 +19,12 @@ extends Node2D
 
 # Estado del juego
 var ejecutando_codigo: bool = false
-var mision_actual = {}
+var juego_fallido: bool = false # Bandera para abortar secuencia si hay Game Over
+
+# --- SISTEMA DE MISIONES ---
+var mision_actual_def: DefinicionMision = null
+var caso_actual_idx: int = 0
+var logs_consola: Array[String] = [] # Para verificar condiciones de Output
 
 # Precargamos la escena del elemento
 var elemento_escena = preload("res://scenes/elemento_tablero/elemento_tablero.tscn")
@@ -28,70 +33,89 @@ func _ready():
 	GridManager.limpiar_datos() 
 	
 	# 1. Configurar el Ejecutor
-	# Le decimos quién es el personaje y quién manda (nosotros)
 	ejecutor.personaje = jugador
 	ejecutor.controlador_nivel = self
 	
-	if not jugador.game_over_triggered.is_connected(_on_jugador_game_over):
-		jugador.game_over_triggered.connect(_on_jugador_game_over)
-	
-	# 2. Conectar botón Ejecutar
+	# 2. Conexiones
 	if not boton_ejecutar.pressed.is_connected(_on_ejecutar_pressed):
 		boton_ejecutar.pressed.connect(_on_ejecutar_pressed)
-		
-	if not jugador.has_signal("consola_mensaje"):
-		# Esto evita errores si aún no agregaste la señal en el jugador
-		pass
-	else:
-		if not jugador.consola_mensaje.is_connected(agregar_mensaje):
-			jugador.consola_mensaje.connect(agregar_mensaje)
 	
-	# 3. Configurar Timer
 	timer_reinicio.one_shot = true
 	if not timer_reinicio.timeout.is_connected(_on_reinicio_listo):
 		timer_reinicio.timeout.connect(_on_reinicio_listo)
+		
+	if not jugador.game_over_triggered.is_connected(_on_jugador_game_over):
+		jugador.game_over_triggered.connect(_on_jugador_game_over)
+		
+	if not jugador.consola_mensaje_enviado.is_connected(agregar_mensaje_consola):
+		jugador.consola_mensaje_enviado.connect(agregar_mensaje_consola)
 	
-	# 4. Cargar Misión de Prueba
-	var datos_prueba = {
-		"nombre": "Misión de prueba",
-		"descripcion": "Recorre todo el sendero 1 hasta encontrar una moneda. Recógela, imprime la posición del valle actual y repite avanzar el número de la posición del valle. Luego, recorre todo el sendero 1 hasta el final recolectando todas las monedas e imprimiendo cuando encuentres una.",
-		"dificultad": "Fácil",
-		"pos_inicio": Vector2i(0, 0) 
-	}
-	cargar_mision(datos_prueba)
-	
-	queue_redraw()
+	# 3. Cargar Misión de Prueba (Temporal, luego vendrá del menú)
+	_cargar_mision_prueba()
 
-func cargar_mision(datos: Dictionary):
-	mision_actual = datos
+# --- CARGA DE MISIÓN ---
+
+func cargar_mision(definicion: DefinicionMision):
+	mision_actual_def = definicion
 	
-	# 1. Actualizar UI
-	label_mision.text = datos["nombre"]
-	label_dificultad.text = datos["dificultad"]
-	label_descripcion.text = datos["descripcion"]
+	# Actualizar UI
+	label_mision.text = definicion.titulo
+	label_dificultad.text = definicion.dificultad
+	label_descripcion.text = definicion.descripcion
 	
-	# 2. Posicionar Jugador
-	jugador.teletransportar_a(datos["pos_inicio"])
+	# Preparamos el primer caso de prueba visualmente para que el alumno vea el escenario 1
+	_preparar_caso_prueba(0)
+
+func _cargar_mision_prueba():
+	# Creamos una misión en código para probar el sistema sin archivos externos por ahora
+	var caso1 = CasoPruebaMision.new()
+	caso1.inicio_jugador = Vector2i(0, 0)
+	caso1.agregar_elemento(ElementoTablero.Tipo.MONEDA, Vector2i(0, 2))
+	caso1.agregar_condicion(CondicionMision.Recolectar.new("monedas", 1))
 	
-	# --- Escenario de Prueba ---
-	# Colocamos elementos estratégicos para probar todas las primitivas
+	var caso2 = CasoPruebaMision.new()
+	caso2.inicio_jugador = Vector2i(0, 0) # Mismo inicio
+	caso2.agregar_elemento(ElementoTablero.Tipo.MONEDA, Vector2i(0, 4)) # Moneda más lejos
+	caso2.agregar_condicion(CondicionMision.Recolectar.new("monedas", 1))
 	
-	# Sendero 1: Monedas y Enemigo
-	spawn_elemento(Vector2i(0, 2), ElementoTablero.Tipo.MONEDA)
-	spawn_elemento(Vector2i(0, 3), ElementoTablero.Tipo.ENEMIGO) # Para probar atacar
-	spawn_elemento(Vector2i(0, 5), ElementoTablero.Tipo.MONEDA)
+	var mision = DefinicionMision.new()
+	mision.titulo = "Prueba de Tests Automáticos"
+	mision.descripcion = "Recoge la moneda. Tu código debe funcionar sin importar dónde esté."
+	# Agregamos los casos al array tipado existente
+	mision.casos_de_prueba.append(caso1)
+	mision.casos_de_prueba.append(caso2)
 	
-	# Sendero 2: Llave y Obstáculo
-	spawn_elemento(Vector2i(1, 2), ElementoTablero.Tipo.LLAVE)
-	spawn_elemento(Vector2i(1, 4), ElementoTablero.Tipo.OBSTACULO) # Para probar saltar
+	cargar_mision(mision)
+
+func _preparar_caso_prueba(indice: int):
+	if mision_actual_def == null or indice >= mision_actual_def.casos_de_prueba.size():
+		return
+		
+	var caso = mision_actual_def.casos_de_prueba[indice]
 	
-	# Sendero 3: Puente y Cofre
-	spawn_elemento(Vector2i(2, 3), ElementoTablero.Tipo.PUENTE) # Requiere moneda
-	spawn_elemento(Vector2i(2, 5), ElementoTablero.Tipo.COFRE)  # Requiere llave
+	# 1. Limpiar escenario anterior
+	_limpiar_entidades()
+	GridManager.limpiar_datos()
+	logs_consola.clear()
 	
-	# Límites y zonas vacías para probar movimiento libre
+	# 2. Reiniciar Jugador
+	jugador.inventario.monedas = 0
+	jugador.inventario.llaves = 0
+	jugador.teletransportar_a(caso.inicio_jugador)
+	# TODO: Soportar dirección inicial si se define en el caso
 	
-	
+	# 3. Spawnear Elementos
+	for item_data in caso.elementos_mapa:
+		spawn_elemento(item_data["pos"], item_data["tipo"])
+		
+	agregar_mensaje_consola("--- Cargando Caso de Prueba " + str(indice + 1) + " ---", "SISTEMA")
+
+func _limpiar_entidades():
+	for child in entidades_container.get_children():
+		if child != jugador: 
+			child.queue_free()
+
+# --- PREPARACIÓN DEL ESCENARIO ---
 
 func spawn_elemento(pos: Vector2i, tipo):
 	var nuevo_elemento = elemento_escena.instantiate()
@@ -103,82 +127,131 @@ func spawn_elemento(pos: Vector2i, tipo):
 	# Registramos en la memoria del GridManager
 	GridManager.registrar_objeto(pos, nuevo_elemento)
 
-# --- LÓGICA DE EJECUCIÓN ---
-
+# --- LÓGICA DE EJECUCIÓN (TEST RUNNER) ---
 func _on_ejecutar_pressed():
-	if ejecutando_codigo:
-		return # Ya está corriendo, no hacer nada
+	if ejecutando_codigo: return # Ya está corriendo, no hacer nada
 		
-	print("--- INICIANDO EJECUCIÓN ---")
+	print("--- INICIANDO SUITE DE PRUEBAS ---")
 	ejecutando_codigo = true
-	boton_ejecutar.disabled = true # Deshabilitar botón para evitar spam
+	juego_fallido = false
+	caso_actual_idx = 0
+	boton_ejecutar.disabled = true
 	
-	# Le pasamos el texto crudo al ejecutor
+	# Ejecutamos el primer caso
+	_ejecutar_caso_actual()
+
+func _ejecutar_caso_actual():
+	if juego_fallido: return
+	
+	# 1. Resetear el tablero para el caso actual
+	_preparar_caso_prueba(caso_actual_idx)
+	
+	# Pequeña pausa para que se asienten los nodos
+	await get_tree().process_frame
+	
+	# 2. Inyectar código al ejecutor
 	var codigo_fuente = code_edit.text
 	ejecutor.procesar_y_ejecutar(codigo_fuente)
 
 # Esta función es llamada por el Ejecutor cuando el script termina (Línea 'Fin')
-# o si hubo un error de sintaxis.
+# OJO: Si hubo Game Over, esta función recibe exito=false
 func on_ejecucion_terminada(exito: bool):
-	print("--- EJECUCIÓN FINALIZADA (Éxito: " + str(exito) + ") ---")
+	if juego_fallido:
+		# Si ya falló por Game Over, no hacemos nada más que esperar el reinicio UI
+		return 
+		
+	if not exito:
+		# Falló por error de sintaxis o runtime error
+		_manejar_fallo("Error de ejecución en el script.")
+		return
+
+	# Si el script terminó bien, VERIFICAMOS LAS CONDICIONES DE VICTORIA
+	print("Script finalizado. Verificando condiciones del caso ", caso_actual_idx + 1)
 	
+	var caso = mision_actual_def.casos_de_prueba[caso_actual_idx]
+	var condiciones_cumplidas = true
+	var error_msg = ""
+	
+	for condicion in caso.condiciones_victoria:
+		var paso = condicion.verificar(jugador, GridManager, logs_consola)
+		if not paso:
+			condiciones_cumplidas = false
+			error_msg = condicion.descripcion
+			break
+	
+	if condiciones_cumplidas:
+		agregar_mensaje_consola("¡Caso " + str(caso_actual_idx + 1) + " Superado!", "SISTEMA")
+		_avanzar_siguiente_caso()
+	else:
+		_manejar_fallo("Objetivo no cumplido: " + error_msg)
+
+func _avanzar_siguiente_caso():
+	caso_actual_idx += 1
+	
+	if caso_actual_idx < mision_actual_def.casos_de_prueba.size():
+		# Hay más casos, seguimos ejecutando
+		await get_tree().create_timer(1.0).timeout
+		_ejecutar_caso_actual()
+	else:
+		# ¡TODOS LOS CASOS SUPERADOS!
+		_victoria_total()
+		
+
+func _victoria_total():
+	agregar_mensaje_consola("¡MISIÓN COMPLETADA! ★★★", "SISTEMA")
+	print("VICTORIA TOTAL")
 	ejecutando_codigo = false
+	boton_ejecutar.disabled = false
+	# Aquí guardarías el progreso en la BD local
+
+func _manejar_fallo(mensaje: String):
+	juego_fallido = true
+	agregar_mensaje_consola("FALLO: " + mensaje, "ERROR")
 	
-	# 2. Iniciar el Timer de 3 segundos
-	print("Reiniciando en 3 segundos...")
-	timer_reinicio.start(3.0) 
-	
-	# Desconectamos el timer del nodo para evitar spam si ya estaba conectado
-	if timer_reinicio.timeout.is_connected(_on_reinicio_listo):
-		timer_reinicio.timeout.disconnect(_on_reinicio_listo)
-	timer_reinicio.timeout.connect(_on_reinicio_listo)
+	# Timer para permitir reintentar
+	timer_reinicio.start(3.0)
+
 
 func _on_jugador_game_over(mensaje):
-	# 1. Mandamos el error a la pantalla (Consola UI)
-	agregar_mensaje("GAME OVER: " + mensaje, "ERROR")
+	# 1. Informar al usuario
+	agregar_mensaje_consola("GAME OVER: " + mensaje, "ERROR")
 	
-	# 2. ¡IMPORTANTE! Matamos el script para evitar bucles infinitos
+	# 2. Marcar estado de fallo y detener scripts
+	juego_fallido = true
 	ejecutor.detener_ejecucion_inmediata()
 	
-	# 3. Iniciamos la secuencia de reinicio
-	on_ejecucion_terminada(false)
+	# 3. Iniciar el timer de reinicio
+	print("Iniciando reinicio por Game Over...")
+	timer_reinicio.start(3.0)
+
+func agregar_mensaje_consola(mensaje: String, tipo: String = "NORMAL"):
+	logs_consola.append(mensaje) # Guardamos para validación (OutputContiene)
+	
+	if not consola_visual: return
+	
+	var color_hex = "#FFFFFF"
+	var prefijo = "> "
+	
+	match tipo:
+		"ERROR":
+			color_hex = "#FF5555"
+			prefijo = "[ERROR] "
+		"OUTPUT":
+			color_hex = "#55FFFF"
+			prefijo = ""
+		"SISTEMA":
+			color_hex = "#FFFF55"
+			prefijo = "[SISTEMA] "
+			
+	var texto_final = "[color=" + color_hex + "]" + prefijo + mensaje + "[/color]"
+	consola_visual.append_text(texto_final + "\n")
+	
+	await get_tree().process_frame
+	consola_visual.scroll_to_line(consola_visual.get_line_count())
 
 func _on_reinicio_listo():
-	print("Reiniciando el estado del juego...")
-	
-	# 1. Habilitar el botón (para que el alumno pueda intentar de nuevo)
+	print("Reiniciando para reintento...")
 	boton_ejecutar.disabled = false 
-	
-	# 2. Reiniciar los objetos del mapa
-	_reiniciar_estado_nivel()
-	print("Nivel reiniciado")
-
-func _reiniciar_estado_nivel():
-	# Lógica para restaurar el estado inicial del nivel:
-	
-	# A. Limpiar entidades viejas del contenedor, EXCLUYENDO al Jugador
-	for child in entidades_container.get_children():
-		# Si el hijo NO es el jugador, lo eliminamos
-		if child != jugador: 
-			child.queue_free()
-		
-	# B. Limpiar la memoria del GridManager
-	GridManager.limpiar_datos()
-	
-	# C. Reiniciar el inventario del jugador
-	jugador.inventario.monedas = 0
-	jugador.inventario.llaves = 0
-	
-	# D. Recargar la misión (esto repone objetos y al jugador)
-	cargar_mision(mision_actual)
-
-
-func agregar_mensaje(mensaje: String, tipo: String):
-	if not consola_visual: return
-
-	var color = "white"
-	if tipo == "ERROR": color = "#ff5555" # Rojo
-	if tipo == "OUTPUT": color = "#55ffff" # Cyan
-
-	# Escribimos con BBCode
-	consola_visual.append_text("[color=" + color + "]" + mensaje + "[/color]\n")
+	# Volvemos a mostrar el caso 0 para que el alumno piense
+	_preparar_caso_prueba(0)
+	ejecutando_codigo = false

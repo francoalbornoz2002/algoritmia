@@ -16,7 +16,7 @@ var inventario = { "monedas": 0, "llaves": 0 }
 
 # --- SEÑALES ---
 signal game_over_triggered(mensaje)
-signal consola_mensaje(texto, tipo)
+signal consola_mensaje_enviado(texto, tipo)
 
 func _ready():
 	# 1. Configuración Inicial de Posición
@@ -323,7 +323,7 @@ func imprimir(argumentos: Array):
 		texto_final += str(item) + " "
 
 	# Lo enviamos a la UI
-	consola_mensaje.emit(texto_final, "OUTPUT")
+	consola_mensaje_enviado.emit(texto_final, "OUTPUT")
 
 	# Pequeña pausa estética
 	await get_tree().create_timer(TIEMPO_ACCION).timeout

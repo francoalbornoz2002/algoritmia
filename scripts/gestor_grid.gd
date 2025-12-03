@@ -30,6 +30,10 @@ static func obtener_objeto_en_celda(celda: Vector2i) -> Node2D:
 		return _grid_contenidos[celda]
 	return null
 
+static func obtener_todos_los_objetos() -> Array:
+	# Devuelve una lista con todos los nodos ElementoTablero activos en el mapa
+	return _grid_contenidos.values()
+
 # Convierte coordenada de Grilla (ej: 1,1) a Pixeles (ej: 48, 48)
 # Nota: Devuelve el CENTRO de la celda para que el sprite quede centrado.
 static func grid_to_world(celda: Vector2i) -> Vector2:
