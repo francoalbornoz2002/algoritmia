@@ -16,6 +16,9 @@ class_name DefinicionMision extends Resource
 # Flag para saber si aplicamos recompensas dobles
 @export var es_mision_especial: bool = false
 
+# Tamaño del mapa para esta misión (ej: 25, 50)
+@export var tamano_mapa: Vector2i = Vector2i(25, 25)
+
 @export_group("Evaluación")
 # El código del alumno se ejecutará una vez por cada caso de prueba.
 # Debe aprobar TODOS los casos para completar la misión.

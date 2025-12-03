@@ -33,33 +33,6 @@ func _ready():
 		camara.limit_right = (GridManager.COLUMNAS_MAX * GridManager.TAMANO_CELDA) + 1
 		camara.limit_bottom = (GridManager.FILAS_MAX * GridManager.TAMANO_CELDA) + 1
 
-func _input(event):
-	# Si ya estamos haciendo algo, ignoramos
-	if esta_actuando:
-		return
-		
-	# 1. Movimiento (Teclas de control para avanzar y girar)
-	if event.is_action_pressed("ui_up"):
-		avanzar()
-	elif event.is_action_pressed("ui_right"):
-		girar_derecha()
-	# 2. Acciones de Prueba (Mapeo a Primitivas del GDD)
-	# ui_accept (Espacio/Enter) -> Moneda
-	elif event.is_action_pressed("recoger_moneda"): 
-		recoger_moneda()
-	# ui_select (Enter/Space alternativa) -> Llave
-	elif event.is_action_pressed("recoger_llave"): 
-		recoger_llave()
-	# ui_focus_next (Tab) -> Cofre
-	elif event.is_action_pressed("abrir_cofre"): 
-		abrir_cofre()
-	elif event.is_action_pressed("atacar"):
-		atacar()
-	elif event.is_action_pressed("saltar"):
-		saltar()
-	elif event.is_action_pressed("activar_puente"):
-		activar_puente()
-
 # --- ACCIONES PRINCIPALES ---
 
 func avanzar():

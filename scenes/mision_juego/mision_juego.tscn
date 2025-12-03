@@ -78,7 +78,6 @@ text = "Dificultad"
 custom_minimum_size = Vector2(0, 40)
 layout_mode = 2
 theme_override_font_sizes/font_size = 12
-text = "Descripción de la misión. hasta 2 lineas estaría bdsggggggggDescripción de la misión. hasta 2 lineas estaría bdsggggggggDescripción de la misión. hasta 2 lineas estaría bdsggggggggDescripción de la misión. hasta 2 lineas estaría bdsggggggggDescripción de la misión. hasta 2 lineas estaría bdsggggggggDescripción de la misión. hasta 2 lineas estaría bdsgggggggg"
 autowrap_mode = 2
 max_lines_visible = 2
 
