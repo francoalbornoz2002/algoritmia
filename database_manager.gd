@@ -310,6 +310,61 @@ func registrar_mision_local(id_mision: String, estrellas: int, exp: int, intento
 	print("DBManager: Misión local registrada y ultima_actividad actualizada.")
 	return true
 
+## Registra una misión ESPECIAL completada (generada dinámicamente).
+## Genera un UUID propio, guarda nombre/descripción y actualiza ultima_actividad.
+func registrar_mision_especial_local(nombre: String, descripcion: String, estrellas: int, exp: int, intentos: int) -> bool:
+	print("DBManager: Registrando misión ESPECIAL localmente...")
+	
+	# 1. Generar ID único (UUID)
+	var id_uuid = _generar_uuid_v4()
+	
+	# 2. Obtener Fecha UTC
+	var dict_utc = Time.get_datetime_dict_from_system(true)
+	var fecha_actual = "%04d-%02d-%02dT%02d:%02d:%02dZ" % [
+		dict_utc.year, dict_utc.month, dict_utc.day,
+		dict_utc.hour, dict_utc.minute, dict_utc.second
+	]
+	
+	# 3. Iniciar Transacción
+	if not db.query("BEGIN TRANSACTION;"):
+		print("ERROR (DBManager): No se pudo iniciar transacción (Especial). ", db.error_message)
+		return false
+	
+	# 4. Insertar en la tabla de misiones especiales
+	# Notar que aquí guardamos nombre y descripción porque no existen en un catálogo externo
+	var sql_especial = "INSERT INTO misiones_especiales_local (id, nombre, descripcion, estrellas, exp, intentos, fecha_completado, sincronizado) VALUES (?, ?, ?, ?, ?, ?, ?, ?);"
+	
+	var bindings_especial = [
+		id_uuid,
+		nombre,
+		descripcion,
+		estrellas,
+		exp,
+		intentos,
+		fecha_actual,
+		false # No sincronizado aún
+	]
+	
+	if not db.query_with_bindings(sql_especial, bindings_especial):
+		print("ERROR (DBManager): Falló insert en misiones_especiales_local. ", db.error_message)
+		db.query("ROLLBACK;")
+		return false
+	
+	# 5. Actualizar última actividad del alumno (Igual que en la misión normal)
+	var sql_alumno = "UPDATE alumno SET ultima_actividad = ?;"
+	if not db.query_with_bindings(sql_alumno, [fecha_actual]):
+		print("ERROR (DBManager): Falló actualizar ultima_actividad. ", db.error_message)
+		db.query("ROLLBACK;")
+		return false
+		
+	# 6. Commit
+	if not db.query("COMMIT;"):
+		print("ERROR (DBManager): Falló COMMIT (Especial). ", db.error_message)
+		return false
+		
+	print("DBManager: Misión Especial registrada con ID: ", id_uuid)
+	return true
+
 ## Marca una misión como sincronizada (sincronizado = true)
 func marcar_mision_sincronizada(id_mision: String) -> bool:
 	print("DBManager: Marcando misión como sincronizada: ", id_mision)
@@ -451,3 +506,24 @@ func obtener_fecha_ultima_actividad() -> int:
 	var fecha_dict = Time.get_datetime_dict_from_datetime_string(fecha_str, false)
 	var unix_time = Time.get_unix_time_from_datetime_dict(fecha_dict)
 	return unix_time
+
+# --- HELPERS ---
+
+func _generar_uuid_v4() -> String:
+	# Generación manual de UUID v4 estándar
+	var b = []
+	for i in range(16):
+		b.append(randi() % 256)
+	
+	# Ajustar bits para la versión 4 y variante DCE 1.1
+	b[6] = (b[6] & 0x0f) | 0x40
+	b[8] = (b[8] & 0x3f) | 0x80
+	
+	# Formatear a string hexadecimal
+	return "%02x%02x%02x%02x-%02x%02x-%02x%02x-%02x%02x-%02x%02x%02x%02x%02x%02x" % [
+		b[0], b[1], b[2], b[3],
+		b[4], b[5],
+		b[6], b[7],
+		b[8], b[9],
+		b[10], b[11], b[12], b[13], b[14], b[15]
+	]

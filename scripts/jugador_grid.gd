@@ -13,6 +13,7 @@ var esta_actuando: bool = false
 var pos_grid_actual: Vector2i = Vector2i.ZERO
 var direccion_actual: Vector2i = Vector2i(0, 1) # (0, 1) es ARRIBA lógico
 var inventario = { "monedas": 0, "llaves": 0 }
+var analista: AnalistaDificultad = null
 
 # --- SEÑALES ---
 signal game_over_triggered(mensaje)
@@ -94,6 +95,7 @@ func intentar_teletransportar(celda_destino: Vector2i):
 
 # --- PRIMITIVAS DEL PSEUDOCÓDIGO (Moneda) ---
 func recoger_moneda():
+	if analista: analista.registrar_accion("recogerMoneda")
 	if esta_actuando: return
 	esta_actuando = true
 	
@@ -128,6 +130,7 @@ func recoger_moneda():
 
 # --- PRIMITIVAS DEL PSEUDOCÓDIGO (Llave) ---
 func recoger_llave():
+	analista.registrar_accion("recogerLlave")
 	if esta_actuando: return
 	esta_actuando = true
 	
@@ -154,6 +157,7 @@ func recoger_llave():
 
 # --- PRIMITIVAS DEL PSEUDOCÓDIGO (Cofre) ---
 func abrir_cofre():
+	if analista: analista.registrar_accion("abrirCofre")
 	if esta_actuando: return
 	esta_actuando = true
 	
@@ -186,6 +190,8 @@ func abrir_cofre():
 
 # --- PRIMITIVAS DEL PSEUDOCÓDIGO (Atacar) ---
 func atacar():
+	if analista: analista.registrar_accion("atacar")
+	analista.registrar_accion("atacar")
 	if esta_actuando: return
 	esta_actuando = true
 	
@@ -210,6 +216,7 @@ func atacar():
 
 # --- PRIMITIVAS DEL PSEUDOCÓDIGO (Saltar) ---
 func saltar():
+	if analista: analista.registrar_accion("saltar")
 	if esta_actuando: return
 	esta_actuando = true
 	
@@ -251,6 +258,7 @@ func saltar():
 
 # --- PRIMITIVAS DEL PSEUDOCÓDIGO (Activar puente) ---
 func activar_puente():
+	if analista: analista.registrar_accion("activarPuente")
 	if esta_actuando: return
 	esta_actuando = true
 	
@@ -304,6 +312,7 @@ func imprimir(argumentos: Array):
 # --- PRIMITIVAS DE SENSOR ---
 # Sensor para saber si hay un enemigo en la celda adyacente (en la dirección actual)
 func hay_enemigo() -> bool:
+	if analista: analista.registrar_validacion("enemigo")
 	var celda_en_frente = pos_grid_actual + direccion_actual
 	if not GridManager.es_celda_valida(celda_en_frente):
 		return false
@@ -315,6 +324,7 @@ func hay_enemigo() -> bool:
 
 # Sensor para saber si hay un obstáculo en la celda adyacente
 func hay_obstaculo() -> bool:
+	if analista: analista.registrar_validacion("obstaculo")
 	var celda_en_frente = pos_grid_actual + direccion_actual
 	if not GridManager.es_celda_valida(celda_en_frente):
 		return false
@@ -326,6 +336,7 @@ func hay_obstaculo() -> bool:
 
 # Sensor para saber si hay un puente en la celda adyacente
 func hay_puente() -> bool:
+	if analista: analista.registrar_validacion("puente")
 	var celda_en_frente = pos_grid_actual + direccion_actual
 	if not GridManager.es_celda_valida(celda_en_frente):
 		return false
@@ -337,6 +348,7 @@ func hay_puente() -> bool:
 
 # Sensor para saber si hay un cofre en la celda actual
 func hay_cofre() -> bool:
+	if analista: analista.registrar_validacion("cofre")
 	var objeto = GridManager.obtener_objeto_en_celda(pos_grid_actual)
 	if objeto and objeto.tipo == ElementoTablero.Tipo.COFRE:
 		return true
@@ -344,6 +356,7 @@ func hay_cofre() -> bool:
 	
 # Sensor para saber si hay una moneda en la celda actual
 func hay_moneda() -> bool:
+	if analista: analista.registrar_validacion("moneda")
 	var objeto = GridManager.obtener_objeto_en_celda(pos_grid_actual)
 	if objeto and objeto.tipo == ElementoTablero.Tipo.MONEDA:
 		return true
@@ -351,18 +364,11 @@ func hay_moneda() -> bool:
 
 # Sensor para saber si hay una llave en la celda actual
 func hay_llave() -> bool:
+	analista.registrar_validacion("llave")
 	var objeto = GridManager.obtener_objeto_en_celda(pos_grid_actual)
 	if objeto and objeto.tipo == ElementoTablero.Tipo.LLAVE:
 		return true
 	return false
-
-# Retorna el número de Sendero actual (Columna). Base 1.
-func pos_sendero() -> int:
-	return pos_grid_actual.x + 1
-
-# Retorna el número de Valle actual (Fila). Base 1.
-func pos_valle() -> int:
-	return pos_grid_actual.y + 1
 
 # Retorna verdadero si tiene al menos una moneda en el inventario
 func tengo_moneda() -> bool:
@@ -371,6 +377,14 @@ func tengo_moneda() -> bool:
 # Retorna verdadero si tiene al menos una llave en el inventario
 func tengo_llave() -> bool:
 	return inventario["llaves"] > 0
+
+# Retorna el número de Sendero actual (Columna). Base 1.
+func pos_sendero() -> int:
+	return pos_grid_actual.x + 1
+
+# Retorna el número de Valle actual (Fila). Base 1.
+func pos_valle() -> int:
+	return pos_grid_actual.y + 1
 
 # --- MOVIMIENTO INTERNO Y UTILIDADES ---
 func mover_a_celda(celda_destino: Vector2i):

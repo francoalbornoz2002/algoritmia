@@ -5,6 +5,7 @@ extends Node2D
 @export var mapa_visual: TileMapLayer
 @export var jugador: CharacterBody2D
 @export var entidades_container: Node2D
+var analista_dificultad: AnalistaDificultad
 
 # UI Referencias
 @export var label_mision: Label
@@ -19,8 +20,9 @@ extends Node2D
 
 # Estado del juego
 var ejecutando_codigo: bool = false
-var sandbox: bool = true
+var sandbox: bool = false
 var juego_fallido: bool = false # Bandera para abortar secuencia si hay Game Over
+var intentos_totales: int = 0
 
 # --- SISTEMA DE MISIONES ---
 var mision_actual_def: DefinicionMision = null
@@ -51,33 +53,20 @@ func _ready():
 	if not jugador.consola_mensaje_enviado.is_connected(agregar_mensaje_consola):
 		jugador.consola_mensaje_enviado.connect(agregar_mensaje_consola)
 	
-	# Cargar sandbox si se quiere
-	if sandbox:
+	# INICIALIZAR ANALISTA
+	analista_dificultad = AnalistaDificultad.new()
+	add_child(analista_dificultad)
+	
+	# Conectarlo con el jugador (que es quien ejecuta las acciones)
+	jugador.analista = analista_dificultad
+	
+	# Verificamos si hay una misión pendiente en el Singleton
+	if GameData.mision_seleccionada != null:
+		cargar_mision(GameData.mision_seleccionada)
+		# Limpiamos la variable para no recargarla por error si volvemos al menú y entramos a otro lado
+		GameData.mision_seleccionada = null
+	elif sandbox:
 		jugador.teletransportar_a(Vector2i(0, 0))
-		# --- ESCENARIO PARA TEST INTEGRAL ---
-		
-		# 1. Moneda en el mismo lugar de inicio (0,0)
-		# Prueba: Si hayMoneda -> recogerMoneda
-		spawn_elemento(Vector2i(0, 0), ElementoTablero.Tipo.MONEDA)
-		
-		# 2. Enemigo en frente (0,1)
-		# Prueba: Si hayEnemigo -> atacar -> avanzar
-		spawn_elemento(Vector2i(0, 1), ElementoTablero.Tipo.ENEMIGO)
-		
-		# 3. Obstáculo en (0,2)
-		# Nota: Cuando el jugador avance a (0,1) tras matar al enemigo,
-		# el obstáculo quedará en frente.
-		# Prueba: Si hayObstaculo -> saltar (cae en 0,3)
-		spawn_elemento(Vector2i(0, 2), ElementoTablero.Tipo.OBSTACULO)
-		
-		# 4. Moneda en el aterrizaje (0,3)
-		spawn_elemento(Vector2i(0, 3), ElementoTablero.Tipo.MONEDA)
-		
-		# 5. Extras para pruebas manuales (Llave y Cofre) en el Sendero 2
-		# (Para probar 'mapa(2,1)' si quisieras)
-		spawn_elemento(Vector2i(1, 0), ElementoTablero.Tipo.LLAVE)
-		spawn_elemento(Vector2i(1, 1), ElementoTablero.Tipo.COFRE)
-	# 3. Cargar Misión de Prueba (Temporal, luego vendrá del menú)
 	else:
 		_cargar_mision_prueba()
 
@@ -85,6 +74,7 @@ func _ready():
 
 func cargar_mision(definicion: DefinicionMision):
 	mision_actual_def = definicion
+	intentos_totales = 0
 	
 	print("--- DEBUG DESCRIPCIÓN ---")
 	print(definicion.descripcion) # <-- Mira esto en la consola de Godot
@@ -170,8 +160,16 @@ func spawn_elemento(pos: Vector2i, tipo):
 func _on_ejecutar_pressed():
 	if ejecutando_codigo: return # Ya está corriendo, no hacer nada
 	
+	intentos_totales += 1
+	
+	print("--- INICIANDO INTENTO #", intentos_totales, " ---") # Log para debug
+	
 	limpiar_errores_editor()
 	limpiar_consola_visual()
+	
+	# Avisar al analista que empieza un nuevo intento
+	if analista_dificultad:
+		analista_dificultad.iniciar_nuevo_intento()
 	
 	print("--- INICIANDO SUITE DE PRUEBAS ---")
 	ejecutando_codigo = true
@@ -252,10 +250,53 @@ func _avanzar_siguiente_caso():
 
 func _victoria_total():
 	agregar_mensaje_consola("¡MISIÓN COMPLETADA! ★★★", "SISTEMA")
-	print("VICTORIA TOTAL")
 	ejecutando_codigo = false
 	boton_ejecutar.disabled = false
-	# Aquí guardarías el progreso en la BD local
+	
+	# 1. Calcular Recompensas con la nueva lógica
+	var resultado = calcular_resultado_final()
+	var estrellas_finales = resultado["estrellas"]
+	var exp_final = resultado["exp"]
+	
+	# 2. Aplicar Bonus de Misión Especial (Si aplica)
+	if mision_actual_def:
+		if mision_actual_def.es_mision_especial:
+			agregar_mensaje_consola("¡BONUS MISIÓN ESPECIAL! (x2 Recompensas)", "SISTEMA")
+			# Multiplicar recompensas
+			estrellas_finales *= 2 
+			exp_final *= 2
+			DatabaseManager.registrar_mision_especial_local(
+				mision_actual_def.titulo,
+				mision_actual_def.descripcion,
+				estrellas_finales,
+				exp_final,
+				intentos_totales
+			)
+		else:
+			DatabaseManager.registrar_mision_local(
+				mision_actual_def.id, 
+				estrellas_finales, 
+				exp_final, 
+				intentos_totales
+			)
+	
+	print("Resultado FINAL -> Estrellas: ", estrellas_finales, " | XP: ", exp_final)
+	
+	# 3. Guardar en BD Local
+	if mision_actual_def:
+		DatabaseManager.registrar_mision_local(mision_actual_def.id, estrellas_finales, exp_final, intentos_totales)
+		
+		# Procesar dificultades
+		if analista_dificultad:
+			analista_dificultad.procesar_resultados_finales()
+			
+		# Sincronización Automática
+		GestorSincronizacion.sincronizar_pendientes()
+	
+	# 4. MOSTRAR POPUP DE VICTORIA
+	# Esperamos un frame o un pequeño timer para que el usuario vea el último movimiento del personaje
+	await get_tree().create_timer(1.0).timeout
+	mostrar_popup_victoria(estrellas_finales, exp_final)
 
 func _manejar_fallo(mensaje: String):
 	juego_fallido = true
@@ -342,3 +383,97 @@ func limpiar_consola_visual():
 	if consola_visual:
 		consola_visual.clear()
 	logs_consola.clear() # También limpiamos el historial interno de validación
+
+# --- HELPERS DE RECOMPENSA ---
+
+func _obtener_xp_base(dificultad: String) -> int:
+	# Normalizamos el string por si acaso (ej: "Fácil" vs "Facil")
+	var dif = dificultad.to_lower()
+	
+	if "facil" in dif or "fácil" in dif:
+		return 250
+	elif "media" in dif or "medio" in dif:
+		return 500
+	elif "dificil" in dif or "difícil" in dif:
+		return 750
+	
+	# Valor por defecto si no coincide
+	return 250
+
+func calcular_resultado_final() -> Dictionary:
+	# 1. Configuración Base
+	var estrellas = 3
+	# Obtenemos la base según la dificultad definida en el recurso de la misión
+	var xp_base = _obtener_xp_base(mision_actual_def.dificultad)
+	
+	# 2. Penalización por Intentos (NUEVA FÓRMULA)
+	# 1 a 3 intentos: -0
+	# 4 a 6 intentos: -1
+	# +7 intentos: -2
+	if intentos_totales <= 3:
+		pass # Perfecto (0 penalización)
+	elif intentos_totales <= 6:
+		estrellas -= 1
+		print("Evaluación: -1 Estrella por intentos (", intentos_totales, ")")
+	else:
+		estrellas -= 2
+		print("Evaluación: -2 Estrellas por intentos (", intentos_totales, ")")
+	
+	# 3. Penalización por "Buenas Prácticas" (Analista)
+	if analista_dificultad:
+		var total_errores = analista_dificultad.obtener_total_errores()
+		var errores_graves = analista_dificultad.hay_errores_graves()
+		
+		# Si hay errores graves o más de 3 errores leves acumulados
+		if total_errores > 3 or errores_graves:
+			estrellas -= 1
+			print("Evaluación: -1 Estrella por calidad de código (Errores: ", total_errores, ")")
+
+	# 4. Clamp (Mínimo 1, Máximo 3)
+	# Aunque penalicemos mucho, si completó la misión, merece 1 estrella.
+	if estrellas < 1: estrellas = 1
+	if estrellas > 3: estrellas = 3
+	
+	# 5. Cálculo de XP (NUEVA FÓRMULA)
+	# Fórmula: XP Final = Base * (Estrellas / 2)
+	# Usamos float para que la división no trunque decimales (ej: 3/2 = 1.5)
+	var factor_estrellas = float(estrellas) / 2.0
+	var xp_final = int(xp_base * factor_estrellas)
+	
+	print("Cálculo XP: Base(", xp_base, ") * Factor(", factor_estrellas, ") = ", xp_final)
+		
+	return {"estrellas": estrellas, "exp": xp_final}
+
+# --- UI DE VICTORIA ---
+
+func mostrar_popup_victoria(estrellas: int, xp: int):
+	# 1. Creamos el diálogo al vuelo
+	var popup = AcceptDialog.new()
+	popup.title = "¡MISIÓN COMPLETADA!"
+	
+	# 2. Construimos el mensaje
+	var mensaje = "¡Felicitaciones! Has completado la misión.\n\n"
+	mensaje += "Recompensas obtenidas:\n"
+	mensaje += "⭐ Estrellas: " + str(estrellas) + "\n"
+	mensaje += "✨ Experiencia: " + str(xp) + " XP"
+	
+	# Mensaje especial si hubo bonus
+	if mision_actual_def and mision_actual_def.es_mision_especial:
+		mensaje += "\n\n(¡Incluye Bonus x2 por Misión Especial!)"
+	
+	popup.dialog_text = mensaje
+	popup.ok_button_text = "Continuar"
+	
+	# 3. Importante: Conectar la señal para irse al menú cuando cierre
+	# Usamos 'confirmed' (botón OK) y 'canceled' (botón X) por seguridad
+	popup.confirmed.connect(_volver_al_menu)
+	popup.canceled.connect(_volver_al_menu)
+	
+	# 4. Lo agregamos a la escena y lo mostramos
+	add_child(popup)
+	popup.popup_centered()
+
+func _volver_al_menu():
+	print("Regresando al selector de misiones...")
+	# Asegúrate de que esta ruta sea correcta en tu proyecto
+	get_tree().change_scene_to_file("res://scenes/selector_misiones/selector_misiones.tscn")

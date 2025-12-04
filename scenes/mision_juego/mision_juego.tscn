@@ -51,7 +51,7 @@ metadata/_edit_use_anchors_ = true
 offset_left = 8.0
 offset_top = 8.0
 offset_right = 1144.0
-offset_bottom = 88.0
+offset_bottom = 120.0
 mouse_filter = 1
 
 [node name="VBoxContainer" type="VBoxContainer" parent="CapaUI/Panel"]
@@ -59,7 +59,7 @@ layout_mode = 0
 offset_left = 8.0
 offset_top = 8.0
 offset_right = 1128.0
-offset_bottom = 72.0
+offset_bottom = 108.0
 
 [node name="HBoxContainer" type="HBoxContainer" parent="CapaUI/Panel/VBoxContainer"]
 layout_mode = 2
@@ -75,20 +75,20 @@ theme_override_font_sizes/font_size = 12
 text = "Dificultad"
 
 [node name="LabelDescripción" type="Label" parent="CapaUI/Panel/VBoxContainer"]
-custom_minimum_size = Vector2(0, 40)
+custom_minimum_size = Vector2(0, 79)
 layout_mode = 2
 theme_override_font_sizes/font_size = 12
-autowrap_mode = 2
-max_lines_visible = 2
+autowrap_mode = 3
+max_lines_visible = 4
 
 [node name="VBoxContainer" type="VBoxContainer" parent="CapaUI"]
 anchors_preset = -1
 anchor_top = 0.15900001
 anchor_bottom = 0.15900001
 offset_left = 8.0
-offset_top = -9.032005
+offset_top = 22.967995
 offset_right = 472.0
-offset_bottom = 505.968
+offset_bottom = 537.968
 grow_vertical = 2
 theme_override_constants/separation = 4
 
@@ -116,20 +116,26 @@ text = "Ejecutar"
 
 [node name="SalidaConsola" type="RichTextLabel" parent="CapaUI"]
 offset_left = 512.0
-offset_top = 492.0
+offset_top = 524.0
 offset_right = 1120.0
-offset_bottom = 608.0
+offset_bottom = 640.0
 focus_mode = 2
+theme_override_font_sizes/normal_font_size = 12
+theme_override_font_sizes/bold_font_size = 12
+theme_override_font_sizes/bold_italics_font_size = 12
+theme_override_font_sizes/italics_font_size = 12
+theme_override_font_sizes/mono_font_size = 12
 theme_override_styles/normal = SubResource("StyleBoxFlat_xnhqp")
 bbcode_enabled = true
 scroll_following = true
 selection_enabled = true
+drag_and_drop_selection_enabled = false
 
 [node name="ContenedorJuego" type="SubViewportContainer" parent="."]
 offset_left = 512.0
-offset_top = 96.0
+offset_top = 128.0
 offset_right = 1120.0
-offset_bottom = 480.0
+offset_bottom = 512.0
 stretch = true
 
 [node name="SubViewport" type="SubViewport" parent="ContenedorJuego"]

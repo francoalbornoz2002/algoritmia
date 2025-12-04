@@ -166,6 +166,24 @@ static func generar_mision_compleja(nivel_dificultad: int = DIFICULTAD_MEDIA) ->
 	
 	return mision
 
+# Crea una misión especial por inactividad (Doble XP/Estrellas)
+static func generar_mision_especial_inactividad() -> DefinicionMision:
+	# 1. Generamos la misión base (el puzzle)
+	var mision = generar_mision_compleja(DIFICULTAD_MEDIA) 
+	
+	# 2. Personalizamos el título
+	mision.titulo = "Misión de Retorno"
+	
+	# 3. CORRECCIÓN: Prependemos el mensaje al enunciado existente
+	var mensaje_bienvenida = "¡Has vuelto! El Santuario ha detectado tu ausencia. Completa este desafío para obtener DOBLE experiencia y estrellas.\n"
+	
+	# Sumamos el mensaje + la descripción original del puzzle
+	mision.descripcion = mensaje_bienvenida + mision.descripcion
+	
+	# 4. Activamos el flag
+	mision.es_mision_especial = true 
+	
+	return mision
 # --- UTILS PRIVADOS ---
 
 static func _obtener_coords_ruta(tipo: String, indice: int) -> Array[Vector2i]:
