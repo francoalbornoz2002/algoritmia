@@ -20,7 +20,7 @@ var analista_dificultad: AnalistaDificultad
 
 # Estado del juego
 var ejecutando_codigo: bool = false
-var sandbox: bool = false
+var sandbox: bool = true
 var juego_fallido: bool = false # Bandera para abortar secuencia si hay Game Over
 var intentos_totales: int = 0
 
@@ -53,12 +53,14 @@ func _ready():
 	if not jugador.consola_mensaje_enviado.is_connected(agregar_mensaje_consola):
 		jugador.consola_mensaje_enviado.connect(agregar_mensaje_consola)
 	
-	# INICIALIZAR ANALISTA
-	analista_dificultad = AnalistaDificultad.new()
-	add_child(analista_dificultad)
-	
-	# Conectarlo con el jugador (que es quien ejecuta las acciones)
-	jugador.analista = analista_dificultad
+	if not sandbox:
+		analista_dificultad = AnalistaDificultad.new()
+		add_child(analista_dificultad)
+		
+		# Conectarlo con el jugador
+		jugador.analista = analista_dificultad
+	else:
+		print("--- Modo Sandbox: Analista de Dificultad DESACTIVADO ---")
 	
 	# Verificamos si hay una misión pendiente en el Singleton
 	if GameData.mision_seleccionada != null:

@@ -227,7 +227,7 @@ func _transpilar(texto: String) -> Dictionary:
 			
 			variables_registradas.append(nombre)
 			
-			var init_str = "AlgVar.new('" + tipo + "', _ctrl_, null)"
+			var init_str = "AlgVar.new('" + tipo + "', _ctrl_, '" + nombre + "', null)"
 			
 			if zona == "GLOBAL":
 				vars_globales_code += "var " + nombre + "\n"
@@ -253,6 +253,10 @@ func _transpilar(texto: String) -> Dictionary:
 			l = l.replace("Si ", "if ")
 			l = l.replace(" entonces:", ":").replace(" entonces", ":")
 			l = _procesar_condicion(l) # Aquí se arregla el AND -> and
+			
+			# Agregamos "and not _ctrl_.juego_fallido" a la condición.
+			# Si get_val() detecta error, activa 'juego_fallido', esto se vuelve FALSE y no entra al bloque.
+			l = l.trim_suffix(":") + " and not _ctrl_.juego_fallido:"
 			codigo_generado = indent + l
 			
 		elif source == "Sino" or source == "Sino:":
@@ -280,6 +284,11 @@ func _transpilar(texto: String) -> Dictionary:
 			l = l.replace("Mientras ", "while ")
 			l = l.replace(" hacer:", ":").replace(" hacer", ":")
 			l = _procesar_condicion(l)
+			
+			# Agregamos "and not _ctrl_.juego_fallido" a la condición.
+			# Si get_val() detecta error, activa 'juego_fallido', esto se vuelve FALSE y no entra al bloque.
+			l = l.trim_suffix(":") + " and not _ctrl_.juego_fallido:"
+			
 			codigo_generado += indent + l + "\n"
 			
 			# 3. Chequeo de seguridad (dentro del bucle)
@@ -370,14 +379,11 @@ func _transpilar(texto: String) -> Dictionary:
 				var l = source
 				for v in variables_registradas:
 					if v + "++" in l:
-						l = "await " + v + ".set_val(" + v + ".v + 1)"
+						l = "await " + v + ".set_val(" + v + ".get_val() + 1)"
 						break
 					elif v + "--" in l:
-						l = "await " + v + ".set_val(" + v + ".v - 1)"
+						l = "await " + v + ".set_val(" + v + ".get_val() - 1)"
 						break
-				if l == source:
-					l = _inyectar_referencias(l)
-					l = l.replace("++", ".v += 1").replace("--", ".v -= 1")
 				codigo_generado = indent + l
 				es_valido = true
 			
@@ -406,13 +412,17 @@ func _transpilar(texto: String) -> Dictionary:
 	script += "var _ctrl_: Node\n\n"
 	
 	script += "class AlgVar:\n"
-	script += "\tvar v\n"
+	script += "\tvar v = null\n"
 	script += "\tvar t\n"
 	script += "\tvar c\n"
-	script += "\tfunc _init(type, ctrl, val=null):\n"
+	script += "\tvar n\n"
+	
+	script += "\tfunc _init(type, ctrl, name_str, val=null):\n"
 	script += "\t\tv = val\n"
 	script += "\t\tt = type\n"
 	script += "\t\tc = ctrl\n"
+	script += "\t\tn = name_str\n"
+	
 	script += "\tfunc set_val(val):\n"
 	script += "\t\tif t == 'entero' and typeof(val) == TYPE_FLOAT:\n"
 	script += "\t\t\tif val != int(val):\n" 
@@ -421,6 +431,18 @@ func _transpilar(texto: String) -> Dictionary:
 	script += "\t\t\t\treturn\n"
 	script += "\t\t\tval = int(val)\n" 
 	script += "\t\tv = val\n\n"
+	
+	# --- NUEVO GETTER SEGURO (VA-02) ---
+	script += "\tfunc get_val():\n"
+	script += "\t\tif v == null:\n"
+	script += "\t\t\t# Reportar VA-02 al Analista\n"
+	script += "\t\t\tif c.analista_dificultad:\n"
+	script += "\t\t\t\tc.analista_dificultad.registrar_error_externo('" + AnalistaDificultad.DIF_VAR_NO_INIT + "')\n"
+	script += "\t\t\t\tc.analista_dificultad.consolidar_intento_actual()\n"
+	
+	script += "\t\t\tc._on_jugador_game_over('Error VA-02: La variable \"' + n + '\" se usó sin tener valor inicial.')\n"
+	script += "\t\t\treturn 0\n" # Retorno dummy para no romper operaciones math inmediatas mientras muere
+	script += "\t\treturn v\n\n"
 	
 	script += "func _div(a, b):\n"
 	script += "\tif b == 0:\n"
@@ -604,9 +626,15 @@ func _inyectar_referencias(linea: String) -> String:
 	var res = linea
 	var regex = RegEx.new()
 	for variable in variables_registradas:
-		regex.compile("\\b" + variable + "\\b") 
+		regex.compile("\\b" + variable + "\\b")
+		
+		# Si ya tiene .v o .set_val, lo ignoramos (evitar doble inyección)
 		if ".v" in res and (variable + ".v") in res: continue
-		res = regex.sub(res, variable + ".v", true)
+		if ".set_val" in res and (variable + ".set_val") in res: continue
+		if ".get_val" in res and (variable + ".get_val") in res: continue
+		
+		# Usamos el getter seguro
+		res = regex.sub(res, variable + ".get_val()", true)
 	return res
 
 func _procesar_llamada_procedimiento(linea: String) -> String:
@@ -662,8 +690,8 @@ func _procesar_cabecera_proceso(linea_raw: String) -> String:
 		params_gd.append(nombre_param)
 		
 		if modo == "E":
-			codigo_clonacion += "\tvar _temp_" + nombre_param + " = AlgVar.new('" + tipo + "', _ctrl_, null)\n"
-			codigo_clonacion += "\tawait _temp_" + nombre_param + ".set_val(" + nombre_param + ".v)\n"
+			codigo_clonacion += "\tvar _temp_" + nombre_param + " = AlgVar.new('" + tipo + "', _ctrl_, '" + nombre_param + "', null)\n"
+			codigo_clonacion += "\tawait _temp_" + nombre_param + ".set_val(" + nombre_param + ".get_val())\n" 
 			codigo_clonacion += "\t" + nombre_param + " = _temp_" + nombre_param + "\n"
 			
 	return "func " + nombre_func + "(" + ", ".join(params_gd) + "):\n" + codigo_clonacion

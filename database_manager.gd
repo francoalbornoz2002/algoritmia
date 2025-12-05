@@ -59,6 +59,7 @@ CREATE TABLE IF NOT EXISTS "dificultades" (
 CREATE TABLE IF NOT EXISTS "dificultad_alumno_local" (
 	"id_dificultad" TEXT NOT NULL UNIQUE,
 	"grado" TEXT NOT NULL,
+	"cant_errores" INTEGER NOT NULL DEFAULT 0,
 	"sincronizado" BOOLEAN NOT NULL DEFAULT false,
 	PRIMARY KEY ("id_dificultad"),
 	FOREIGN KEY ("id_dificultad") REFERENCES "dificultades" ("id") ON UPDATE NO ACTION ON DELETE NO ACTION
@@ -364,6 +365,53 @@ func registrar_mision_especial_local(nombre: String, descripcion: String, estrel
 		
 	print("DBManager: Misión Especial registrada con ID: ", id_uuid)
 	return true
+
+# --- GESTIÓN ACUMULATIVA DE DIFICULTADES ---
+
+func registrar_errores_dificultad(id_dificultad: String, nuevos_errores: int) -> bool:
+	print("DBManager: Procesando %d errores nuevos para %s" % [nuevos_errores, id_dificultad])
+	
+	if nuevos_errores <= 0: return true # Nada que hacer
+	
+	# 1. Obtener estado actual
+	var query = "SELECT cant_errores, grado FROM dificultad_alumno_local WHERE id_dificultad = ?;"
+	db.query_with_bindings(query, [id_dificultad])
+	
+	var errores_totales = nuevos_errores
+	var grado_actual = "Ninguno"
+	
+	if not db.query_result.is_empty():
+		var registro = db.query_result[0]
+		errores_totales += registro["cant_errores"]
+		grado_actual = registro["grado"]
+	
+	# 2. Calcular nuevo grado según umbrales (ACUMULATIVO)
+	# Definimos los umbrales
+	var nuevo_grado = "Ninguno"
+	if errores_totales >= 7:
+		nuevo_grado = "Alto"
+	elif errores_totales >= 5:
+		nuevo_grado = "Medio"
+	elif errores_totales >= 3:
+		nuevo_grado = "Bajo"
+	
+	# 3. Optimización: Solo actualizamos si cambiaron los errores o el grado
+	# Siempre marcamos sincronizado = false (0) al actualizar
+	
+	var sql = """
+		INSERT OR REPLACE INTO dificultad_alumno_local (id_dificultad, grado, cant_errores, sincronizado)
+		VALUES (?, ?, ?, 0);
+	"""
+	# Nota: INSERT OR REPLACE funciona bien aquí
+	
+	var exito = db.query_with_bindings(sql, [id_dificultad, nuevo_grado, errores_totales])
+	
+	if exito:
+		print("DBManager: Dificultad actualizada. Total Errores: %d. Grado: %s -> %s" % [errores_totales, grado_actual, nuevo_grado])
+	else:
+		print("ERROR DBManager: Falló actualización de dificultad.", db.error_message)
+		
+	return exito
 
 ## Marca una misión como sincronizada (sincronizado = true)
 func marcar_mision_sincronizada(id_mision: String) -> bool:

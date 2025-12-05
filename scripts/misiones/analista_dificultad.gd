@@ -5,6 +5,8 @@ const DIF_REDUNDANCIA = "SL-01"      # Redundancia de instrucciones
 const DIF_NO_VALIDAR = "SL-02"       # No valida objeto antes de recoger
 const DIF_INNECESARIA = "SL-03"      # Instrucciones innecesarias (contexto)
 const DIF_BUCLE_INFINITO = "EC-01"   # Bucles mal controlados
+const DIF_OPERADORES_LOGICOS = "LP-01" # Mal uso o confusión con operadores lógicos.
+const DIF_VAR_NO_INIT = "VA-02" # Uso de variables sin inicializar
 
 # --- UMBRALES DE EVALUACIÓN ---
 # Cuántos intentos CON el error se necesitan para subir de grado
@@ -35,7 +37,9 @@ func _resetear_contadores_globales():
 		DIF_REDUNDANCIA: 0,
 		DIF_NO_VALIDAR: 0,
 		DIF_INNECESARIA: 0,
-		DIF_BUCLE_INFINITO: 0
+		DIF_BUCLE_INFINITO: 0,
+		DIF_OPERADORES_LOGICOS: 0,
+		DIF_VAR_NO_INIT: 0
 	}
 
 func registrar_error_externo(codigo: String):
@@ -46,19 +50,20 @@ func iniciar_nuevo_intento():
 	historial_acciones.clear()
 	errores_detectados_en_este_intento.clear()
 	
-	# Reiniciamos timestamps de validaciones
-	validaciones_recientes = {
-		"moneda": -1, "llave": -1, "enemigo": -1, 
-		"obstaculo": -1, "cofre": -1, "puente": -1
-	}
+	# Reiniciamos a estructura vacía
+	# Estructura interna será: "tipo": { "paso": 10, "resultado": true }
+	validaciones_recientes = {}
+	
 	paso_actual = 0
-	print("--- Analista: Iniciando monitoreo de intento ---")
+	print("--- Analista: Nuevo intento ---")
 
 # --- API DE EVENTOS ---
 
-func registrar_validacion(tipo_objeto: String):
-	# Registramos en qué paso se hizo la validación (ej: "Si hayMoneda")
-	validaciones_recientes[tipo_objeto] = paso_actual
+func registrar_validacion(tipo_objeto: String, resultado: bool = false):
+	validaciones_recientes[tipo_objeto] = {
+		"paso": paso_actual,
+		"resultado": resultado
+	}
 
 func registrar_accion(accion: String):
 	paso_actual += 1
@@ -76,9 +81,11 @@ func registrar_accion(accion: String):
 
 	# 3. ANÁLISIS DE VALIDACIÓN PREVIA (SL-02 y SL-03)
 	_analizar_validacion_requerida(accion)
+	
+	# 4. ANÁLISIS LÓGICA PROPOSICIONAL (LP-01) <--- NUEVO
+	_analizar_logica_operadores(accion)
 
 # --- LÓGICA DE DETECCIÓN DE PATRONES ---
-
 func _analizar_redundancia(accion_actual: String):
 	if historial_acciones.is_empty(): return
 	
@@ -133,15 +140,38 @@ func _analizar_validacion_requerida(accion: String):
 		if not _se_valido_recientemente(sensor_requerido):
 			_registrar_incidencia(dificultad_tipo)
 
-func _se_valido_recientemente(tipo: String) -> bool:
-	var ultimo_check = validaciones_recientes.get(tipo, -1)
-	if ultimo_check == -1: return false
+
+# --- NUEVA FUNCIÓN DE ANÁLISIS ---
+func _analizar_logica_operadores(accion: String):
+	# Detectamos si entró a una acción compuesta faltando una condición crítica
+	# Esto sugiere uso de OR en vez de AND, o mal uso de NOT.
 	
-	# Tolerancia temporal: La validación debe haber ocurrido hace poco.
-	# En un bucle "Mientras hayMoneda: recogerMoneda", la validación ocurre
-	# justo antes de la acción (distancia 1 o 2).
-	# Damos un margen de 3 pasos por si hay instrucciones intermedias.
-	var distancia = paso_actual - ultimo_check
+	if accion == "abrirCofre":
+		# Requiere LLAVE. Si validó llave recientemente y dio FALSO, pero entró igual...
+		if _valido_y_dio_falso("llave"):
+			_registrar_incidencia(DIF_OPERADORES_LOGICOS)
+			
+	elif accion == "activarPuente":
+		# Requiere MONEDA. Si validó moneda recientemente y dio FALSO, pero entró igual...
+		if _valido_y_dio_falso("moneda"):
+			_registrar_incidencia(DIF_OPERADORES_LOGICOS)
+
+# Helper para verificar si se validó algo hace poco y dio false
+func _valido_y_dio_falso(tipo: String) -> bool:
+	if not validaciones_recientes.has(tipo): return false
+	
+	var data = validaciones_recientes[tipo]
+	var distancia = paso_actual - data["paso"]
+	
+	# Si se validó en los últimos 3 pasos y el resultado fue FALSO
+	return distancia <= 3 and data["resultado"] == false
+
+
+func _se_valido_recientemente(tipo: String) -> bool:
+	if not validaciones_recientes.has(tipo): return false
+	
+	var data = validaciones_recientes[tipo]
+	var distancia = paso_actual - data["paso"]
 	return distancia <= 3
 
 func _registrar_incidencia(codigo: String):
@@ -154,24 +184,25 @@ func _registrar_incidencia(codigo: String):
 # --- PROCESAMIENTO FINAL (Al terminar misión o Game Over) ---
 
 func procesar_resultados_finales():
-	# 1. Volcar los errores de ESTE último intento al acumulado global
-	# (Si el juego termina, asumimos que el último intento cuenta)
+	# 1. Consolidar el último intento
 	consolidar_intento_actual()
 	
 	print("--- Analista: Resultados acumulados de la sesión ---")
 	print(contador_incidencias_acumuladas)
 	
-	# 2. Calcular Grados y Guardar
+	# 2. Enviar conteos crudos a la BD
 	for codigo in contador_incidencias_acumuladas:
-		var cantidad_intentos_fallidos = contador_incidencias_acumuladas[codigo]
+		var cantidad_errores = contador_incidencias_acumuladas[codigo]
 		
-		if cantidad_intentos_fallidos > 0:
-			var grado = _calcular_grado(cantidad_intentos_fallidos)
-			if grado != "Ninguno":
-				_guardar_dificultad_bd(codigo, grado)
+		if cantidad_errores > 0:
+			# Obtenemos el UUID real
+			var id_uuid = _obtener_uuid_por_codigo(codigo)
+			if id_uuid != "":
+				# DELEGAMOS el cálculo de grado al DatabaseManager
+				DatabaseManager.registrar_errores_dificultad(id_uuid, cantidad_errores)
 
 # Llamar a esto cada vez que termina un intento (Game Over o Victoria)
-# para "fijar" los errores detectados en esa corrida.
+# para "fijar" los errores detectados.
 func consolidar_intento_actual():
 	for codigo in errores_detectados_en_este_intento:
 		# PESO: Bucle Infinito vale x3
@@ -186,23 +217,6 @@ func consolidar_intento_actual():
 			contador_incidencias_acumuladas[codigo] = peso
 	
 	errores_detectados_en_este_intento.clear()
-
-func _calcular_grado(cantidad_intentos: int) -> String:
-	if cantidad_intentos >= UMBRALES.ALTO: return "Alto"
-	if cantidad_intentos >= UMBRALES.MEDIO: return "Medio"
-	if cantidad_intentos >= UMBRALES.BAJO: return "Bajo"
-	return "Ninguno"
-
-func _guardar_dificultad_bd(codigo: String, grado: String):
-	# Mapeo de IDs internos a UUIDs de la BD (según el SQL que generamos antes)
-	# Esto es importante si el 'codigo' (SL-01) no es la PK de la tabla.
-	# Si en tu BD local usaste los UUIDs del script anterior, necesitamos un mapeo aquí.
-	# Si en tu BD local usaste "SL-01" como ID (lo cual simplificaría), úsalo directo.
-	
-	# Asumiendo que DatabaseManager maneja la traducción o que usamos IDs directos:
-	var id_real = _obtener_uuid_por_codigo(codigo)
-	if id_real != "":
-		DatabaseManager.registrar_dificultad_local(id_real, grado)
 
 # --- HELPERS PARA ESTADÍSTICAS ---
 func obtener_total_errores() -> int:
@@ -226,5 +240,7 @@ func _obtener_uuid_por_codigo(codigo: String) -> String:
 		DIF_NO_VALIDAR: return "a1001001-0000-0000-0000-000000000002"
 		DIF_INNECESARIA: return "a1001001-0000-0000-0000-000000000003"
 		DIF_BUCLE_INFINITO: return "c3003003-0000-0000-0000-000000000001"
+		DIF_OPERADORES_LOGICOS: return "b2002002-0000-0000-0000-000000000001"
+		DIF_VAR_NO_INIT: return "d4004004-0000-0000-0000-000000000002"
 		# Agrega los demás si implementamos detección para ellos
 	return ""

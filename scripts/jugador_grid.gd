@@ -10,7 +10,7 @@ const TIEMPO_ACCION = 0.5 # Tiempo de espera para recolectar/atacar
 
 # Estado
 var esta_actuando: bool = false
-var pos_grid_actual: Vector2i = Vector2i.ZERO
+var posicion_actual: Vector2i = Vector2i.ZERO
 var direccion_actual: Vector2i = Vector2i(0, 1) # (0, 1) es ARRIBA lógico
 var inventario = { "monedas": 0, "llaves": 0 }
 var analista: AnalistaDificultad = null
@@ -21,8 +21,8 @@ signal consola_mensaje_enviado(texto, tipo)
 
 func _ready():
 	# 1. Configuración Inicial de Posición
-	pos_grid_actual = GridManager.world_to_grid(position)
-	teletransportar_a(pos_grid_actual)
+	posicion_actual = GridManager.world_to_grid(position)
+	teletransportar_a(posicion_actual)
 	rotation_degrees = 0
 	
 	# 2. --- LÍMITES DE LA CÁMARA ---
@@ -44,7 +44,7 @@ func avanzar():
 		await _esperar_muerte()
 		return
 		
-	var celda_destino = pos_grid_actual + direccion_actual
+	var celda_destino = posicion_actual + direccion_actual
 	await mover_a_celda(celda_destino)
 	await get_tree().create_timer(TIEMPO_PAUSA_INSTRUCCION).timeout
 	return true
@@ -100,7 +100,7 @@ func recoger_moneda():
 	esta_actuando = true
 	
 	# 1. Consultamos qué hay en mi celda actual
-	var objeto = GridManager.obtener_objeto_en_celda(pos_grid_actual)
+	var objeto = GridManager.obtener_objeto_en_celda(posicion_actual)
 	
 	# 2. Validaciones (Game Over)
 	if objeto == null:
@@ -119,7 +119,7 @@ func recoger_moneda():
 	print("¡Moneda recogida! Monedas totales: ", inventario["monedas"])
 	
 	# Actualizar GridManager (ya no hay objeto aquí)
-	GridManager.quitar_objeto(pos_grid_actual)
+	GridManager.quitar_objeto(posicion_actual)
 	
 	# Visualmente borrar el objeto
 	objeto.recoger()
@@ -134,7 +134,7 @@ func recoger_llave():
 	if esta_actuando: return
 	esta_actuando = true
 	
-	var objeto = GridManager.obtener_objeto_en_celda(pos_grid_actual)
+	var objeto = GridManager.obtener_objeto_en_celda(posicion_actual)
 	
 	if objeto == null:
 		game_over("Intentaste recoger una llave, pero aquí no hay nada.")
@@ -149,7 +149,7 @@ func recoger_llave():
 	
 	print("¡Llave recogida! Llaves totales: ", inventario["llaves"] + 1)
 	inventario["llaves"] += 1
-	GridManager.quitar_objeto(pos_grid_actual)
+	GridManager.quitar_objeto(posicion_actual)
 	objeto.recoger()
 	
 	await get_tree().create_timer(TIEMPO_ACCION).timeout
@@ -161,7 +161,7 @@ func abrir_cofre():
 	if esta_actuando: return
 	esta_actuando = true
 	
-	var objeto = GridManager.obtener_objeto_en_celda(pos_grid_actual)
+	var objeto = GridManager.obtener_objeto_en_celda(posicion_actual)
 	
 	# VALIDACIÓN 1: ¿Hay Cofre?
 	if objeto == null or objeto.tipo != ElementoTablero.Tipo.COFRE:
@@ -182,7 +182,7 @@ func abrir_cofre():
 	inventario["llaves"] -= 1
 	inventario["monedas"] += 5 # SUMA +5 MONEDAS (GDD)
 	
-	GridManager.quitar_objeto(pos_grid_actual)
+	GridManager.quitar_objeto(posicion_actual)
 	objeto.abrir_cofre() # Usa la función del ElementoTablero
 	
 	await get_tree().create_timer(TIEMPO_ACCION).timeout
@@ -196,7 +196,7 @@ func atacar():
 	esta_actuando = true
 	
 	# 1. Calculamos la celda que está inmediatamente en frente
-	var celda_objetivo = pos_grid_actual + direccion_actual
+	var celda_objetivo = posicion_actual + direccion_actual
 	var objeto = GridManager.obtener_objeto_en_celda(celda_objetivo)
 	
 	# 2. Validar
@@ -221,7 +221,7 @@ func saltar():
 	esta_actuando = true
 	
 	# 1. Celda que está inmediatamente en frente (el Obstáculo)
-	var celda_obstaculo = pos_grid_actual + direccion_actual
+	var celda_obstaculo = posicion_actual + direccion_actual
 	var obstaculo = GridManager.obtener_objeto_en_celda(celda_obstaculo)
 	
 	# 2. Validar
@@ -231,7 +231,7 @@ func saltar():
 		return
 		
 	# 3. Celda de aterrizaje (salta 2 casillas)
-	var celda_destino = pos_grid_actual + (direccion_actual * 2)
+	var celda_destino = posicion_actual + (direccion_actual * 2)
 	
 	# Validar que el aterrizaje sea válido
 	if not GridManager.es_celda_valida(celda_destino):
@@ -251,7 +251,7 @@ func saltar():
 	tween.tween_property(self, "position", destino_pixel, TIEMPO_MOVIMIENTO / 2).set_delay(TIEMPO_MOVIMIENTO / 4)
 	
 	# Actualizamos la posición lógica al final
-	pos_grid_actual = celda_destino
+	posicion_actual = celda_destino
 	await tween.finished # Esperar animación
 	esta_actuando = false
 	return true
@@ -263,7 +263,7 @@ func activar_puente():
 	esta_actuando = true
 	
 	# 1. Celda en frente
-	var celda_en_frente = pos_grid_actual + direccion_actual
+	var celda_en_frente = posicion_actual + direccion_actual
 	var objeto = GridManager.obtener_objeto_en_celda(celda_en_frente)
 	
 	# VALIDACIÓN 1: ¿Hay Puente?
@@ -309,82 +309,85 @@ func imprimir(argumentos: Array):
 	# Pequeña pausa estética
 	await get_tree().create_timer(TIEMPO_ACCION).timeout
 
-# --- PRIMITIVAS DE SENSOR ---
-# Sensor para saber si hay un enemigo en la celda adyacente (en la dirección actual)
-func hay_enemigo() -> bool:
-	if analista: analista.registrar_validacion("enemigo")
-	var celda_en_frente = pos_grid_actual + direccion_actual
-	if not GridManager.es_celda_valida(celda_en_frente):
-		return false
-	
-	var objeto = GridManager.obtener_objeto_en_celda(celda_en_frente)
-	if objeto and objeto.tipo == ElementoTablero.Tipo.ENEMIGO:
-		return true
-	return false
+# ----- SENSORES DEL ENTORNO ----- #
 
-# Sensor para saber si hay un obstáculo en la celda adyacente
-func hay_obstaculo() -> bool:
-	if analista: analista.registrar_validacion("obstaculo")
-	var celda_en_frente = pos_grid_actual + direccion_actual
-	if not GridManager.es_celda_valida(celda_en_frente):
-		return false
-	
-	var objeto = GridManager.obtener_objeto_en_celda(celda_en_frente)
-	if objeto and objeto.tipo == ElementoTablero.Tipo.OBSTACULO:
-		return true
-	return false
-
-# Sensor para saber si hay un puente en la celda adyacente
-func hay_puente() -> bool:
-	if analista: analista.registrar_validacion("puente")
-	var celda_en_frente = pos_grid_actual + direccion_actual
-	if not GridManager.es_celda_valida(celda_en_frente):
-		return false
-	
-	var objeto = GridManager.obtener_objeto_en_celda(celda_en_frente)
-	if objeto and objeto.tipo == ElementoTablero.Tipo.PUENTE:
-		return true
-	return false
-
-# Sensor para saber si hay un cofre en la celda actual
-func hay_cofre() -> bool:
-	if analista: analista.registrar_validacion("cofre")
-	var objeto = GridManager.obtener_objeto_en_celda(pos_grid_actual)
-	if objeto and objeto.tipo == ElementoTablero.Tipo.COFRE:
-		return true
-	return false
-	
 # Sensor para saber si hay una moneda en la celda actual
 func hay_moneda() -> bool:
-	if analista: analista.registrar_validacion("moneda")
-	var objeto = GridManager.obtener_objeto_en_celda(pos_grid_actual)
-	if objeto and objeto.tipo == ElementoTablero.Tipo.MONEDA:
-		return true
-	return false
+	# 1. Obtenemos el objeto en la celda
+	var objeto = GridManager.obtener_objeto_en_celda(posicion_actual)
+	
+	# 2. Verificamos:
+	#    a) Que el objeto exista (no sea null)
+	#    b) Que su propiedad 'tipo' sea MONEDA
+	var res = (objeto != null and objeto.tipo == ElementoTablero.Tipo.MONEDA)
+	
+	if analista: analista.registrar_validacion("moneda", res)
+	return res
 
 # Sensor para saber si hay una llave en la celda actual
 func hay_llave() -> bool:
-	analista.registrar_validacion("llave")
-	var objeto = GridManager.obtener_objeto_en_celda(pos_grid_actual)
-	if objeto and objeto.tipo == ElementoTablero.Tipo.LLAVE:
-		return true
-	return false
+	var objeto = GridManager.obtener_objeto_en_celda(posicion_actual)
+	var res = (objeto != null and objeto.tipo == ElementoTablero.Tipo.LLAVE)
+	
+	if analista: analista.registrar_validacion("llave", res)
+	return res
+
+# Sensor para saber si hay un cofre en la celda actual
+func hay_cofre() -> bool:
+	var objeto = GridManager.obtener_objeto_en_celda(posicion_actual)
+	var res = (objeto != null and objeto.tipo == ElementoTablero.Tipo.COFRE)
+	
+	if analista: analista.registrar_validacion("cofre", res)
+	return res
+
+# Sensor para saber si hay un enemigo en la celda adyacente (en la dirección actual)
+func hay_enemigo() -> bool:
+	var pos_target = posicion_actual + direccion_actual
+	var objeto = GridManager.obtener_objeto_en_celda(pos_target)
+	
+	var res = (objeto != null and objeto.tipo == ElementoTablero.Tipo.ENEMIGO)
+	if analista: analista.registrar_validacion("enemigo", res)
+	return res
+
+# Sensor para saber si hay un obstáculo en la celda adyacente
+func hay_obstaculo() -> bool:
+	var pos_target = posicion_actual + direccion_actual
+	var objeto = GridManager.obtener_objeto_en_celda(pos_target)
+	
+	var res = (objeto != null and objeto.tipo == ElementoTablero.Tipo.OBSTACULO)
+	if analista: analista.registrar_validacion("obstaculo", res)
+	return res
+
+# Sensor para saber si hay un puente en la celda adyacente
+func hay_puente() -> bool:
+	var pos_target = posicion_actual + direccion_actual
+	var objeto = GridManager.obtener_objeto_en_celda(pos_target)
+	
+	var res = (objeto != null and objeto.tipo == ElementoTablero.Tipo.PUENTE)
+	if analista: analista.registrar_validacion("puente", res)
+	return res
+
+# ----- SENSORES DE INVENTARIO ----- #
 
 # Retorna verdadero si tiene al menos una moneda en el inventario
 func tengo_moneda() -> bool:
-	return inventario["monedas"] > 0
+	var res = inventario.monedas > 0
+	if analista: analista.registrar_validacion("moneda", res) # Reutilizamos etiqueta "moneda" o usa "tengoMoneda" si prefieres diferenciar
+	return res
 
 # Retorna verdadero si tiene al menos una llave en el inventario
 func tengo_llave() -> bool:
-	return inventario["llaves"] > 0
+	var res = inventario.llaves > 0
+	if analista: analista.registrar_validacion("llave", res)
+	return res
 
 # Retorna el número de Sendero actual (Columna). Base 1.
 func pos_sendero() -> int:
-	return pos_grid_actual.x + 1
+	return posicion_actual.x + 1
 
 # Retorna el número de Valle actual (Fila). Base 1.
 func pos_valle() -> int:
-	return pos_grid_actual.y + 1
+	return posicion_actual.y + 1
 
 # --- MOVIMIENTO INTERNO Y UTILIDADES ---
 func mover_a_celda(celda_destino: Vector2i):
@@ -397,7 +400,7 @@ func mover_a_celda(celda_destino: Vector2i):
 	
 	# 2. Iniciar movimiento
 	print("avanzando...")
-	pos_grid_actual = celda_destino # Actualizamos lógica ya
+	posicion_actual = celda_destino # Actualizamos lógica ya
 	var destino_pixel = GridManager.grid_to_world(celda_destino)
 	var tween = create_tween()
 	tween.tween_property(self, "position", destino_pixel, TIEMPO_MOVIMIENTO)
@@ -406,7 +409,7 @@ func mover_a_celda(celda_destino: Vector2i):
 	esta_actuando = false
 
 func teletransportar_a(celda_destino: Vector2i):
-	pos_grid_actual = celda_destino
+	posicion_actual = celda_destino
 	position = GridManager.grid_to_world(celda_destino)
 	esta_actuando = false
 	# Resetear rotación y dirección al inicio (Mirando arriba)
@@ -416,7 +419,7 @@ func teletransportar_a(celda_destino: Vector2i):
 # --- NUEVA FUNCIÓN DE VERIFICACIÓN (Peligro Enemigo/Obstáculo) ---
 func _verificar_peligro_inminente() -> bool:
 	# 1. Celda en frente
-	var celda_en_frente = pos_grid_actual + direccion_actual
+	var celda_en_frente = posicion_actual + direccion_actual
 	
 	# Si no es celda válida (límites), no hay peligro, lo maneja mover_a_celda.
 	if not GridManager.es_celda_valida(celda_en_frente):
