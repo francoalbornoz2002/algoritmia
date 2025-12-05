@@ -1,8 +1,12 @@
 class_name EjecutorAlgoritmo extends Node
 
+const MAX_ITERACIONES_BUCLE = 1000 # Límite para evitar crasheos por bucle infinito
+
 # --- Referencias ---
 var personaje: CharacterBody2D 
 var controlador_nivel: Node2D
+# Variable de clase para guardar la referencia exacta
+var runner_actual: Node
 
 # --- Mapeo de Instrucciones (CASE SENSITIVE) ---
 const COMANDOS_ATOMICOS = {
@@ -47,11 +51,10 @@ var _string_idx = 0
 
 # Permite leer el valor final de una variable del alumno
 func obtener_valor_variable(nombre: String):
-	var nodo_runner = controlador_nivel.get_node_or_null("RunnerTemporal")
-	if not is_instance_valid(nodo_runner): return null
+	if not is_instance_valid(runner_actual): return null
 	
 	# Buscamos la propiedad en el script dinámico
-	var valor_ref = nodo_runner.get(nombre)
+	var valor_ref = runner_actual.get(nombre)
 	if valor_ref and "v" in valor_ref:
 		return valor_ref.v
 	return null
@@ -64,6 +67,12 @@ func obtener_uso_estructura(nombre: String) -> int:
 
 # --- FUNCIÓN PRINCIPAL ---
 func procesar_y_ejecutar(texto_codigo: String):
+	# Limpiar runner anterior
+	# Esto asegura que get_node("RunnerTemporal") siempre traiga el actual
+	detener_ejecucion_inmediata() 
+	# Esperamos un frame para asegurar que queue_free actúe (opcional pero recomendado)
+	await controlador_nivel.get_tree().process_frame
+	
 	# Limpieza de estado
 	variables_registradas.clear()
 	funciones_definidas.clear()
@@ -100,6 +109,7 @@ func _finalizar_ejecucion(exito: bool):
 # --- EL TRANSPILADOR ---
 func _transpilar(texto: String) -> Dictionary:
 	var lineas = texto.split("\n")
+	var loop_safety_count = 0
 	
 	# FASE 0: Escaneo previo de funciones para validar llamadas antes de procesarlas
 	_escanear_definiciones_funciones(lineas)
@@ -257,12 +267,28 @@ func _transpilar(texto: String) -> Dictionary:
 			var err_var = _validar_identificadores(source)
 			if err_var != "": return { "error": true, "linea": i, "mensaje": err_var }
 			
+			# --- INYECCIÓN DE SEGURIDAD ---
+			loop_safety_count += 1
+			var var_safety = "_safety_" + str(loop_safety_count)
+			
+			# 1. Declarar contador
+			codigo_generado += indent + "var " + var_safety + " = 0\n"
+			
+			# 2. Línea del While
 			var l = _inyectar_referencias(source)
 			l = _procesar_matematicas_seguras(l)
 			l = l.replace("Mientras ", "while ")
 			l = l.replace(" hacer:", ":").replace(" hacer", ":")
 			l = _procesar_condicion(l)
-			codigo_generado = indent + l
+			codigo_generado += indent + l + "\n"
+			
+			# 3. Chequeo de seguridad (dentro del bucle)
+			var indent_inner = indent + "\t"
+			codigo_generado += indent_inner + var_safety + " += 1\n"
+			codigo_generado += indent_inner + "if " + var_safety + " > " + str(MAX_ITERACIONES_BUCLE) + ":\n"
+			codigo_generado += indent_inner + "\t_ctrl_._on_jugador_game_over(\"Error Crítico: Bucle Infinito detectado (+1000 ciclos).\")\n"
+			codigo_generado += indent_inner + "\tawait _ctrl_.get_tree().create_timer(0.1).timeout\n"
+			codigo_generado += indent_inner + "\treturn" # Sin \n final, el loop principal lo añade
 			
 		elif source.begins_with("Repetir "):
 			var partes = source.replace(":", "").split(" ", false)
@@ -270,7 +296,8 @@ func _transpilar(texto: String) -> Dictionary:
 				var veces = _inyectar_referencias(partes[1])
 				veces = _procesar_matematicas_seguras(veces)
 				veces = _procesar_condicion(veces)
-				codigo_generado = indent + "for _iter_ in range(" + veces + "):"
+				# INYECCIÓN: Usamos min() para limitar las repeticiones
+				codigo_generado = indent + "for _iter_ in range(min(" + veces + ", " + str(MAX_ITERACIONES_BUCLE) + ")):"
 
 		# 3. PRIMITIVAS
 		elif source.begins_with("mapa(") and source.ends_with(")"):
@@ -663,6 +690,7 @@ func _ejecutar_dinamicamente(codigo: String):
 	nodo._p_ = personaje
 	nodo._ctrl_ = controlador_nivel
 	controlador_nivel.add_child(nodo)
+	runner_actual = nodo
 	nodo.call_deferred("run")
 
 

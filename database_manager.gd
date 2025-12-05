@@ -385,10 +385,18 @@ func obtener_misiones_pendientes() -> Array:
 	if not exito:
 		print("ERROR (DBManager): No se pudieron obtener misiones pendientes. ", db.error_message)
 		return []
-	
 	# Retornamos el resultado
 	return db.query_result
 
+# Obtiene las misiones especiales que no se han subido aún
+func obtener_misiones_especiales_pendientes() -> Array:
+	# Consultamos la tabla ESPECÍFICA de misiones especiales
+	var exito = db.query("SELECT * FROM misiones_especiales_local WHERE sincronizado = 0;")
+	if not exito:
+		print("ERROR (DBManager): No se pudieron obtener misiones especiales pendientes. ", db.error_message)
+		return []
+	# Retornamos el resultado
+	return db.query_result
 
 # Marca un LOTE de misiones como sincronizadas (sincronizado = true)
 # Recibe un array de IDs de misiones.
@@ -417,6 +425,23 @@ func marcar_lote_misiones_sincronizadas(ids_misiones: Array) -> bool:
 		print("ERROR (DBManager): No se pudo hacer COMMIT (marcar lote). ", db.error_message)
 		return false
 		
+	return true
+
+# Marca un lote de misiones especiales como sincronizadas
+func marcar_lote_misiones_especiales_sincronizadas(ids_especiales: Array) -> bool:
+	if ids_especiales.is_empty(): return true
+	
+	if not db.query("BEGIN TRANSACTION;"): return false
+	
+	# OJO: En la tabla especial la clave es 'id', no 'id_mision'
+	var sql = "UPDATE misiones_especiales_local SET sincronizado = true WHERE id = ?;"
+	
+	for id_uuid in ids_especiales:
+		if not db.query_with_bindings(sql, [id_uuid]):
+			db.query("ROLLBACK;")
+			return false
+			
+	db.query("COMMIT;")
 	return true
 
 ## Escribe una dificultad de alumno en la BD local.

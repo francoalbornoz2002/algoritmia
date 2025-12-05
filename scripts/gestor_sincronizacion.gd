@@ -24,7 +24,7 @@ func _ready():
 	
 	# 2. Creamos el Timer (revisará cada 5 minutos)
 	timer = Timer.new()
-	timer.wait_time = 300 # 300 segundos = 5 minutos
+	timer.wait_time = 10 # 300 segundos = 5 minutos
 	timer.autostart = true
 	add_child(timer)
 	timer.timeout.connect(_on_timer_timeout)
@@ -57,23 +57,42 @@ func sincronizar_pendientes():
 	# 3. Colocamos el estado de sincronización a verdadero
 	esta_sincronizando = true
 	
-	# --- PASO 1: PRIORIZAMOS MISIONES ---
-	# Obtenemos las misiones pendientes de sincronización
-	_lote_en_progreso = DatabaseManager.obtener_misiones_pendientes()
+	# --- PASO 1: REVISAR MISIONES (NORMALES Y ESPECIALES) ---
+	
+	# A. Obtenemos las misiones normales pendientes
+	var pendientes_normales = DatabaseManager.obtener_misiones_pendientes()
+	var pendientes_especiales = DatabaseManager.obtener_misiones_especiales_pendientes()
+	
+	# B. Fusionamos las listas
+	_lote_en_progreso = pendientes_normales + pendientes_especiales
+	
 	if not _lote_en_progreso.is_empty():
-		print("Sincronizador: ¡Encontré %s misiones! Enviando lote..." % _lote_en_progreso.size())
+		print("Sincronizador: ¡Encontré %s misiones (total)! Enviando lote..." % _lote_en_progreso.size())
 		tarea_en_progreso = "MISIONES" # Guardamos el contexto
 		
 		var lote_para_enviar = []
-		for mision_db in _lote_en_progreso:
-			lote_para_enviar.append({
+		for item_db in _lote_en_progreso:
+			# Base común del payload
+			var payload = {
 				"idAlumno": id_alumno,
-				"idMision": mision_db["id_mision"],
-				"estrellas": mision_db["estrellas"],
-				"exp": mision_db["exp"],
-				"intentos": mision_db["intentos"],
-				"fechaCompletado": mision_db["fecha_completado"]
-			})
+				"estrellas": item_db["estrellas"],
+				"exp": item_db["exp"],
+				"intentos": item_db["intentos"],
+				"fechaCompletado": item_db["fecha_completado"]
+			}
+			
+			# Diferenciamos si es especial o normal
+			# (Sabemos que es especial si tiene la clave "nombre", que la tabla normal no tiene)
+			if item_db.has("nombre"): 
+				payload["idMision"] = item_db["id"] # UUID generado
+				payload["esMisionEspecial"] = true
+				payload["nombre"] = item_db["nombre"]
+				payload["descripcion"] = item_db["descripcion"]
+			else:
+				payload["idMision"] = item_db["id_mision"] # ID del catálogo
+				payload["esMisionEspecial"] = false
+			
+			lote_para_enviar.append(payload)
 		
 		_enviar_peticion(URL_LOTE_MISIONES, lote_para_enviar)
 		return # Salimos, esperamos la respuesta del callback
@@ -122,45 +141,56 @@ func _enviar_peticion(url: String, lote_datos: Array):
 # --- El Callback (Respuesta del servidor) ---
 
 func _on_http_request_completado(result, response_code, headers, body):
-	# No aseguramos de que esta respuesta sea del gestor de sincronización
-	if not esta_sincronizando: 
-		return 
+	if not esta_sincronizando: return 
 
-	# Guardamos el estado actual antes de limpiar
 	var tarea_terminada = tarea_en_progreso
-	var lote_terminado = _lote_en_progreso.duplicate() # Copiamos el array
+	var lote_terminado = _lote_en_progreso.duplicate()
 	
-	# 1. Pase lo que pase, Abrimos el sincronizador y limpiamos la tarea y lote
+	# Liberamos recursos y el candado
 	esta_sincronizando = false
 	tarea_en_progreso = ""
 	_lote_en_progreso.clear()
 
-	# 2. Verificamos el resultado de la red
+	var exito = false
+	
+	# 1. ANÁLISIS DE RESULTADO
 	if result != HTTPRequest.RESULT_SUCCESS:
-		print("Sincronizador ERROR: Falló la conexión de red. Se reintentará más tarde.")
-		# No hacemos nada más, los datos siguen 'sincronizado = 0'
+		print("Sincronizador ERROR: Fallo de conexión o red.")
+	elif response_code >= 200 and response_code < 300:
+		print("Sincronizador: ¡Éxito (%s)!" % tarea_terminada)
+		exito = true
 		
-	# 3. Verificamos la respuesta del servidor
-	elif response_code == 200 or response_code == 201:
-		# Éxito en el envío
-		print("Sincronizador: ¡Lote de %s enviado con éxito!" % tarea_terminada)
-		
-		# Marcamos como sincronizado las misiones o dificultades (según el contexto)
+		# 2. MARCADO EN BASE DE DATOS (Lógica Fusionada)
 		if tarea_terminada == "MISIONES":
-			var ids_misiones = lote_terminado.map(func(m): return m["id_mision"])
-			DatabaseManager.marcar_lote_misiones_sincronizadas(ids_misiones)
+			var ids_normales = []
+			var ids_especiales = []
 			
+			for m in lote_terminado:
+				if m.has("nombre"): # Identificamos Misión Especial por el campo 'nombre'
+					ids_especiales.append(m["id"])
+				else:
+					ids_normales.append(m["id_mision"])
+			
+			if not ids_normales.is_empty():
+				DatabaseManager.marcar_lote_misiones_sincronizadas(ids_normales)
+			
+			if not ids_especiales.is_empty():
+				DatabaseManager.marcar_lote_misiones_especiales_sincronizadas(ids_especiales)
+				
 		elif tarea_terminada == "DIFICULTADES":
 			var ids_dificultades = lote_terminado.map(func(d): return d["id_dificultad"])
 			DatabaseManager.marcar_lote_dificultades_sincronizadas(ids_dificultades)
 			
 	else:
-		# El servidor respondió con un error (400, 500, etc.)
-		print("Sincronizador ERROR: El servidor rechazó el lote de %s (Código: %s). Se reintentará." % [tarea_terminada, response_code])
-		# No hacemos nada, los datos siguen 'sincronizado = 0'
+		print("Sincronizador ERROR: Servidor rechazó (%s). Código: %s" % [tarea_terminada, response_code])
 
-	# 4. Intentamos sincronizar de nuevo inmediatamente.
-	# Si acabamos de enviar misiones, esto revisará si hay dificultades.
-	# Si acabamos de enviar dificultades, esto revisará si (mientras tanto)
-	# entró una nueva misión.
-	sincronizar_pendientes()
+	# 3. LÓGICA DE REINTENTO (TIMER 10s)
+	
+	if exito:
+		# Si hubo éxito, seguimos inmediatamente para vaciar la cola rápido
+		sincronizar_pendientes()
+	else:
+		# Si falló, esperamos 10 segundos antes de volver a intentar
+		print("Sincronizador: Reintentando envío en 10 segundos...")
+		await get_tree().create_timer(10.0).timeout
+		sincronizar_pendientes()

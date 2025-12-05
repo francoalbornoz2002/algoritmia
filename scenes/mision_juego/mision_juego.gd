@@ -251,20 +251,25 @@ func _avanzar_siguiente_caso():
 func _victoria_total():
 	agregar_mensaje_consola("¡MISIÓN COMPLETADA! ★★★", "SISTEMA")
 	ejecutando_codigo = false
-	boton_ejecutar.disabled = false
+	boton_ejecutar.disabled = true
 	
 	# 1. Calcular Recompensas con la nueva lógica
 	var resultado = calcular_resultado_final()
 	var estrellas_finales = resultado["estrellas"]
 	var exp_final = resultado["exp"]
 	
-	# 2. Aplicar Bonus de Misión Especial (Si aplica)
+	print("Recompensas Base -> Estrellas: ", estrellas_finales, " | XP: ", exp_final)
+	
+	# 2. Guardado en BD y Lógica Diferenciada
 	if mision_actual_def:
+		# --- RAMA A: MISIÓN ESPECIAL ---
 		if mision_actual_def.es_mision_especial:
 			agregar_mensaje_consola("¡BONUS MISIÓN ESPECIAL! (x2 Recompensas)", "SISTEMA")
+			
 			# Multiplicar recompensas
 			estrellas_finales *= 2 
 			exp_final *= 2
+			
 			DatabaseManager.registrar_mision_especial_local(
 				mision_actual_def.titulo,
 				mision_actual_def.descripcion,
@@ -272,6 +277,7 @@ func _victoria_total():
 				exp_final,
 				intentos_totales
 			)
+		# --- RAMA B: MISIÓN NORMAL ---
 		else:
 			DatabaseManager.registrar_mision_local(
 				mision_actual_def.id, 
@@ -279,22 +285,17 @@ func _victoria_total():
 				exp_final, 
 				intentos_totales
 			)
+		
+		# 3. Procesar Dificultades para ambos tipos de misión
+		if analista_dificultad:
+			analista_dificultad.procesar_resultados_finales()
+		
+		# 4. Intentamos hacer la sincronización Automática
+		GestorSincronizacion.sincronizar_pendientes()
 	
 	print("Resultado FINAL -> Estrellas: ", estrellas_finales, " | XP: ", exp_final)
 	
-	# 3. Guardar en BD Local
-	if mision_actual_def:
-		DatabaseManager.registrar_mision_local(mision_actual_def.id, estrellas_finales, exp_final, intentos_totales)
-		
-		# Procesar dificultades
-		if analista_dificultad:
-			analista_dificultad.procesar_resultados_finales()
-			
-		# Sincronización Automática
-		GestorSincronizacion.sincronizar_pendientes()
-	
-	# 4. MOSTRAR POPUP DE VICTORIA
-	# Esperamos un frame o un pequeño timer para que el usuario vea el último movimiento del personaje
+	# 5. MOSTRAR POPUP DE VICTORIA
 	await get_tree().create_timer(1.0).timeout
 	mostrar_popup_victoria(estrellas_finales, exp_final)
 
@@ -313,9 +314,19 @@ func _on_jugador_game_over(mensaje):
 	juego_fallido = true
 	ejecutor.detener_ejecucion_inmediata()
 	
-	# 3. Iniciar el timer de reinicio
+	# 3. INTERCEPTAR ERROR DE BUCLE Y CONSOLIDAR
+	if analista_dificultad:
+		# Si fue un bucle infinito (mensaje del Ejecutor), avisamos
+		if "Bucle Infinito" in mensaje:
+			analista_dificultad.registrar_error_externo(AnalistaDificultad.DIF_BUCLE_INFINITO)
+		
+		# Consolidamos el intento fallido
+		analista_dificultad.consolidar_intento_actual()
+	
+	# 4. Iniciar el timer de reinicio
 	print("Iniciando reinicio por Game Over...")
-	timer_reinicio.start(3.0)
+	if timer_reinicio.is_stopped():
+		timer_reinicio.start(3.0)
 
 func agregar_mensaje_consola(mensaje: String, tipo: String = "NORMAL"):
 	logs_consola.append(mensaje) # Guardamos para validación (OutputContiene)
