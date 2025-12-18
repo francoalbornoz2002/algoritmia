@@ -160,8 +160,8 @@ static func generar_mision_compleja(nivel_dificultad: int = DIFICULTAD_MEDIA) ->
 	mision.titulo = titulo
 	mision.descripcion = desc # Todo en una sola línea larga
 	
-	if nivel_dificultad == DIFICULTAD_FACIL: mision.dificultad = "Fácil"
-	elif nivel_dificultad == DIFICULTAD_MEDIA: mision.dificultad = "Media"
+	if nivel_dificultad == DIFICULTAD_FACIL: mision.dificultad_mision = "Fácil"
+	elif nivel_dificultad == DIFICULTAD_MEDIA: mision.dificultad_mision = "Media"
 	else: mision.dificultad = "Difícil"
 	
 	return mision
@@ -185,6 +185,45 @@ static func generar_mision_especial_inactividad() -> DefinicionMision:
 	
 	return mision
 # --- UTILS PRIVADOS ---
+
+static func generar_mision_demo_normal() -> DefinicionMision:
+	var mision = DefinicionMision.new()
+	# UUID Fijo para poder sincronizarlo luego con la Web
+	mision.id = "11111111-1111-1111-1111-111111111111" 
+	mision.titulo = "Misión Demo"
+	mision.descripcion = "Recorre todo sendero 1, recolectando las monedas, atacando enemigos y evadiendo obstáculos. Luego, recorre el valle 5 y haz lo mismo. Al finalizar, imprime cuantas monedas recolectaste, cuantos enemigos derrotaste y cuandos obstáculos saltaste."
+	mision.dificultad_mision = "Media"
+	mision.es_mision_especial = false # <--- ES NORMAL
+	
+	# --- CASO 1: Combate y Recolección ---
+	var caso1 = CasoPruebaMision.new()
+	caso1.inicio_jugador = Vector2i(0, 0)
+	# Mapa: (0)Inicio -> (1)Nada -> (2)Moneda -> (3)Enemigo -> (4)Nada -> (5)Meta
+	caso1.agregar_elemento(ElementoTablero.Tipo.MONEDA, Vector2i(2, 0))
+	caso1.agregar_elemento(ElementoTablero.Tipo.ENEMIGO, Vector2i(3, 0))
+	
+	# Condiciones Caso 1
+	caso1.agregar_condicion(CondicionMision.LlegarA.new(Vector2i(5, 0)))
+	caso1.agregar_condicion(CondicionMision.Recolectar.new("monedas", 1))
+	
+	mision.casos_de_prueba.append(caso1)
+	
+	# --- CASO 2: Obstáculos ---
+	var caso2 = CasoPruebaMision.new()
+	caso2.inicio_jugador = Vector2i(0, 0)
+	# Mapa: (0)Inicio -> (1)Obstáculo -> (2)Cae Aquí -> (3)Obstáculo -> (4)Cae Aquí -> (5)Meta
+	# Nota: Saltar mueve 2 casillas (de 0 a 2, de 2 a 4). 
+	# Desde 4, avanza a 5.
+	caso2.agregar_elemento(ElementoTablero.Tipo.OBSTACULO, Vector2i(1, 0))
+	caso2.agregar_elemento(ElementoTablero.Tipo.OBSTACULO, Vector2i(3, 0))
+	
+	# Condiciones Caso 2
+	caso2.agregar_condicion(CondicionMision.LlegarA.new(Vector2i(5, 0)))
+	caso2.agregar_condicion(CondicionMision.Recolectar.new("monedas", 0)) # Asegurar que no invente monedas
+	
+	mision.casos_de_prueba.append(caso2)
+	
+	return mision
 
 static func _obtener_coords_ruta(tipo: String, indice: int) -> Array[Vector2i]:
 	var coords: Array[Vector2i] = []

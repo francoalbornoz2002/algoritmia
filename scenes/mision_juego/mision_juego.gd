@@ -20,7 +20,7 @@ var analista_dificultad: AnalistaDificultad
 
 # Estado del juego
 var ejecutando_codigo: bool = false
-var sandbox: bool = true
+var sandbox: bool = false
 var juego_fallido: bool = false # Bandera para abortar secuencia si hay Game Over
 var intentos_totales: int = 0
 
@@ -84,7 +84,7 @@ func cargar_mision(definicion: DefinicionMision):
 	
 	# Actualizar UI
 	label_mision.text = definicion.titulo
-	label_dificultad.text = definicion.dificultad
+	label_dificultad.text = definicion.dificultad_mision
 	label_descripcion.text = definicion.descripcion
 	
 	# Preparamos el primer caso de prueba visualmente para que el alumno vea el escenario 1
@@ -417,7 +417,7 @@ func calcular_resultado_final() -> Dictionary:
 	# 1. Configuración Base
 	var estrellas = 3
 	# Obtenemos la base según la dificultad definida en el recurso de la misión
-	var xp_base = _obtener_xp_base(mision_actual_def.dificultad)
+	var xp_base = _obtener_xp_base(mision_actual_def.dificultad_mision)
 	
 	# 2. Penalización por Intentos (NUEVA FÓRMULA)
 	# 1 a 3 intentos: -0

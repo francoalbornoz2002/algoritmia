@@ -52,21 +52,22 @@ func _iniciar_mision_especial():
 	# Asegúrate de que la ruta sea correcta según tu estructura de carpetas
 	get_tree().change_scene_to_file("res://scenes/mision_juego/mision_juego.tscn")
 
-
-
-
-
-
-
-
-
-
-
-func _on_registrar_mision_pressed() -> void:
-	get_tree().change_scene_to_file("res://scenes/registrar_mision/registrar_mision.tscn")
-
-func _on_registrar_dificultad_pressed() -> void:
-	get_tree().change_scene_to_file("res://scenes/registrar_dificultad/registrar_dificultad.tscn")
-
 func _on_jugar_pressed() -> void:
-	get_tree().change_scene_to_file("res://scenes/selector_misiones/selector_misiones.tscn")
+	print("--- Generando Misión Compleja para Demo ---")
+	
+	# 1. Usamos el generador existente (Dificultad Media o Dificil)
+	var mision_demo = GeneradorMisiones.generar_mision_compleja(GeneradorMisiones.DIFICULTAD_MEDIA)
+	
+	# 2. LA FORZAMOS a ser una Misión Normal con ID Fijo
+	# Esto es vital para que puedas crearla en la Web y la sincronización funcione.
+	mision_demo.id = "11111111-1111-1111-1111-111111111111" 
+	mision_demo.titulo = "Misión Generada: Demo Video"
+	mision_demo.es_mision_especial = false 
+	
+	# 3. Inyectar en el catálogo local (Tabla 'misiones')
+	# Requerido para evitar el error de Foreign Key al guardar el progreso
+	DatabaseManager.insertar_mision_demo_catalogo(mision_demo)
+	
+	# 4. Iniciar Juego
+	GameData.mision_seleccionada = mision_demo
+	get_tree().change_scene_to_file("res://scenes/mision_juego/mision_juego.tscn")
