@@ -53,21 +53,19 @@ func _iniciar_mision_especial():
 	get_tree().change_scene_to_file("res://scenes/mision_juego/mision_juego.tscn")
 
 func _on_jugar_pressed() -> void:
-	print("--- Generando Misión Compleja para Demo ---")
+	print("--- Iniciando Misión de Campaña (Prueba) ---")
 	
-	# 1. Usamos el generador existente (Dificultad Media o Dificil)
-	var mision_demo = GeneradorMisiones.generar_mision_compleja(GeneradorMisiones.DIFICULTAD_MEDIA)
+	# 1. Obtener la misión del catálogo (Usando la clave que definimos)
+	var mision = CatalogoMisiones.obtener_mision("campana_01")
 	
-	# 2. LA FORZAMOS a ser una Misión Normal con ID Fijo
-	# Esto es vital para que puedas crearla en la Web y la sincronización funcione.
-	mision_demo.id = "11111111-1111-1111-1111-111111111111" 
-	mision_demo.titulo = "Misión Generada: Demo Video"
-	mision_demo.es_mision_especial = false 
+	if mision == null:
+		print("Error: No se encontró la misión 'campana_01'")
+		return
 	
-	# 3. Inyectar en el catálogo local (Tabla 'misiones')
+	# 2. Inyectar en el catálogo local (Tabla 'misiones')
 	# Requerido para evitar el error de Foreign Key al guardar el progreso
-	DatabaseManager.insertar_mision_demo_catalogo(mision_demo)
+	DatabaseManager.insertar_mision_demo_catalogo(mision)
 	
-	# 4. Iniciar Juego
-	GameData.mision_seleccionada = mision_demo
+	# 3. Iniciar Juego
+	GameData.mision_seleccionada = mision
 	get_tree().change_scene_to_file("res://scenes/mision_juego/mision_juego.tscn")
