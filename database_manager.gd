@@ -366,6 +366,25 @@ func registrar_mision_especial_local(nombre: String, descripcion: String, estrel
 	print("DBManager: Misión Especial registrada con ID: ", id_uuid)
 	return true
 
+# Función auxiliar para demos: Inserta una misión en el catálogo local
+func insertar_mision_demo_catalogo(mision: DefinicionMision):
+	# Usamos INSERT OR REPLACE para no fallar si ya corrimos la demo antes
+	var sql = """
+		INSERT OR REPLACE INTO misiones (id, nombre, descripcion, dificultad_mision)
+		VALUES (?, ?, ?, ?);
+	"""
+	var exito = db.query_with_bindings(sql, [
+		mision.id,
+		mision.titulo,
+		mision.descripcion,
+		mision.dificultad_mision
+	])
+	
+	if exito:
+		print("DBManager: Misión Demo inyectada en catálogo local correctamente.")
+	else:
+		print("DBManager ERROR: Falló inyección de misión demo.", db.error_message)
+
 # --- GESTIÓN ACUMULATIVA DE DIFICULTADES ---
 
 func registrar_errores_dificultad(id_dificultad: String, nuevos_errores: int) -> bool:

@@ -3,7 +3,7 @@ class_name EjecutorAlgoritmo extends Node
 const MAX_ITERACIONES_BUCLE = 1000 # Límite para evitar crasheos por bucle infinito
 
 # --- Referencias ---
-var personaje: CharacterBody2D 
+var personaje: CharacterBody2D
 var controlador_nivel: Node2D
 # Variable de clase para guardar la referencia exacta
 var runner_actual: Node
@@ -23,7 +23,7 @@ const COMANDOS_ATOMICOS = {
 # Configuración de Argumentos Esperados (-1 = VarArgs)
 const FIRMAS_NATIVAS = {
 	"mapa": 2,
-	"imprimir": -1 
+	"imprimir": - 1
 }
 
 const MAPEO_SENSORES = {
@@ -44,8 +44,13 @@ var variables_registradas: Array[String] = []
 var funciones_definidas: Array[String] = []
 var estructuras_usadas: Dictionary = {}
 var metadatos_funciones: Dictionary = {} # { "nombre": num_args }
-var _string_cache = {} 
+var _string_cache = {}
 var _string_idx = 0
+
+# Variables para análisis estático (PR-03)
+var _params_proceso_actual = {} # { "nombre_param": false } (false = no usado)
+# Variables para análisis estático (PR-02)
+var _params_es_proceso_actual = {} # { "nombre_param": false } (false = no modificado)
 
 # --- API DE INTROSPECCIÓN (Para Condiciones de Misión) ---
 
@@ -69,7 +74,7 @@ func obtener_uso_estructura(nombre: String) -> int:
 func procesar_y_ejecutar(texto_codigo: String):
 	# Limpiar runner anterior
 	# Esto asegura que get_node("RunnerTemporal") siempre traiga el actual
-	detener_ejecucion_inmediata() 
+	detener_ejecucion_inmediata()
 	# Esperamos un frame para asegurar que queue_free actúe (opcional pero recomendado)
 	await controlador_nivel.get_tree().process_frame
 	
@@ -78,6 +83,8 @@ func procesar_y_ejecutar(texto_codigo: String):
 	funciones_definidas.clear()
 	metadatos_funciones.clear()
 	estructuras_usadas = {"si": 0, "mientras": 0, "repetir": 0, "sino": 0}
+	_params_proceso_actual.clear()
+	_params_es_proceso_actual.clear()
 	
 	# 1. Transpilación con Linter (Validación)
 	var resultado = _transpilar(texto_codigo)
@@ -96,6 +103,14 @@ func procesar_y_ejecutar(texto_codigo: String):
 
 	print("--- CÓDIGO GDSCRIPT GENERADO ---\n", codigo_gdscript, "\n--------------------------------")
 	_ejecutar_dinamicamente(codigo_gdscript)
+
+# Helper para reportar al analista
+func _reportar_dificultad(codigo: String, es_bloqueante: bool = false):
+	if controlador_nivel and controlador_nivel.analista_dificultad:
+		controlador_nivel.analista_dificultad.registrar_error_externo(codigo)
+		# Si el error detiene la ejecución (sintaxis), debemos consolidar AHORA porque no habrá Game Over ni Victoria
+		if es_bloqueante:
+			controlador_nivel.analista_dificultad.consolidar_intento_actual()
 
 func detener_ejecucion_inmediata():
 	var nodo_runner = controlador_nivel.get_node_or_null("RunnerTemporal")
@@ -150,7 +165,7 @@ func _transpilar(texto: String) -> Dictionary:
 		
 		if indent_expecting:
 			if indent_curr_level <= indent_last_level:
-				return { "error": true, "linea": i, "mensaje": "Error de Indentación: Se esperaba un bloque con sangría (Tab) después de la instrucción anterior." }
+				return {"error": true, "linea": i, "mensaje": "Error de Indentación: Se esperaba un bloque con sangría (Tab) después de la instrucción anterior."}
 			indent_expecting = false
 		
 		# Actualizamos tracking de indentación
@@ -166,7 +181,7 @@ func _transpilar(texto: String) -> Dictionary:
 		if "(" in source and not source.begins_with("proceso "):
 			var err_args = _validar_argumentos_linea(source)
 			if err_args != "":
-				return { "error": true, "linea": i, "mensaje": err_args }
+				return {"error": true, "linea": i, "mensaje": err_args}
 		
 		# --- ANÁLISIS DE ESTRUCTURA ---
 		if source.begins_with("Si "): estructuras_usadas["si"] += 1
@@ -184,11 +199,23 @@ func _transpilar(texto: String) -> Dictionary:
 			zona = "GLOBAL"
 			continue
 		if source.begins_with("proceso "):
+			# Si veníamos de otro proceso, verificar PR-03 antes de cambiar
+			if zona == "PROCESO":
+				_verificar_uso_parametros_proceso()
+				_verificar_modificacion_parametros_es()
+			
 			zona = "PROCESO"
 			# Guardamos el nombre de la función para evaluarlo
 			var nombre_proc = _extraer_nombre_proceso(source)
 			funciones_definidas.append(nombre_proc)
 			funciones_code += _procesar_cabecera_proceso(source) + "\n"
+			continue
+
+		# --- ANÁLISIS DE USO DE PARÁMETROS (PR-03) ---
+		if zona == "PROCESO":
+			for param in _params_proceso_actual:
+				if _palabra_en_linea(param, source):
+					_params_proceso_actual[param] = true
 			continue
 
 		# --- GENERACIÓN DE CÓDIGO ---
@@ -197,6 +224,8 @@ func _transpilar(texto: String) -> Dictionary:
 		
 		# Detectar si volvimos al margen izquierdo (Global)
 		if zona == "PROCESO" and indent == "" and not source.begins_with("proceso "):
+			_verificar_uso_parametros_proceso() # Verificar el proceso que acaba de terminar
+			_verificar_modificacion_parametros_es()
 			zona = "GLOBAL"
 		
 		# 1. DECLARACIÓN
@@ -204,26 +233,26 @@ func _transpilar(texto: String) -> Dictionary:
 			# VALIDACIÓN ESTRICTA: Debe ser "var " exacto.
 			# Si escribe "var" (solo), "var  x" (doble espacio) o "var\tx" (tab), fallará aquí con mensaje claro.
 			if not source.begins_with("var "):
-				return { "error": true, "linea": i, "mensaje": "Sintaxis incorrecta. Se espera un solo espacio después de 'var'. Ejemplo: 'var numero: entero'." }
+				return {"error": true, "linea": i, "mensaje": "Sintaxis incorrecta. Se espera un solo espacio después de 'var'. Ejemplo: 'var numero: entero'."}
 			
-			var partes = source.split(":") 
+			var partes = source.split(":")
 			if partes.size() < 2:
-				return { "error": true, "linea": i, "mensaje": "Declaración incompleta. Falta el tipo (ej: 'var x: entero')." }
+				return {"error": true, "linea": i, "mensaje": "Declaración incompleta. Falta el tipo (ej: 'var x: entero')."}
 			
 			# Parseo del nombre
-			var nombre_raw = partes[0].strip_edges() 
+			var nombre_raw = partes[0].strip_edges()
 			# Quitamos el "var " inicial que ya sabemos que existe
 			var nombre = nombre_raw.substr(4).strip_edges()
 			
 			# VALIDACIÓN: Nombre sin espacios internos
 			# Si escribe "var mi numero: entero", nombre será "mi numero" -> Error
 			if " " in nombre or "\t" in nombre:
-				return { "error": true, "linea": i, "mensaje": "El nombre de la variable no puede contener espacios." }
+				return {"error": true, "linea": i, "mensaje": "El nombre de la variable no puede contener espacios."}
 			
 			# Parseo del tipo
 			var tipo = partes[1].strip_edges().to_lower()
 			if tipo != "entero" and tipo != "real":
-				return { "error": true, "linea": i, "mensaje": "Tipo desconocido '" + tipo + "'. Solo se permiten 'entero' o 'real'." }
+				return {"error": true, "linea": i, "mensaje": "Tipo desconocido '" + tipo + "'. Solo se permiten 'entero' o 'real'."}
 			
 			variables_registradas.append(nombre)
 			
@@ -232,21 +261,20 @@ func _transpilar(texto: String) -> Dictionary:
 			if zona == "GLOBAL":
 				vars_globales_code += "var " + nombre + "\n"
 				vars_globales_init_code += "\t" + nombre + " = " + init_str + "\n"
-			elif zona == "MAIN": 
+			elif zona == "MAIN":
 				main_code += indent + "var " + nombre + " = " + init_str + "\n"
-			elif zona == "PROCESO": 
+			elif zona == "PROCESO":
 				funciones_code += indent + "var " + nombre + " = " + init_str + "\n"
 			continue
 
 		# 2. ESTRUCTURAS DE CONTROL
 		if source.begins_with("Si "):
-			
 			# VALIDACIÓN: Palabra clave 'entonces'
 			if not ("entonces" in source or "Entonces" in source):
-				return { "error": true, "linea": i, "mensaje": "Falta la palabra clave 'entonces' en la estructura Si." }
+				return {"error": true, "linea": i, "mensaje": "Falta la palabra clave 'entonces' en la estructura Si."}
 			# VALIDACIÓN: Variables en la condición
 			var err_var = _validar_identificadores(source)
-			if err_var != "": return { "error": true, "linea": i, "mensaje": err_var }
+			if err_var != "": return {"error": true, "linea": i, "mensaje": err_var}
 			
 			var l = _inyectar_referencias(source)
 			l = _procesar_matematicas_seguras(l)
@@ -263,13 +291,12 @@ func _transpilar(texto: String) -> Dictionary:
 			codigo_generado = indent + "else:"
 			
 		elif source.begins_with("Mientras "):
-			
 			# VALIDACIÓN: Palabra clave 'hacer'
 			if not ("hacer" in source or "Hacer" in source):
-				return { "error": true, "linea": i, "mensaje": "Falta la palabra clave 'hacer' en la estructura Mientras." }
+				return {"error": true, "linea": i, "mensaje": "Falta la palabra clave 'hacer' en la estructura Mientras."}
 			# VALIDACIÓN: Variables
 			var err_var = _validar_identificadores(source)
-			if err_var != "": return { "error": true, "linea": i, "mensaje": err_var }
+			if err_var != "": return {"error": true, "linea": i, "mensaje": err_var}
 			
 			# --- INYECCIÓN DE SEGURIDAD ---
 			loop_safety_count += 1
@@ -319,14 +346,14 @@ func _transpilar(texto: String) -> Dictionary:
 		elif source.begins_with("imprimir(") and source.ends_with(")"):
 			var idx1 = source.find("(")
 			var idx2 = source.rfind(")")
-			var contenido = source.substr(idx1+1, idx2-idx1-1)
+			var contenido = source.substr(idx1 + 1, idx2 - idx1 - 1)
 			
 			# VALIDACIÓN: Contenido vacío
 			if contenido.strip_edges().is_empty():
-				return { "error": true, "linea": i, "mensaje": "La instrucción 'imprimir' requiere al menos un valor o mensaje." }
+				return {"error": true, "linea": i, "mensaje": "La instrucción 'imprimir' requiere al menos un valor o mensaje."}
 			# VALIDACIÓN: Variables en argumentos
 			var err_var = _validar_identificadores(contenido)
-			if err_var != "": return { "error": true, "linea": i, "mensaje": err_var }
+			if err_var != "": return {"error": true, "linea": i, "mensaje": err_var}
 			
 			contenido = _inyectar_referencias(contenido)
 			contenido = _procesar_matematicas_seguras(contenido)
@@ -343,11 +370,15 @@ func _transpilar(texto: String) -> Dictionary:
 			
 			# VALIDACIÓN: ¿Existe la variable de la izquierda?
 			if not lhs_raw in variables_registradas:
-				return { "error": true, "linea": i, "mensaje": "La variable '" + lhs_raw + "' no ha sido declarada." }
+				return {"error": true, "linea": i, "mensaje": "La variable '" + lhs_raw + "' no ha sido declarada."}
 			
 			# VALIDACIÓN: Variables en la derecha (RHS)
 			var err_var = _validar_identificadores(rhs_raw)
-			if err_var != "": return { "error": true, "linea": i, "mensaje": err_var }
+			if err_var != "": return {"error": true, "linea": i, "mensaje": err_var}
+			
+			# Detección PR-02: Asignación a parámetro ES
+			if zona == "PROCESO" and _params_es_proceso_actual.has(lhs_raw):
+				_params_es_proceso_actual[lhs_raw] = true
 			
 			if lhs_raw in variables_registradas:
 				var rhs = _inyectar_referencias(rhs_raw)
@@ -379,9 +410,13 @@ func _transpilar(texto: String) -> Dictionary:
 				var l = source
 				for v in variables_registradas:
 					if v + "++" in l:
+						# Detección PR-02
+						if zona == "PROCESO" and _params_es_proceso_actual.has(v): _params_es_proceso_actual[v] = true
 						l = "await " + v + ".set_val(" + v + ".get_val() + 1)"
 						break
 					elif v + "--" in l:
+						# Detección PR-02
+						if zona == "PROCESO" and _params_es_proceso_actual.has(v): _params_es_proceso_actual[v] = true
 						l = "await " + v + ".set_val(" + v + ".get_val() - 1)"
 						break
 				codigo_generado = indent + l
@@ -390,21 +425,25 @@ func _transpilar(texto: String) -> Dictionary:
 			# --- VALIDACIÓN DE SINTAXIS ---
 			# Si no entró en ninguno de los anteriores, es código basura (ej: "avnzr")
 			if not es_valido:
-				return { "error": true, "linea": i, "mensaje": "Instrucción no reconocida: '" + source + "'" }
+				return {"error": true, "linea": i, "mensaje": "Instrucción no reconocida: '" + source + "'"}
 		# Restauramos strings
 		codigo_generado = _restaurar_strings(codigo_generado)
 		
 		if zona == "MAIN": main_code += codigo_generado + "\n"
 		elif zona == "PROCESO": funciones_code += codigo_generado + "\n"
 	
+	# Verificación final por si el archivo termina dentro de un proceso
+	if zona == "PROCESO":
+		_verificar_uso_parametros_proceso()
+		_verificar_modificacion_parametros_es()
 	
 	# VALIDACIONES FINALES DE ESTRUCTURA
 	if not encontro_inicio:
-		return { "error": true, "linea": 0, "mensaje": "Falta la palabra clave 'Inicio' para comenzar el programa." }
+		return {"error": true, "linea": 0, "mensaje": "Falta la palabra clave 'Inicio' para comenzar el programa."}
 	if not encontro_fin:
-		return { "error": true, "linea": lineas.size(), "mensaje": "Falta la palabra clave 'Fin' al final del programa." }
+		return {"error": true, "linea": lineas.size(), "mensaje": "Falta la palabra clave 'Fin' al final del programa."}
 	
-	if main_code == "": return { "codigo": "" }
+	if main_code == "": return {"codigo": ""}
 	
 	# GENERACIÓN DEL SCRIPT
 	var script = "extends Node\n"
@@ -425,11 +464,11 @@ func _transpilar(texto: String) -> Dictionary:
 	
 	script += "\tfunc set_val(val):\n"
 	script += "\t\tif t == 'entero' and typeof(val) == TYPE_FLOAT:\n"
-	script += "\t\t\tif val != int(val):\n" 
+	script += "\t\t\tif val != int(val):\n"
 	script += "\t\t\t\tc._on_jugador_game_over('Error de Tipo: No se puede asignar Real (' + str(val) + ') a Entero.')\n"
 	script += "\t\t\t\tawait c.get_tree().create_timer(10.0).timeout\n"
 	script += "\t\t\t\treturn\n"
-	script += "\t\t\tval = int(val)\n" 
+	script += "\t\t\tval = int(val)\n"
 	script += "\t\tv = val\n\n"
 	
 	# --- NUEVO GETTER SEGURO (VA-02) ---
@@ -470,7 +509,30 @@ func _transpilar(texto: String) -> Dictionary:
 	script += "# FUNCS\n" + funciones_code + "\n"
 	script += "# MAIN\n" + main_code
 	
-	return { "codigo": script }
+	return {"codigo": script}
+
+# --- HELPERS DE ANÁLISIS ESTÁTICO (PR-03) ---
+
+func _verificar_uso_parametros_proceso():
+	for param in _params_proceso_actual:
+		if _params_proceso_actual[param] == false:
+			# Detectamos PR-03: Parámetro declarado pero no usado
+			# No es bloqueante, solo registramos la dificultad
+			_reportar_dificultad(AnalistaDificultad.DIF_PARAM_NO_USADO, false)
+	_params_proceso_actual.clear()
+
+func _verificar_modificacion_parametros_es():
+	for param in _params_es_proceso_actual:
+		if _params_es_proceso_actual[param] == false:
+			# Detectamos PR-02: Parámetro ES declarado pero no modificado
+			_reportar_dificultad(AnalistaDificultad.DIF_PARAM_NO_MODIFICADO, false)
+	_params_es_proceso_actual.clear()
+
+func _palabra_en_linea(palabra: String, linea: String) -> bool:
+	# Búsqueda simple de palabra completa usando regex
+	var regex = RegEx.new()
+	regex.compile("\\b" + palabra + "\\b")
+	return regex.search(linea) != null
 
 # --- HELPERS DE VALIDACIÓN ---
 
@@ -484,7 +546,7 @@ func _escanear_definiciones_funciones(lineas: Array):
 			var idx1 = linea_limpia.find("(")
 			var idx2 = linea_limpia.rfind(")")
 			if idx1 != -1 and idx2 != -1:
-				var contenido = linea_limpia.substr(idx1+1, idx2-idx1-1).strip_edges()
+				var contenido = linea_limpia.substr(idx1 + 1, idx2 - idx1 - 1).strip_edges()
 				if contenido.is_empty():
 					metadatos_funciones[nombre] = 0
 				else:
@@ -504,13 +566,13 @@ func _validar_argumentos_linea(linea: String) -> String:
 	# Buscamos la última palabra antes del paréntesis
 	var palabras = pre_paren.split(" ", false)
 	if palabras.is_empty(): return ""
-	var nombre_func = palabras[palabras.size()-1]
+	var nombre_func = palabras[palabras.size() - 1]
 	
 	# Si es asignación o keyword, ignoramos (ej: Si (condicion))
 	if nombre_func == "Si" or nombre_func == "Mientras": return ""
 	
 	# Contar argumentos pasados
-	var contenido = linea.substr(idx1+1, idx2-idx1-1).strip_edges()
+	var contenido = linea.substr(idx1 + 1, idx2 - idx1 - 1).strip_edges()
 	var num_args_dados = 0
 	if not contenido.is_empty():
 		# OJO: Esto es simplificado. Si hay comas dentro de strings "a,b" fallaría.
@@ -521,12 +583,14 @@ func _validar_argumentos_linea(linea: String) -> String:
 	if FIRMAS_NATIVAS.has(nombre_func):
 		var esperados = FIRMAS_NATIVAS[nombre_func]
 		if esperados != -1 and num_args_dados != esperados:
+			_reportar_dificultad(AnalistaDificultad.DIF_MAL_PARAMETROS, true)
 			return "Error de Llamada: La función '%s' espera %d argumentos, pero recibiste %d." % [nombre_func, esperados, num_args_dados]
 			
 	# 2. Validar Usuario
 	elif metadatos_funciones.has(nombre_func):
 		var esperados = metadatos_funciones[nombre_func]
 		if num_args_dados != esperados:
+			_reportar_dificultad(AnalistaDificultad.DIF_MAL_PARAMETROS, true)
 			return "Error de Llamada: El proceso '%s' espera %d argumentos, pero recibiste %d." % [nombre_func, esperados, num_args_dados]
 			
 	return ""
@@ -571,13 +635,13 @@ func _procesar_matematicas_seguras(linea: String) -> String:
 	var regex_div = RegEx.new()
 	regex_div.compile("([a-zA-Z0-9_.]+(?:\\.v)?)\\s*([/%])\\s*([a-zA-Z0-9_.]+(?:\\.v)?)")
 	
-	var max_iteraciones = 10 
+	var max_iteraciones = 10
 	var iter = 0
 	
 	while iter < max_iteraciones:
 		var match_result = regex_div.search(res)
 		if not match_result:
-			break 
+			break
 			
 		var todo = match_result.get_string()
 		var op1 = match_result.get_string(1)
@@ -599,7 +663,7 @@ func _ocultar_strings(texto: String) -> String:
 	_string_cache.clear()
 	_string_idx = 0
 	var regex = RegEx.new()
-	regex.compile("\"([^\"]*)\"") 
+	regex.compile("\"([^\"]*)\"")
 	
 	var resultados = regex.search_all(texto)
 	var texto_seguro = texto
@@ -644,7 +708,7 @@ func _procesar_llamada_procedimiento(linea: String) -> String:
 	
 	# IMPORTANTE: Ya NO usamos to_lower() aquí para respetar el case sensitive
 	var nombre_func = linea.substr(0, idx1).strip_edges()
-	var args_raw = linea.substr(idx1+1, idx2-idx1-1).split(",")
+	var args_raw = linea.substr(idx1 + 1, idx2 - idx1 - 1).split(",")
 	
 	var args_procesados = []
 	for arg in args_raw:
@@ -673,10 +737,13 @@ func _procesar_cabecera_proceso(linea_raw: String) -> String:
 	var params_gd = []
 	var codigo_clonacion = ""
 	
+	_params_proceso_actual.clear()
+	_params_es_proceso_actual.clear()
+	
 	for p in lista_params:
 		p = p.strip_edges().replace("\t", " ")
 		if p.is_empty(): continue
-		var partes = p.split(" ", false) 
+		var partes = p.split(" ", false)
 		if partes.size() < 2: continue
 		
 		var modo = partes[0].to_upper()
@@ -689,10 +756,16 @@ func _procesar_cabecera_proceso(linea_raw: String) -> String:
 		variables_registradas.append(nombre_param)
 		params_gd.append(nombre_param)
 		
+		# Registramos para seguimiento de PR-03 (inicialmente false = no usado)
+		_params_proceso_actual[nombre_param] = false
+		
 		if modo == "E":
 			codigo_clonacion += "\tvar _temp_" + nombre_param + " = AlgVar.new('" + tipo + "', _ctrl_, '" + nombre_param + "', null)\n"
-			codigo_clonacion += "\tawait _temp_" + nombre_param + ".set_val(" + nombre_param + ".get_val())\n" 
+			codigo_clonacion += "\tawait _temp_" + nombre_param + ".set_val(" + nombre_param + ".get_val())\n"
 			codigo_clonacion += "\t" + nombre_param + " = _temp_" + nombre_param + "\n"
+		elif modo == "ES":
+			# Registramos para seguimiento de PR-02 (inicialmente false = no modificado)
+			_params_es_proceso_actual[nombre_param] = false
 			
 	return "func " + nombre_func + "(" + ", ".join(params_gd) + "):\n" + codigo_clonacion
 
@@ -723,7 +796,6 @@ func _ejecutar_dinamicamente(codigo: String):
 
 
 func _validar_identificadores(linea: String) -> String:
-	
 	# Busca palabras que parecen variables y verifica si existen
 	var regex = RegEx.new()
 	regex.compile("[a-zA-Z_][a-zA-Z0-9_]*") # Identificadores
@@ -746,7 +818,7 @@ func _validar_identificadores(linea: String) -> String:
 		# 5. Ignoramos funciones del usuario
 		if metadatos_funciones.has(palabra): continue
 		# 6. Ignoramos placeholders de strings (__STR_0__)
-		if palabra.begins_with("__STR_"): continue 
+		if palabra.begins_with("__STR_"): continue
 		
 		# 7. CRÍTICO: Si no es nada de lo anterior, DEBE ser una variable registrada
 		if not palabra in variables_registradas:

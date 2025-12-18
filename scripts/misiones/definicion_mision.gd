@@ -11,7 +11,7 @@ class_name DefinicionMision extends Resource
 @export_multiline var descripcion: String = "Escribe tu algoritmo..."
 
 # Dificultad (ej: "Fácil", "Medio", "Difícil" o numérico 1-3)
-@export var dificultad: String = "Fácil" 
+@export var dificultad_mision: String = "Fácil" 
 
 # Flag para saber si aplicamos recompensas dobles
 @export var es_mision_especial: bool = false
