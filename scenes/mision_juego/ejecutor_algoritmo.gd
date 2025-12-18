@@ -51,6 +51,8 @@ var _string_idx = 0
 var _params_proceso_actual = {} # { "nombre_param": false } (false = no usado)
 # Variables para análisis estático (PR-02)
 var _params_es_proceso_actual = {} # { "nombre_param": false } (false = no modificado)
+# Variables para análisis estático (VA-03)
+var _var_usage_stats = {} # { "nombre": { "reads": 0, "writes": 0 } }
 
 # Referencia al tamaño del mapa para validaciones estáticas (LP-02)
 var tamano_mapa_ref: Vector2i = Vector2i(25, 25)
@@ -88,6 +90,7 @@ func procesar_y_ejecutar(texto_codigo: String):
 	estructuras_usadas = {"si": 0, "mientras": 0, "repetir": 0, "sino": 0}
 	_params_proceso_actual.clear()
 	_params_es_proceso_actual.clear()
+	_var_usage_stats.clear()
 	
 	# 1. Transpilación con Linter (Validación)
 	var resultado = _transpilar(texto_codigo)
@@ -131,6 +134,8 @@ func _transpilar(texto: String) -> Dictionary:
 	
 	# FASE 0: Escaneo previo de funciones para validar llamadas antes de procesarlas
 	_escanear_definiciones_funciones(lineas)
+	_analizar_estructuras_control(lineas)
+	_analizar_anidamiento_ec03(lineas)
 	
 	var vars_globales_code = ""
 	var vars_globales_init_code = ""
@@ -145,6 +150,12 @@ func _transpilar(texto: String) -> Dictionary:
 	# Estado para validación de indentación
 	var indent_expecting = false # ¿La línea anterior terminó en ':'?
 	var indent_last_level = 0
+	
+	# --- SCOPE TRACKING (VA-01) ---
+	var global_vars_scope: Array[String] = [] # Variables zona GLOBAL
+	var local_scope_stack: Array[Array] = [[]] # Pila de scopes locales (Array de Arrays de Strings)
+	var loop_depth_stack: Array[int] = [] # Pila para saber si estamos dentro de bucles (guarda el nivel de indent)
+	# ------------------------------
 	
 	for i in range(lineas.size()):
 		var linea = lineas[i]
@@ -178,11 +189,25 @@ func _transpilar(texto: String) -> Dictionary:
 		# Actualizamos tracking de indentación
 		indent_last_level = indent_curr_level
 		
+		# --- GESTIÓN DE CIERRE DE SCOPES (VA-01) ---
+		# Si la indentación bajó, cerramos scopes locales
+		while local_scope_stack.size() > (indent_curr_level + 1):
+			local_scope_stack.pop_back()
+			
+		# Si la indentación bajó, verificamos si salimos de un bucle
+		while not loop_depth_stack.is_empty() and loop_depth_stack.back() >= indent_curr_level:
+			loop_depth_stack.pop_back()
+		
 		# Detectamos si esta línea abre un bloque (termina en dos puntos implícitos o explícitos)
 		# Keywords: Si, Sino, Mientras, Repetir, proceso
 		if source.begins_with("Si ") or source == "Sino" or source == "Sino:" or \
 		   source.begins_with("Mientras ") or source.begins_with("Repetir ") or source.begins_with("proceso "):
 			indent_expecting = true
+			# Preparamos un nuevo scope local para el bloque que se abrirá en la SIGUIENTE línea
+			# Nota: Como procesamos línea a línea, el scope efectivo empieza cuando indent aumenta.
+			# Pero para simplificar, aseguramos que el stack tenga tamaño suficiente.
+			if local_scope_stack.size() <= (indent_curr_level + 1):
+				local_scope_stack.append([])
 		
 		# --- VALIDACIÓN 2: ARGUMENTOS EN LLAMADAS ---
 		if "(" in source and not source.begins_with("proceso "):
@@ -199,10 +224,14 @@ func _transpilar(texto: String) -> Dictionary:
 		if source == "Inicio":
 			encontro_inicio = true # Marcar flag
 			zona = "MAIN"; main_code += "func run():\n"
+			# Resetear scopes locales al entrar a Main
+			local_scope_stack = [[]]
 			continue
 		if source == "Fin":
 			encontro_fin = true # Marcar flag
 			if zona == "MAIN": main_code += "\t_ctrl_.on_ejecucion_terminada(true)\n"
+			# Limpiar scopes locales al salir
+			local_scope_stack = [[]]
 			zona = "GLOBAL"
 			continue
 		if source.begins_with("proceso "):
@@ -216,6 +245,8 @@ func _transpilar(texto: String) -> Dictionary:
 			var nombre_proc = _extraer_nombre_proceso(source)
 			funciones_definidas.append(nombre_proc)
 			funciones_code += _procesar_cabecera_proceso(source) + "\n"
+			# Resetear scopes locales al entrar a Proceso
+			local_scope_stack = [[]]
 			continue
 
 		# --- ANÁLISIS DE USO DE PARÁMETROS (PR-03) ---
@@ -263,6 +294,23 @@ func _transpilar(texto: String) -> Dictionary:
 			
 			variables_registradas.append(nombre)
 			
+			# --- REGISTRO DE USO (VA-03) ---
+			_var_usage_stats[nombre] = {"reads": 0, "writes": 0}
+			
+			# --- REGISTRO DE SCOPE (VA-01) ---
+			if zona == "GLOBAL":
+				global_vars_scope.append(nombre)
+			else:
+				# Estamos en local (Main o Proceso)
+				# 1. Detectar redefinición en bucle
+				if not loop_depth_stack.is_empty():
+					_reportar_dificultad(AnalistaDificultad.DIF_SCOPE_VARS, false)
+				
+				# 2. Registrar en el scope actual (el último del stack)
+				if local_scope_stack.is_empty(): local_scope_stack.append([])
+				local_scope_stack.back().append(nombre)
+			# ---------------------------------
+			
 			var init_str = "AlgVar.new('" + tipo + "', _ctrl_, '" + nombre + "', null)"
 			
 			if zona == "GLOBAL":
@@ -282,6 +330,12 @@ func _transpilar(texto: String) -> Dictionary:
 			# VALIDACIÓN: Variables en la condición
 			var err_var = _validar_identificadores(source)
 			if err_var != "": return {"error": true, "linea": i, "mensaje": err_var}
+			
+			# VALIDACIÓN VA-01: Verificar alcance de variables usadas
+			if _verificar_alcance_vars_linea(source, global_vars_scope, local_scope_stack): return {"error": true, "linea": i, "mensaje": "Variable fuera de alcance (VA-01)."}
+			
+			# REGISTRO VA-03 (Lectura en condición)
+			_registrar_lectura_vars(source)
 			
 			var l = _inyectar_referencias(source)
 			l = _procesar_matematicas_seguras(l)
@@ -304,6 +358,12 @@ func _transpilar(texto: String) -> Dictionary:
 			# VALIDACIÓN: Variables
 			var err_var = _validar_identificadores(source)
 			if err_var != "": return {"error": true, "linea": i, "mensaje": err_var}
+			
+			# VALIDACIÓN VA-01
+			if _verificar_alcance_vars_linea(source, global_vars_scope, local_scope_stack): return {"error": true, "linea": i, "mensaje": "Variable fuera de alcance (VA-01)."}
+			
+			# REGISTRO VA-03 (Lectura en condición)
+			_registrar_lectura_vars(source)
 			
 			# --- INYECCIÓN DE SEGURIDAD ---
 			loop_safety_count += 1
@@ -333,19 +393,37 @@ func _transpilar(texto: String) -> Dictionary:
 			codigo_generado += indent_inner + "\tawait _ctrl_.get_tree().create_timer(0.1).timeout\n"
 			codigo_generado += indent_inner + "\treturn" # Sin \n final, el loop principal lo añade
 			
+			# Registrar que entramos a un bucle (para VA-01)
+			loop_depth_stack.append(indent_curr_level)
+			
 		elif source.begins_with("Repetir "):
 			var partes = source.replace(":", "").split(" ", false)
 			if partes.size() >= 2:
+				# VALIDACIÓN VA-01
+				if _verificar_alcance_vars_linea(partes[1], global_vars_scope, local_scope_stack): return {"error": true, "linea": i, "mensaje": "Variable fuera de alcance (VA-01)."}
+				
+				# REGISTRO VA-03 (Lectura en repeticiones)
+				_registrar_lectura_vars(partes[1])
+				
 				var veces = _inyectar_referencias(partes[1])
 				veces = _procesar_matematicas_seguras(veces)
 				veces = _procesar_condicion(veces)
 				# INYECCIÓN: Usamos min() para limitar las repeticiones
 				codigo_generado = indent + "for _iter_ in range(min(" + veces + ", " + str(MAX_ITERACIONES_BUCLE) + ")):"
 
+			# Registrar que entramos a un bucle (para VA-01)
+			loop_depth_stack.append(indent_curr_level)
+
 		# 3. PRIMITIVAS
 		elif source.begins_with("mapa(") and source.ends_with(")"):
 			var args = source.trim_prefix("mapa(").trim_suffix(")").split(",")
 			if args.size() == 2:
+				# VALIDACIÓN VA-01
+				if _verificar_alcance_vars_linea(args[0] + " " + args[1], global_vars_scope, local_scope_stack): return {"error": true, "linea": i, "mensaje": "Variable fuera de alcance (VA-01)."}
+				
+				# REGISTRO VA-03 (Lectura en argumentos)
+				_registrar_lectura_vars(args[0] + " " + args[1])
+				
 				var s = _procesar_condicion(_procesar_matematicas_seguras(_inyectar_referencias(args[0]))) + " - 1"
 				var v = _procesar_condicion(_procesar_matematicas_seguras(_inyectar_referencias(args[1]))) + " - 1"
 				codigo_generado = indent + "if not await _p_.intentar_teletransportar(Vector2i(" + s + ", " + v + ")): return"
@@ -361,6 +439,12 @@ func _transpilar(texto: String) -> Dictionary:
 			# VALIDACIÓN: Variables en argumentos
 			var err_var = _validar_identificadores(contenido)
 			if err_var != "": return {"error": true, "linea": i, "mensaje": err_var}
+			
+			# VALIDACIÓN VA-01
+			if _verificar_alcance_vars_linea(contenido, global_vars_scope, local_scope_stack): return {"error": true, "linea": i, "mensaje": "Variable fuera de alcance (VA-01)."}
+			
+			# REGISTRO VA-03 (Lectura en argumentos)
+			_registrar_lectura_vars(contenido)
 			
 			contenido = _inyectar_referencias(contenido)
 			contenido = _procesar_matematicas_seguras(contenido)
@@ -382,6 +466,13 @@ func _transpilar(texto: String) -> Dictionary:
 			# VALIDACIÓN: Variables en la derecha (RHS)
 			var err_var = _validar_identificadores(rhs_raw)
 			if err_var != "": return {"error": true, "linea": i, "mensaje": err_var}
+			
+			# VALIDACIÓN VA-01 (Revisar ambos lados)
+			if _verificar_alcance_vars_linea(source, global_vars_scope, local_scope_stack): return {"error": true, "linea": i, "mensaje": "Variable fuera de alcance (VA-01)."}
+			
+			# REGISTRO VA-03
+			if _var_usage_stats.has(lhs_raw): _var_usage_stats[lhs_raw].writes += 1
+			_registrar_lectura_vars(rhs_raw)
 			
 			# Detección PR-02: Asignación a parámetro ES
 			if zona == "PROCESO" and _params_es_proceso_actual.has(lhs_raw):
@@ -410,10 +501,23 @@ func _transpilar(texto: String) -> Dictionary:
 				es_valido = true
 				
 			elif "(" in source:
+				# REGISTRO VA-03 (Lectura en argumentos de llamada)
+				_registrar_lectura_vars(source)
+				
 				codigo_generado = indent + "await " + _procesar_llamada_procedimiento(source)
 				es_valido = true
 				
 			elif "++" in source or "--" in source:
+				# VALIDACIÓN VA-01
+				if _verificar_alcance_vars_linea(source, global_vars_scope, local_scope_stack): return {"error": true, "linea": i, "mensaje": "Variable fuera de alcance (VA-01)."}
+				
+				# REGISTRO VA-03 (Incremento/Decremento cuenta como lectura y escritura)
+				for v in variables_registradas:
+					if v + "++" in source or v + "--" in source:
+						if _var_usage_stats.has(v):
+							_var_usage_stats[v].reads += 1
+							_var_usage_stats[v].writes += 1
+				
 				var l = source
 				for v in variables_registradas:
 					if v + "++" in l:
@@ -443,6 +547,8 @@ func _transpilar(texto: String) -> Dictionary:
 	if zona == "PROCESO":
 		_verificar_uso_parametros_proceso()
 		_verificar_modificacion_parametros_es()
+	
+	_verificar_va03()
 	
 	# VALIDACIONES FINALES DE ESTRUCTURA
 	if not encontro_inicio:
@@ -535,6 +641,23 @@ func _verificar_modificacion_parametros_es():
 			_reportar_dificultad(AnalistaDificultad.DIF_PARAM_NO_MODIFICADO, false)
 	_params_es_proceso_actual.clear()
 
+func _registrar_lectura_vars(linea: String):
+	var regex = RegEx.new()
+	regex.compile("[a-zA-Z_][a-zA-Z0-9_]*")
+	var resultados = regex.search_all(linea)
+	for res in resultados:
+		var palabra = res.get_string()
+		if _var_usage_stats.has(palabra):
+			_var_usage_stats[palabra].reads += 1
+
+func _verificar_va03():
+	for var_name in _var_usage_stats:
+		var stats = _var_usage_stats[var_name]
+		# Caso 1: Declarada pero no leída (ni usada en condiciones/cálculos)
+		# Esto cubre "Declarada no usada" y "Asignada pero no leída"
+		if stats.reads == 0:
+			_reportar_dificultad(AnalistaDificultad.DIF_VAR_INCONSISTENTE, false)
+
 func _verificar_limites_estaticos(linea: String):
 	# Regex para detectar "posValle > N" (LP-02: Comparación imposible)
 	var regex = RegEx.new()
@@ -557,6 +680,145 @@ func _palabra_en_linea(palabra: String, linea: String) -> bool:
 	var regex = RegEx.new()
 	regex.compile("\\b" + palabra + "\\b")
 	return regex.search(linea) != null
+
+# --- ANÁLISIS DE ESTRUCTURAS DE CONTROL (EC-02) ---
+
+func _analizar_estructuras_control(lineas: Array):
+	var i = 0
+	while i < lineas.size():
+		var linea = lineas[i]
+		var linea_norm = linea.replace("    ", "\t")
+		var indent = linea_norm.count("\t")
+		# Limpieza básica para detectar keywords
+		var content = linea_norm.split("--")[0].strip_edges()
+		
+		if content.begins_with("Si ") and ("entonces" in content or "Entonces" in content):
+			# Encontramos un bloque Si. Vamos a escanear su contenido y buscar su Sino.
+			var si_indent = indent
+			var block_si = []
+			var block_sino = []
+			var has_sino = false
+			
+			# Avanzamos para capturar el cuerpo
+			var j = i + 1
+			while j < lineas.size():
+				var l_sub = lineas[j].replace("    ", "\t")
+				var sub_indent = l_sub.count("\t")
+				var sub_content = l_sub.split("--")[0].strip_edges()
+				
+				if sub_content.is_empty(): # Ignorar líneas vacías
+					j += 1
+					continue
+				
+				if sub_indent <= si_indent:
+					# Se acabó el bloque Si (o encontramos el Sino)
+					if sub_content == "Sino" or sub_content == "Sino:":
+						has_sino = true
+						j += 1 # Consumir la línea del Sino
+						# Capturar bloque Sino
+						while j < lineas.size():
+							var l_sino = lineas[j].replace("    ", "\t")
+							var sino_indent = l_sino.count("\t")
+							var sino_content = l_sino.split("--")[0].strip_edges()
+							
+							if sino_content.is_empty():
+								j += 1
+								continue
+							
+							if sino_indent <= si_indent:
+								break # Fin del Sino
+							
+							block_sino.append(sino_content)
+							j += 1
+					break # Fin del análisis de este Si/Sino
+				
+				block_si.append(sub_content)
+				j += 1
+			
+			if has_sino:
+				_verificar_ec02(block_si, block_sino)
+		
+		i += 1
+
+func _verificar_ec02(block_si: Array, block_sino: Array):
+	# Caso 1: Sino Vacío
+	if block_sino.is_empty():
+		_reportar_dificultad(AnalistaDificultad.DIF_SI_SINO, false)
+		return
+
+	# Caso 2: Bloques Idénticos (Incoherencia)
+	if block_si == block_sino:
+		_reportar_dificultad(AnalistaDificultad.DIF_SI_SINO, false)
+		return
+
+	# Caso 3: Redundancia de Cola (Tail Redundancy)
+	# Si la última instrucción de ambos bloques es igual, debería estar afuera.
+	if not block_si.is_empty() and not block_sino.is_empty():
+		if block_si.back() == block_sino.back():
+			_reportar_dificultad(AnalistaDificultad.DIF_SI_SINO, false)
+
+# --- ANÁLISIS DE ANIDAMIENTO (EC-03) ---
+
+func _analizar_anidamiento_ec03(lineas: Array):
+	var stack = [] # Array de diccionarios { "indent": int, "type": String, "dirty": bool }
+	
+	for linea in lineas:
+		var linea_norm = linea.replace("    ", "\t")
+		var source = linea_norm.strip_edges()
+		
+		# Ignorar líneas vacías o comentarios
+		if source.is_empty() or source.begins_with("--") or source.begins_with("#"):
+			continue
+			
+		var indent = linea_norm.count("\t")
+		
+		# Sacar de la pila los bloques que ya se cerraron (indentación menor o igual)
+		while not stack.is_empty() and stack.back().indent >= indent:
+			stack.pop_back()
+			
+		if source.begins_with("Si "):
+			# Verificar si el padre inmediato es un Si o un Sino
+			if not stack.is_empty():
+				var parent = stack.back()
+				# Solo reportamos si el padre es Si/Sino Y NO ha tenido contenido intermedio (dirty == false)
+				if (parent.type == "Si" or parent.type == "Sino") and not parent.dirty:
+					_reportar_dificultad(AnalistaDificultad.DIF_CONDICIONALES_ANIDADOS, false)
+			stack.append({"indent": indent, "type": "Si", "dirty": false})
+			
+		elif source.begins_with("Sino") or source.begins_with("Sino:"):
+			stack.append({"indent": indent, "type": "Sino", "dirty": false})
+		
+		else:
+			# Cualquier otra instrucción (Mientras, Repetir, Asignación, Primitiva)
+			# marca el bloque actual como "sucio" (ya tiene contenido previo)
+			if not stack.is_empty():
+				stack.back().dirty = true
+
+# --- VERIFICACIÓN DE ALCANCE (VA-01) ---
+
+func _verificar_alcance_vars_linea(linea: String, globals: Array, local_stack: Array) -> bool:
+	# Retorna TRUE si hay error de alcance (VA-01)
+	var regex = RegEx.new()
+	regex.compile("[a-zA-Z_][a-zA-Z0-9_]*")
+	var resultados = regex.search_all(linea)
+	
+	for res in resultados:
+		var palabra = res.get_string()
+		# Si es una variable registrada (es decir, existe en el programa)
+		if palabra in variables_registradas:
+			# Verificar si está visible en el scope actual
+			var visible = false
+			if palabra in globals: visible = true
+			else:
+				for scope in local_stack:
+					if palabra in scope:
+						visible = true
+						break
+			
+			if not visible:
+				_reportar_dificultad(AnalistaDificultad.DIF_SCOPE_VARS, true)
+				return true # Error encontrado
+	return false
 
 # --- HELPERS DE VALIDACIÓN ---
 
