@@ -4,8 +4,8 @@ class_name AnalistaDificultad extends Node
 const DIF_REDUNDANCIA = "SL-01" # Redundancia de instrucciones
 const DIF_NO_VALIDAR = "SL-02" # No valida objeto antes de recoger
 const DIF_INNECESARIA = "SL-03" # Instrucciones innecesarias (contexto)
-const DIF_BUCLE_INFINITO = "EC-01" # Bucles mal controlados
 const DIF_OPERADORES_LOGICOS = "LP-01" # Mal uso o confusión con operadores lógicos.
+const DIF_BUCLE_INFINITO = "EC-01" # Bucles mal controlados
 const DIF_VAR_NO_INIT = "VA-02" # Uso de variables sin inicializar
 const DIF_MAL_PARAMETROS = "PR-01" # Mal pasaje de parámetros
 const DIF_PARAM_NO_MODIFICADO = "PR-02" # No modifica parámetro E/S
