@@ -52,6 +52,9 @@ var _params_proceso_actual = {} # { "nombre_param": false } (false = no usado)
 # Variables para análisis estático (PR-02)
 var _params_es_proceso_actual = {} # { "nombre_param": false } (false = no modificado)
 
+# Referencia al tamaño del mapa para validaciones estáticas (LP-02)
+var tamano_mapa_ref: Vector2i = Vector2i(25, 25)
+
 # --- API DE INTROSPECCIÓN (Para Condiciones de Misión) ---
 
 # Permite leer el valor final de una variable del alumno
@@ -159,6 +162,10 @@ func _transpilar(texto: String) -> Dictionary:
 		var source = linea_sin_comentarios.strip_edges()
 		
 		if source.is_empty(): continue
+		
+		# --- ANÁLISIS ESTÁTICO LP-02 (Relacionales) ---
+		if "posValle" in source or "posSendero" in source:
+			_verificar_limites_estaticos(source)
 		
 		# --- VALIDACIÓN 1: INDENTACIÓN ---
 		var indent_curr_level = linea_normalizada.count("\t")
@@ -527,6 +534,23 @@ func _verificar_modificacion_parametros_es():
 			# Detectamos PR-02: Parámetro ES declarado pero no modificado
 			_reportar_dificultad(AnalistaDificultad.DIF_PARAM_NO_MODIFICADO, false)
 	_params_es_proceso_actual.clear()
+
+func _verificar_limites_estaticos(linea: String):
+	# Regex para detectar "posValle > N" (LP-02: Comparación imposible)
+	var regex = RegEx.new()
+	regex.compile("posValle\\s*>\\s*(\\d+)")
+	var matches = regex.search_all(linea)
+	for m in matches:
+		var val = int(m.get_string(1))
+		if val >= tamano_mapa_ref.y:
+			_reportar_dificultad(AnalistaDificultad.DIF_RELACIONALES, false)
+
+	regex.compile("posSendero\\s*>\\s*(\\d+)")
+	matches = regex.search_all(linea)
+	for m in matches:
+		var val = int(m.get_string(1))
+		if val >= tamano_mapa_ref.x:
+			_reportar_dificultad(AnalistaDificultad.DIF_RELACIONALES, false)
 
 func _palabra_en_linea(palabra: String, linea: String) -> bool:
 	# Búsqueda simple de palabra completa usando regex

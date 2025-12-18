@@ -12,7 +12,7 @@ const TIEMPO_ACCION = 0.5 # Tiempo de espera para recolectar/atacar
 var esta_actuando: bool = false
 var posicion_actual: Vector2i = Vector2i.ZERO
 var direccion_actual: Vector2i = Vector2i(0, 1) # (0, 1) es ARRIBA lógico
-var inventario = { "monedas": 0, "llaves": 0 }
+var inventario = {"monedas": 0, "llaves": 0}
 var analista: AnalistaDificultad = null
 
 # --- SEÑALES ---
@@ -59,7 +59,7 @@ func girar_derecha():
 	
 	# 2. Lógica Matemática del Giro (solo si es seguro)
 	var nueva_x = direccion_actual.y
-	var nueva_y = -direccion_actual.x
+	var nueva_y = - direccion_actual.x
 	direccion_actual = Vector2i(nueva_x, nueva_y)
 	
 	print("Girando. Nueva dirección: ", direccion_actual)
@@ -81,7 +81,7 @@ func intentar_teletransportar(celda_destino: Vector2i):
 	if not GridManager.es_celda_valida(celda_destino):
 		# Mostramos las coordenadas en Base 1 para que el alumno entienda el error
 		var coord_user = celda_destino + Vector2i(1, 1)
-		game_over("¡Error de Coordenadas! Intentaste ir a " + str(coord_user) + " pero está fuera del mapa.")
+		game_over("¡Error de Coordenadas! Intentaste ir a " + str(coord_user) + " pero está fuera del mapa. [LIMIT_CRASH]")
 		await _esperar_muerte()
 		return
 
@@ -394,7 +394,7 @@ func mover_a_celda(celda_destino: Vector2i):
 	# 1. Validar límites
 	if not GridManager.es_celda_valida(celda_destino):
 		# Llamamos a game_over y luego retornamos.
-		game_over("¡Choque con el límite del mapa! Error de secuencia.")
+		game_over("¡Choque con el límite del mapa! Error de secuencia. [LIMIT_CRASH]")
 		await _esperar_muerte()
 		return
 	
@@ -452,13 +452,13 @@ func _verificar_peligro_inminente() -> bool:
 # --- MANEJO DE GAME OVER ---
 func game_over(razon: String):
 	if esta_actuando == false:
-		return 
+		return
 		
 	print("GAME OVER: ", razon)
-	esta_actuando = true 
+	esta_actuando = true
 	
 	# 1. Emitir señal para que el Ejecutor sepa que falló el código
-	game_over_triggered.emit(razon) 
+	game_over_triggered.emit(razon)
 
 # Función para congelar la ejecución mientras esperamos que el controlador reinicie el nivel
 func _esperar_muerte():

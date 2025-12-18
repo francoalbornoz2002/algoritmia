@@ -296,7 +296,7 @@ func registrar_mision_local(id_mision: String, estrellas: int, exp: int, intento
 		
 	# 2. Actualizamos la última actividad del alumno
 	var sql_alumno = "UPDATE alumno SET ultima_actividad = ?;"
-	var bindings_alumno = [ fecha_actual ]
+	var bindings_alumno = [fecha_actual]
 	
 	if not db.query_with_bindings(sql_alumno, bindings_alumno):
 		print("ERROR (DBManager): No se pudo actualizar ultima_actividad. ", db.error_message)
@@ -406,12 +406,23 @@ func registrar_errores_dificultad(id_dificultad: String, nuevos_errores: int) ->
 	
 	# 2. Calcular nuevo grado según umbrales (ACUMULATIVO)
 	# Definimos los umbrales
+	var umbral_bajo = 3
+	var umbral_medio = 5
+	var umbral_alto = 7
+	
+	# Excepción para LP-03 (Problemas para formular proposiciones compuestas)
+	# UUID: b2002002-0000-0000-0000-000000000003
+	if id_dificultad == "b2002002-0000-0000-0000-000000000003":
+		umbral_bajo = 6
+		umbral_medio = 10
+		umbral_alto = 14
+	
 	var nuevo_grado = "Ninguno"
-	if errores_totales >= 7:
+	if errores_totales >= umbral_alto:
 		nuevo_grado = "Alto"
-	elif errores_totales >= 5:
+	elif errores_totales >= umbral_medio:
 		nuevo_grado = "Medio"
-	elif errores_totales >= 3:
+	elif errores_totales >= umbral_bajo:
 		nuevo_grado = "Bajo"
 	
 	# 3. Optimización: Solo actualizamos si cambiaron los errores o el grado
@@ -436,7 +447,7 @@ func registrar_errores_dificultad(id_dificultad: String, nuevos_errores: int) ->
 func marcar_mision_sincronizada(id_mision: String) -> bool:
 	print("DBManager: Marcando misión como sincronizada: ", id_mision)
 	var sql = "UPDATE misiones_completadas_local SET sincronizado = true WHERE id_mision = ?;"
-	var bindings = [ id_mision ]
+	var bindings = [id_mision]
 	
 	if not db.query_with_bindings(sql, bindings):
 		print("ERROR (DBManager): No se pudo marcar como sincronizado. ", db.error_message)
@@ -587,7 +598,7 @@ func obtener_fecha_ultima_actividad() -> int:
 	db.query("SELECT ultima_actividad FROM alumno LIMIT 1;")
 	
 	if db.query_result.is_empty():
-		return 0 
+		return 0
 	
 	var fecha_str = db.query_result[0]["ultima_actividad"]
 	

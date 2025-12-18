@@ -5,6 +5,8 @@ const DIF_REDUNDANCIA = "SL-01" # Redundancia de instrucciones
 const DIF_NO_VALIDAR = "SL-02" # No valida objeto antes de recoger
 const DIF_INNECESARIA = "SL-03" # Instrucciones innecesarias (contexto)
 const DIF_OPERADORES_LOGICOS = "LP-01" # Mal uso o confusión con operadores lógicos.
+const DIF_RELACIONALES = "LP-02" # Mal uso o confusión con operadores relacionales
+const DIF_PROPOSICIONES_COMPUESTAS = "LP-03" # Problemas para formular proposiciones compuestas
 const DIF_BUCLE_INFINITO = "EC-01" # Bucles mal controlados
 const DIF_VAR_NO_INIT = "VA-02" # Uso de variables sin inicializar
 const DIF_MAL_PARAMETROS = "PR-01" # Mal pasaje de parámetros
@@ -14,9 +16,9 @@ const DIF_PARAM_NO_USADO = "PR-03" # No utiliza todos los parámetros
 # --- UMBRALES DE EVALUACIÓN ---
 # Cuántos intentos CON el error se necesitan para subir de grado
 const UMBRALES = {
-	"BAJO": 3, # Con que aparezca en 1 intento ya es "Bajo" (atención)
-	"MEDIO": 5, # Si persiste en 3 intentos
-	"ALTO": 7 # Si persiste en 5+ intentos
+	"BAJO": 3, # Con que aparezca en 3 intento ya es "Bajo" (atención)
+	"MEDIO": 5, # Si persiste en 5 intentos
+	"ALTO": 7 # Si persiste en 7+ intentos
 }
 
 # Límite de pasos para considerar un bucle infinito (EC-01)
@@ -42,6 +44,8 @@ func _resetear_contadores_globales():
 		DIF_INNECESARIA: 0,
 		DIF_BUCLE_INFINITO: 0,
 		DIF_OPERADORES_LOGICOS: 0,
+		DIF_RELACIONALES: 0,
+		DIF_PROPOSICIONES_COMPUESTAS: 0,
 		DIF_VAR_NO_INIT: 0,
 		DIF_MAL_PARAMETROS: 0,
 		DIF_PARAM_NO_MODIFICADO: 0,
@@ -192,6 +196,15 @@ func procesar_resultados_finales():
 	# 1. Consolidar el último intento
 	consolidar_intento_actual()
 	
+	# --- CÁLCULO DE DIFICULTAD COMPUESTA LP-03 ---
+	# Se basa en la suma de LP-01 y LP-02
+	var err_lp01 = contador_incidencias_acumuladas.get(DIF_OPERADORES_LOGICOS, 0)
+	var err_lp02 = contador_incidencias_acumuladas.get(DIF_RELACIONALES, 0)
+	var total_lp03 = err_lp01 + err_lp02
+	
+	if total_lp03 > 0:
+		contador_incidencias_acumuladas[DIF_PROPOSICIONES_COMPUESTAS] = total_lp03
+	
 	print("--- Analista: Resultados acumulados de la sesión ---")
 	print(contador_incidencias_acumuladas)
 	
@@ -246,6 +259,8 @@ func _obtener_uuid_por_codigo(codigo: String) -> String:
 		DIF_INNECESARIA: return "a1001001-0000-0000-0000-000000000003"
 		DIF_BUCLE_INFINITO: return "c3003003-0000-0000-0000-000000000001"
 		DIF_OPERADORES_LOGICOS: return "b2002002-0000-0000-0000-000000000001"
+		DIF_RELACIONALES: return "b2002002-0000-0000-0000-000000000002"
+		DIF_PROPOSICIONES_COMPUESTAS: return "b2002002-0000-0000-0000-000000000003"
 		DIF_VAR_NO_INIT: return "d4004004-0000-0000-0000-000000000002"
 		DIF_MAL_PARAMETROS: return "e5005005-0000-0000-0000-000000000001"
 		DIF_PARAM_NO_MODIFICADO: return "e5005005-0000-0000-0000-000000000002"

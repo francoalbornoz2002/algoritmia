@@ -33,7 +33,7 @@ var logs_consola: Array[String] = [] # Para verificar condiciones de Output
 var elemento_escena = preload("res://scenes/elemento_tablero/elemento_tablero.tscn")
 
 func _ready():
-	GridManager.limpiar_datos() 
+	GridManager.limpiar_datos()
 	
 	# 1. Configurar el Ejecutor
 	ejecutor.personaje = jugador
@@ -86,6 +86,9 @@ func cargar_mision(definicion: DefinicionMision):
 	label_mision.text = definicion.titulo
 	label_dificultad.text = definicion.dificultad_mision
 	label_descripcion.text = definicion.descripcion
+	
+	# Pasamos el tamaño del mapa al ejecutor para validaciones estáticas (LP-02)
+	if ejecutor: ejecutor.tamano_mapa_ref = definicion.tamano_mapa
 	
 	# Preparamos el primer caso de prueba visualmente para que el alumno vea el escenario 1
 	_preparar_caso_prueba(0)
@@ -144,7 +147,7 @@ func _preparar_caso_prueba(indice: int):
 
 func _limpiar_entidades():
 	for child in entidades_container.get_children():
-		if child != jugador: 
+		if child != jugador:
 			child.queue_free()
 
 # --- PREPARACIÓN DEL ESCENARIO ---
@@ -203,7 +206,7 @@ func _ejecutar_caso_actual():
 # Esta función es llamada por el Ejecutor cuando el script termina (Línea 'Fin')
 func on_ejecucion_terminada(exito: bool):
 	# Si ya falló por Game Over, no hacemos nada más que esperar el reinicio UI
-	if juego_fallido: return 
+	if juego_fallido: return
 	
 	if not exito:
 		# Falló por error de sintaxis o runtime error
@@ -269,7 +272,7 @@ func _victoria_total():
 			agregar_mensaje_consola("¡BONUS MISIÓN ESPECIAL! (x2 Recompensas)", "SISTEMA")
 			
 			# Multiplicar recompensas
-			estrellas_finales *= 2 
+			estrellas_finales *= 2
 			exp_final *= 2
 			
 			DatabaseManager.registrar_mision_especial_local(
@@ -282,9 +285,9 @@ func _victoria_total():
 		# --- RAMA B: MISIÓN NORMAL ---
 		else:
 			DatabaseManager.registrar_mision_local(
-				mision_actual_def.id, 
-				estrellas_finales, 
-				exp_final, 
+				mision_actual_def.id,
+				estrellas_finales,
+				exp_final,
 				intentos_totales
 			)
 		
@@ -321,6 +324,10 @@ func _on_jugador_game_over(mensaje):
 		# Si fue un bucle infinito (mensaje del Ejecutor), avisamos
 		if "Bucle Infinito" in mensaje:
 			analista_dificultad.registrar_error_externo(AnalistaDificultad.DIF_BUCLE_INFINITO)
+			
+		# Detección LP-02: Choque con límites (Off-by-one error)
+		if "[LIMIT_CRASH]" in mensaje:
+			analista_dificultad.registrar_error_externo(AnalistaDificultad.DIF_RELACIONALES)
 		
 		# Consolidamos el intento fallido
 		analista_dificultad.consolidar_intento_actual()
