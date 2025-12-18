@@ -1,26 +1,29 @@
 class_name AnalistaDificultad extends Node
 
 # --- DEFINICIÓN DE DIFICULTADES (GDD Sección 8) ---
-const DIF_REDUNDANCIA = "SL-01"      # Redundancia de instrucciones
-const DIF_NO_VALIDAR = "SL-02"       # No valida objeto antes de recoger
-const DIF_INNECESARIA = "SL-03"      # Instrucciones innecesarias (contexto)
-const DIF_BUCLE_INFINITO = "EC-01"   # Bucles mal controlados
+const DIF_REDUNDANCIA = "SL-01" # Redundancia de instrucciones
+const DIF_NO_VALIDAR = "SL-02" # No valida objeto antes de recoger
+const DIF_INNECESARIA = "SL-03" # Instrucciones innecesarias (contexto)
+const DIF_BUCLE_INFINITO = "EC-01" # Bucles mal controlados
 const DIF_OPERADORES_LOGICOS = "LP-01" # Mal uso o confusión con operadores lógicos.
 const DIF_VAR_NO_INIT = "VA-02" # Uso de variables sin inicializar
+const DIF_MAL_PARAMETROS = "PR-01" # Mal pasaje de parámetros
+const DIF_PARAM_NO_MODIFICADO = "PR-02" # No modifica parámetro E/S
+const DIF_PARAM_NO_USADO = "PR-03" # No utiliza todos los parámetros
 
 # --- UMBRALES DE EVALUACIÓN ---
 # Cuántos intentos CON el error se necesitan para subir de grado
 const UMBRALES = {
-	"BAJO": 3,   # Con que aparezca en 1 intento ya es "Bajo" (atención)
-	"MEDIO": 5,  # Si persiste en 3 intentos
-	"ALTO": 7    # Si persiste en 5+ intentos
+	"BAJO": 3, # Con que aparezca en 1 intento ya es "Bajo" (atención)
+	"MEDIO": 5, # Si persiste en 3 intentos
+	"ALTO": 7 # Si persiste en 5+ intentos
 }
 
 # Límite de pasos para considerar un bucle infinito (EC-01)
-const MAX_PASOS_POR_EJECUCION = 500 
+const MAX_PASOS_POR_EJECUCION = 500
 
 # --- ESTADO VOLÁTIL (Por intento) ---
-var historial_acciones: Array[String] = [] 
+var historial_acciones: Array[String] = []
 var validaciones_recientes: Dictionary = {}
 var paso_actual: int = 0
 var errores_detectados_en_este_intento: Dictionary = {} # Para evitar duplicados masivos
@@ -39,7 +42,10 @@ func _resetear_contadores_globales():
 		DIF_INNECESARIA: 0,
 		DIF_BUCLE_INFINITO: 0,
 		DIF_OPERADORES_LOGICOS: 0,
-		DIF_VAR_NO_INIT: 0
+		DIF_VAR_NO_INIT: 0,
+		DIF_MAL_PARAMETROS: 0,
+		DIF_PARAM_NO_MODIFICADO: 0,
+		DIF_PARAM_NO_USADO: 0
 	}
 
 func registrar_error_externo(codigo: String):
@@ -145,7 +151,6 @@ func _analizar_validacion_requerida(accion: String):
 func _analizar_logica_operadores(accion: String):
 	# Detectamos si entró a una acción compuesta faltando una condición crítica
 	# Esto sugiere uso de OR en vez de AND, o mal uso de NOT.
-	
 	if accion == "abrirCofre":
 		# Requiere LLAVE. Si validó llave recientemente y dio FALSO, pero entró igual...
 		if _valido_y_dio_falso("llave"):
@@ -242,5 +247,8 @@ func _obtener_uuid_por_codigo(codigo: String) -> String:
 		DIF_BUCLE_INFINITO: return "c3003003-0000-0000-0000-000000000001"
 		DIF_OPERADORES_LOGICOS: return "b2002002-0000-0000-0000-000000000001"
 		DIF_VAR_NO_INIT: return "d4004004-0000-0000-0000-000000000002"
+		DIF_MAL_PARAMETROS: return "e5005005-0000-0000-0000-000000000001"
+		DIF_PARAM_NO_MODIFICADO: return "e5005005-0000-0000-0000-000000000002"
+		DIF_PARAM_NO_USADO: return "e5005005-0000-0000-0000-000000000003"
 		# Agrega los demás si implementamos detección para ellos
 	return ""
