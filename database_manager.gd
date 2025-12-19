@@ -317,7 +317,7 @@ func registrar_mision_especial_local(nombre: String, descripcion: String, estrel
 	print("DBManager: Registrando misión ESPECIAL localmente...")
 	
 	# 1. Generar ID único (UUID)
-	var id_uuid = _generar_uuid_v4()
+	var id_uuid = generar_uuid_v4()
 	
 	# 2. Obtener Fecha UTC
 	var dict_utc = Time.get_datetime_dict_from_system(true)
@@ -612,7 +612,7 @@ func obtener_fecha_ultima_actividad() -> int:
 
 # --- HELPERS ---
 
-func _generar_uuid_v4() -> String:
+func generar_uuid_v4() -> String:
 	# Generación manual de UUID v4 estándar
 	var b = []
 	for i in range(16):

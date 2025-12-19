@@ -4,10 +4,10 @@ class_name MisionesCampana extends RefCounted
 static func crear_mision_01_bucle_basico() -> DefinicionMision:
 	var mision = DefinicionMision.new()
 	# UUID fijo para sincronización (Ejemplo)
-	mision.id = "c1001001-0000-0000-0000-000000000001"
-	mision.titulo = "El Sendero de la Incertidumbre"
-	mision.dificultad_mision = "Media"
-	mision.descripcion = "Bienvenido, iniciado. El camino hacia el conocimiento no siempre es claro. Tienes una moneda esperando en este sendero, pero su ubicación cambia con las mareas del código.\n\nObjetivo: Avanza hacia el sur (abajo) hasta encontrar la moneda y recógela.\nRestricción: No sabes cuántos pasos exactos debes dar. Usa tu 'Orbe del Ciclo Infinito' (Mientras) para avanzar mientras NO haya una moneda bajo tus pies."
+	mision.id = "9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d" # UUID v4 válido y fijo
+	mision.titulo = "Mision Campaña (Demo)"
+	mision.dificultad_mision = "Facil"
+	mision.descripcion = "Recorre todo el sendero 1 recolectando las monedas que encuentres en el camino."
 	mision.tamano_mapa = Vector2i(25, 25)
 	
 	# --- CASO 1: Distancia Corta (5 pasos) ---
