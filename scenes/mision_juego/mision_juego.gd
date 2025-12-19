@@ -69,8 +69,6 @@ func _ready():
 		GameData.mision_seleccionada = null
 	elif sandbox:
 		jugador.teletransportar_a(Vector2i(0, 0))
-	else:
-		_cargar_mision_prueba()
 
 # --- CARGA DE MISIÓN ---
 
@@ -92,35 +90,6 @@ func cargar_mision(definicion: DefinicionMision):
 	
 	# Preparamos el primer caso de prueba visualmente para que el alumno vea el escenario 1
 	_preparar_caso_prueba(0)
-
-func _cargar_mision_compleja():
-	var caso = CasoPruebaMision.new()
-	caso.agregar_elemento(ElementoTablero.Tipo.LLAVE, Vector2i(0, 2))
-	caso.agregar_elemento(ElementoTablero.Tipo.LLAVE, Vector2i(0, 4))
-	
-	# 1. Debe tener 2 llaves físicas
-	caso.agregar_condicion(CondicionMision.Recolectar.new("llaves", 2))
-	
-	# 2. Debe tener una variable "contador" con valor 2
-	caso.agregar_condicion(CondicionMision.VariableTieneValor.new("contador", 2))
-	
-	# 3. Debe imprimirlo
-	caso.agregar_condicion(CondicionMision.OutputContiene.new("2"))
-	
-	var mision = DefinicionMision.new()
-	mision.titulo = "Desafío de Variables"
-	mision.descripcion = "Recoge las llaves y cuéntalas en una variable llamada 'contador'."
-	mision.casos_de_prueba.append(caso)
-	cargar_mision(mision)
-
-func _cargar_mision_prueba():
-	randomize()
-	print("--- GENERANDO MISIÓN COMPLEJA ---")
-	
-	# Prueba con Dificultad Media para ver variables y enemigos
-	var mision = GeneradorMisiones.generar_mision_compleja(GeneradorMisiones.DIFICULTAD_DIFICIL)
-	
-	cargar_mision(mision)
 
 func _preparar_caso_prueba(indice: int):
 	if mision_actual_def == null or indice >= mision_actual_def.casos_de_prueba.size():

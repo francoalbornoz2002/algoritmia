@@ -21,7 +21,7 @@ class RutaGenerada:
 # Esta es la que llamarás desde el juego
 static func generar_mision_compleja(nivel_dificultad: int = DIFICULTAD_MEDIA) -> DefinicionMision:
 	var mision = DefinicionMision.new()
-	mision.id = "gen_" + str(Time.get_unix_time_from_system()) + "_" + str(randi())
+	mision.id = DatabaseManager.generar_uuid_v4()
 	mision.es_mision_especial = true
 	mision.tamano_mapa = Vector2i(25, 25) # Tamaño estándar
 	
@@ -75,7 +75,7 @@ static func generar_mision_compleja(nivel_dificultad: int = DIFICULTAD_MEDIA) ->
 			var cant_monedas = randi_range(2, 4)
 			for c in range(cant_monedas):
 				var pos = _pick_and_remove(huecos_libres)
-				if pos != Vector2i(-1,-1):
+				if pos != Vector2i(-1, -1):
 					caso.agregar_elemento(ElementoTablero.Tipo.MONEDA, pos)
 					total_monedas += 1
 			
@@ -84,14 +84,14 @@ static func generar_mision_compleja(nivel_dificultad: int = DIFICULTAD_MEDIA) ->
 				var cant_enemigos = randi_range(1, 2)
 				for c in range(cant_enemigos):
 					var pos = _pick_and_remove(huecos_libres)
-					if pos != Vector2i(-1,-1):
+					if pos != Vector2i(-1, -1):
 						caso.agregar_elemento(ElementoTablero.Tipo.ENEMIGO, pos)
 						total_enemigos += 1
 			
 			# C. Obstáculos (Salpicados)
 			if randf() > 0.6:
 				var pos = _pick_and_remove(huecos_libres)
-				if pos != Vector2i(-1,-1):
+				if pos != Vector2i(-1, -1):
 					# Verificamos si la posición es segura para saltar (no está en los bordes)
 					if _es_posicion_segura_para_obstaculo(pos, mision.tamano_mapa):
 						caso.agregar_elemento(ElementoTablero.Tipo.OBSTACULO, pos)
@@ -169,7 +169,7 @@ static func generar_mision_compleja(nivel_dificultad: int = DIFICULTAD_MEDIA) ->
 # Crea una misión especial por inactividad (Doble XP/Estrellas)
 static func generar_mision_especial_inactividad() -> DefinicionMision:
 	# 1. Generamos la misión base (el puzzle)
-	var mision = generar_mision_compleja(DIFICULTAD_MEDIA) 
+	var mision = generar_mision_compleja(DIFICULTAD_MEDIA)
 	
 	# 2. Personalizamos el título
 	mision.titulo = "Misión de Retorno"
@@ -181,56 +181,17 @@ static func generar_mision_especial_inactividad() -> DefinicionMision:
 	mision.descripcion = mensaje_bienvenida + mision.descripcion
 	
 	# 4. Activamos el flag
-	mision.es_mision_especial = true 
+	mision.es_mision_especial = true
 	
 	return mision
 # --- UTILS PRIVADOS ---
-
-static func generar_mision_demo_normal() -> DefinicionMision:
-	var mision = DefinicionMision.new()
-	# UUID Fijo para poder sincronizarlo luego con la Web
-	mision.id = "11111111-1111-1111-1111-111111111111" 
-	mision.titulo = "Misión Demo"
-	mision.descripcion = "Recorre todo sendero 1, recolectando las monedas, atacando enemigos y evadiendo obstáculos. Luego, recorre el valle 5 y haz lo mismo. Al finalizar, imprime cuantas monedas recolectaste, cuantos enemigos derrotaste y cuandos obstáculos saltaste."
-	mision.dificultad_mision = "Media"
-	mision.es_mision_especial = false # <--- ES NORMAL
-	
-	# --- CASO 1: Combate y Recolección ---
-	var caso1 = CasoPruebaMision.new()
-	caso1.inicio_jugador = Vector2i(0, 0)
-	# Mapa: (0)Inicio -> (1)Nada -> (2)Moneda -> (3)Enemigo -> (4)Nada -> (5)Meta
-	caso1.agregar_elemento(ElementoTablero.Tipo.MONEDA, Vector2i(2, 0))
-	caso1.agregar_elemento(ElementoTablero.Tipo.ENEMIGO, Vector2i(3, 0))
-	
-	# Condiciones Caso 1
-	caso1.agregar_condicion(CondicionMision.LlegarA.new(Vector2i(5, 0)))
-	caso1.agregar_condicion(CondicionMision.Recolectar.new("monedas", 1))
-	
-	mision.casos_de_prueba.append(caso1)
-	
-	# --- CASO 2: Obstáculos ---
-	var caso2 = CasoPruebaMision.new()
-	caso2.inicio_jugador = Vector2i(0, 0)
-	# Mapa: (0)Inicio -> (1)Obstáculo -> (2)Cae Aquí -> (3)Obstáculo -> (4)Cae Aquí -> (5)Meta
-	# Nota: Saltar mueve 2 casillas (de 0 a 2, de 2 a 4). 
-	# Desde 4, avanza a 5.
-	caso2.agregar_elemento(ElementoTablero.Tipo.OBSTACULO, Vector2i(1, 0))
-	caso2.agregar_elemento(ElementoTablero.Tipo.OBSTACULO, Vector2i(3, 0))
-	
-	# Condiciones Caso 2
-	caso2.agregar_condicion(CondicionMision.LlegarA.new(Vector2i(5, 0)))
-	caso2.agregar_condicion(CondicionMision.Recolectar.new("monedas", 0)) # Asegurar que no invente monedas
-	
-	mision.casos_de_prueba.append(caso2)
-	
-	return mision
 
 static func _obtener_coords_ruta(tipo: String, indice: int) -> Array[Vector2i]:
 	var coords: Array[Vector2i] = []
 	var index_0 = indice - 1 # Base 0
 	
 	if tipo == "SENDERO": # Vertical
-		for y in range(25): 
+		for y in range(25):
 			coords.append(Vector2i(index_0, y))
 	elif tipo == "VALLE": # Horizontal
 		for x in range(25):
@@ -248,7 +209,6 @@ static func _pick_and_remove(arr: Array) -> Vector2i:
 static func _es_posicion_segura_para_obstaculo(pos: Vector2i, tamano: Vector2i) -> bool:
 	# Los obstáculos NO pueden estar en los límites del mapa (x=0, x=Max, y=0, y=Max)
 	# porque requieren saltar (mover 2 casillas) y eso podría sacar al jugador del mapa.
-	
 	var es_borde_x = (pos.x == 0) or (pos.x == tamano.x - 1)
 	var es_borde_y = (pos.y == 0) or (pos.y == tamano.y - 1)
 	
