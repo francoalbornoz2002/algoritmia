@@ -49,7 +49,6 @@ func _iniciar_mision_especial():
 	print("Iniciando misión especial: ", mision_especial.titulo)
 	
 	# 3. Cambiamos a la escena de juego
-	# Asegúrate de que la ruta sea correcta según tu estructura de carpetas
 	get_tree().change_scene_to_file("res://scenes/mision_juego/mision_juego.tscn")
 
 func _on_jugar_pressed() -> void:
