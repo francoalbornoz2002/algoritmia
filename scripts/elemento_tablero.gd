@@ -1,10 +1,19 @@
 class_name ElementoTablero extends Node2D
 
 # Tipos de elementos disponibles
-enum Tipo { MONEDA, LLAVE, COFRE, ENEMIGO, OBSTACULO, PUENTE }
+enum Tipo {MONEDA, LLAVE, COFRE, ENEMIGO, OBSTACULO, PUENTE}
 
 @export var tipo: Tipo = Tipo.MONEDA
 @export var sprite: Sprite2D
+
+@export_group("Visuales")
+@export var tex_moneda: Texture2D
+@export var tex_llave: Texture2D
+@export var tex_cofre: Texture2D
+@export var tex_enemigo: Texture2D
+@export var tex_obstaculo: Texture2D
+@export var tex_puente_inactivo: Texture2D
+@export var tex_puente_activo: Texture2D
 
 var pos_grid: Vector2i
 var esta_activo: bool = false # Solo relevante para PUENTE
@@ -19,28 +28,39 @@ func configurar(nuevo_tipo: Tipo, nueva_pos_grid: Vector2i):
 	
 	# Si es un puente, comienza INACTIVO (por defecto)
 	if tipo == Tipo.PUENTE:
-		esta_activo = false 
+		esta_activo = false
 	
 	_actualizar_visual()
 
 func _actualizar_visual():
 	if not sprite: return
 	
-	# Colores temporales (Whiteboxing) para diferenciar
+	# Reset modulate para que la textura se vea con sus colores originales
+	sprite.modulate = Color.WHITE
+	
 	match tipo:
 		Tipo.MONEDA:
-			sprite.modulate = Color.YELLOW # Amarillo
+			if tex_moneda: sprite.texture = tex_moneda
+			else: sprite.modulate = Color.YELLOW
 		Tipo.LLAVE:
-			sprite.modulate = Color.ORANGE # Naranja
+			if tex_llave: sprite.texture = tex_llave
+			else: sprite.modulate = Color.ORANGE
 		Tipo.COFRE:
-			sprite.modulate = Color.BROWN # Marrón
+			if tex_cofre: sprite.texture = tex_cofre
+			else: sprite.modulate = Color.BROWN
 		Tipo.ENEMIGO:
-			sprite.modulate = Color.RED # Rojo
+			if tex_enemigo: sprite.texture = tex_enemigo
+			else: sprite.modulate = Color.RED
 		Tipo.OBSTACULO:
-			sprite.modulate = Color.BLACK # Negro
+			if tex_obstaculo: sprite.texture = tex_obstaculo
+			else: sprite.modulate = Color.BLACK
 		Tipo.PUENTE:
-			# Si es un puente, cambia el color según el estado
-			sprite.modulate = Color.BLUE.lerp(Color.WHITE, 0.7) if esta_activo else Color.BLUE # Azul claro si activo, azul oscuro si inactivo
+			if esta_activo:
+				if tex_puente_activo: sprite.texture = tex_puente_activo
+				else: sprite.modulate = Color.BLUE.lerp(Color.WHITE, 0.7)
+			else:
+				if tex_puente_inactivo: sprite.texture = tex_puente_inactivo
+				else: sprite.modulate = Color.BLUE
 
 func activar():
 	if tipo == Tipo.PUENTE:
@@ -51,7 +71,7 @@ func activar():
 func recoger():
 	# Animación simple de desaparecer
 	var tween = create_tween()
-	tween.tween_property(self, "scale", Vector2.ZERO, 0.2)
+	tween.tween_property(self , "scale", Vector2.ZERO, 0.2)
 	tween.tween_callback(queue_free)
 
 # Función para abrir cofre (cambia visualmente o desaparece)

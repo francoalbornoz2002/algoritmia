@@ -18,7 +18,7 @@ class LlegarA extends CondicionMision:
 		descripcion = "Llegar a posición interna " + str(pos)
 	
 	func verificar(j, _g, _e, _l) -> bool:
-		return j.pos_grid_actual == objetivo
+		return j.posicion_actual == objetivo
 
 # 2. Condición: Tener items en inventario
 class Recolectar extends CondicionMision:
@@ -63,7 +63,7 @@ class VariableTieneValor extends CondicionMision:
 	@export var nombre_var: String
 	@export var valor_esperado: int
 	
-	func _init(nombre="", valor=0):
+	func _init(nombre = "", valor = 0):
 		nombre_var = nombre
 		valor_esperado = valor
 		descripcion = "Variable '" + nombre + "' debe valer " + str(valor)
@@ -77,7 +77,7 @@ class VariableTieneValor extends CondicionMision:
 class ProcedimientoDefinido extends CondicionMision:
 	@export var nombre_proc: String
 	
-	func _init(nombre=""):
+	func _init(nombre = ""):
 		nombre_proc = nombre
 		descripcion = "Definir procedimiento '" + nombre + "'"
 		

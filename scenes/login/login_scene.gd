@@ -6,16 +6,16 @@ extends Control
 const GAME_LOGIN_URL = "http://localhost:3000/api/auth/game-login"
 
 # Referencias a los nodos de la escena
-@export var email_input: TextEdit
-@export var contraseña_input: TextEdit
+@export var email_input: LineEdit
+@export var contraseña_input: LineEdit
 @export var boton_ingresar: Button
 @export var label_errores: Label
 @export var http_request: HTTPRequest
+@export var cargando_overlay: Control
 
 # 2. --- CONEXIÓN DE SEÑALES ---
 
 func _ready():
-	
 	verificar_sesion_existente()
 	
 	# Ocultamos la etiqueta de error al empezar
@@ -35,6 +35,7 @@ func _on_ingresar_pressed() -> void:
 	# 1. Limpiamos errores y desactivamos el botón (para evitar doble clic)
 	label_errores.hide()
 	boton_ingresar.disabled = true
+	if cargando_overlay: cargando_overlay.show()
 	
 	# 2. Obtenemos los datos de los TextEdit
 	var email = email_input.text
@@ -45,6 +46,7 @@ func _on_ingresar_pressed() -> void:
 		label_errores.text = "Email y contraseña no pueden estar vacíos."
 		label_errores.show()
 		boton_ingresar.disabled = false
+		if cargando_overlay: cargando_overlay.hide()
 		return
 	
 	# 4. Preparamos los datos a enviar
@@ -73,11 +75,13 @@ func _on_ingresar_pressed() -> void:
 		label_errores.text = "Error al iniciar la petición HTTP"
 		label_errores.show()
 		boton_ingresar.disabled = false
+		if cargando_overlay: cargando_overlay.hide()
 
 # 4. --- LÓGICA DE RESPUESTA DE LOGIN ---
 
 # Esta función se ejecuta automáticamente cuando el servidor responde
 func _on_http_request_completed(result: int, response_code: int, headers: PackedStringArray, body: PackedByteArray) -> void:
+	if cargando_overlay: cargando_overlay.hide()
 	# 1. Pase lo que pase, volvemos a activar el botón
 	boton_ingresar.disabled = false
 	
@@ -112,7 +116,6 @@ func _on_http_request_completed(result: int, response_code: int, headers: Packed
 			label_errores.show()
 	else:
 		#ERROR (Ej: 401 Credenciales inválidas, 404 No encontrado, etc.)
-		
 		# Intentamos leer el mensaje de error de NestJS
 		var response_string = body.get_string_from_utf8()
 		var error_data = JSON.parse_string(response_string)

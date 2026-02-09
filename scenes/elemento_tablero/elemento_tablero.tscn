@@ -1,12 +1,22 @@
-[gd_scene load_steps=3 format=3 uid="uid://cb12yldddqjge"]
+[gd_scene load_steps=8 format=3 uid="uid://cb12yldddqjge"]
 
 [ext_resource type="Script" uid="uid://dhdduwuuvdrir" path="res://scripts/elemento_tablero.gd" id="1_gd1fq"]
-[ext_resource type="Texture2D" uid="uid://b808yepro7lbj" path="res://icon.svg" id="2_8ofc4"]
+[ext_resource type="Texture2D" uid="uid://l6o7scu8m3ee" path="res://assets/elements/moneda.png" id="2_hxdfs"]
+[ext_resource type="Texture2D" uid="uid://d3y3ywj1ejr41" path="res://assets/elements/llave.png" id="3_a1pjf"]
+[ext_resource type="Texture2D" uid="uid://d383xbb325a0k" path="res://assets/elements/tesoro.png" id="4_8kvfc"]
+[ext_resource type="Texture2D" uid="uid://clrspowki56bl" path="res://assets/elements/enemigo.png" id="5_psvof"]
+[ext_resource type="Texture2D" uid="uid://bh6booi71luc2" path="res://assets/elements/obstaculo_roca.png" id="6_34ahv"]
+[ext_resource type="Texture2D" uid="uid://dlmdnsobsb6r7" path="res://assets/elements/puente.png" id="7_u3npu"]
 
 [node name="ElementoTablero" type="Node2D" node_paths=PackedStringArray("sprite")]
 script = ExtResource("1_gd1fq")
 sprite = NodePath("Sprite2D")
+tex_moneda = ExtResource("2_hxdfs")
+tex_llave = ExtResource("3_a1pjf")
+tex_cofre = ExtResource("4_8kvfc")
+tex_enemigo = ExtResource("5_psvof")
+tex_obstaculo = ExtResource("6_34ahv")
+tex_puente_inactivo = ExtResource("7_u3npu")
+tex_puente_activo = ExtResource("7_u3npu")
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
-scale = Vector2(0.25, 0.25)
-texture = ExtResource("2_8ofc4")

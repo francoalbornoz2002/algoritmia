@@ -25,6 +25,11 @@ GameData="*res://scripts/game_data.gd"
 
 enabled=PackedStringArray("res://addons/godot-sqlite/plugin.cfg")
 
+[gui]
+
+theme/custom="uid://b15du5cfuk0ig"
+theme/custom_font="uid://c1rri638e47ue"
+
 [input]
 
 recoger_llave={

@@ -1,6 +1,10 @@
 extends Node2D
 
 func _ready():
+	# Aseguramos que la grilla se dibuje por encima del TileMap (Suelo)
+	z_index = 10
+	# Ocultamos la grilla visualmente para que se aprecie el suelo renderizado
+	visible = false
 	# Forzamos el redibujado al iniciar
 	queue_redraw()
 

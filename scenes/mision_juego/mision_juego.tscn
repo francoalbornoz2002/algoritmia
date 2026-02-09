@@ -1,17 +1,259 @@
-[gd_scene load_steps=10 format=3 uid="uid://2jepe683syd0"]
+[gd_scene load_steps=24 format=3 uid="uid://2jepe683syd0"]
 
-[ext_resource type="Texture2D" uid="uid://b808yepro7lbj" path="res://icon.svg" id="1_64tsv"]
 [ext_resource type="Script" uid="uid://bxur2wp0du33t" path="res://scenes/mision_juego/mision_juego.gd" id="1_kmg2i"]
+[ext_resource type="Texture2D" uid="uid://cy7w5a7mu2a5i" path="res://assets/tileset/FieldsTile_59.png" id="2_bv6hu"]
 [ext_resource type="Script" uid="uid://bmnei8fvcjj7b" path="res://scenes/mision_juego/debug_grilla.gd" id="2_nlnw5"]
 [ext_resource type="Script" uid="uid://b5pfn0gr0oaia" path="res://scenes/mision_juego/code_edit.gd" id="2_u8nxi"]
+[ext_resource type="Texture2D" uid="uid://ua4rfg7rv4kd" path="res://assets/tileset/FieldsTile_35.png" id="3_7hffk"]
 [ext_resource type="Script" uid="uid://bjikulbhte535" path="res://scripts/jugador_grid.gd" id="3_v32ml"]
+[ext_resource type="Texture2D" uid="uid://btnjemot3nump" path="res://assets/tileset/FieldsTile_04.png" id="4_abxeu"]
+[ext_resource type="Texture2D" uid="uid://ogxf0udhnw2c" path="res://assets/tileset/FieldsTile_21.png" id="5_ktdj7"]
+[ext_resource type="Texture2D" uid="uid://c657d3a5fclrp" path="res://assets/tileset/FieldsTile_17.png" id="6_b7bg2"]
 [ext_resource type="Script" uid="uid://dbkn78vqq1sy4" path="res://scenes/mision_juego/ejecutor_algoritmo.gd" id="6_xnhqp"]
+[ext_resource type="Texture2D" uid="uid://b0w53vrxoff2w" path="res://assets/tileset/FieldsTile_06.png" id="7_03h6q"]
+[ext_resource type="Texture2D" uid="uid://uved6jpsosyv" path="res://assets/tileset/FieldsTile_12.png" id="8_ih85b"]
+[ext_resource type="Texture2D" uid="uid://cdmemmltqvobs" path="res://assets/tileset/FieldsTile_26.png" id="9_fe2i8"]
+[ext_resource type="Texture2D" uid="uid://dtp0hajxbrjq4" path="res://assets/tileset/FieldsTile_28.png" id="10_utjwa"]
+[ext_resource type="Texture2D" uid="uid://3lax3avyhii" path="res://assets/character/Character_Walk.png" id="14_bv6hu"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_xnhqp"]
 bg_color = Color(0.2509804, 0.2509804, 0.2509804, 1)
 
-[sub_resource type="TileSet" id="TileSet_kmg2i"]
-tile_size = Vector2i(32, 32)
+[sub_resource type="Animation" id="Animation_abxeu"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Sprite:texture:load_path")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": ["res://.godot/imported/Character_Walk.png-f454a7a29c13b0cf379bdf179ad485f7.ctex"]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("Sprite:hframes")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [4]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("Sprite:vframes")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [4]
+}
+tracks/3/type = "value"
+tracks/3/imported = false
+tracks/3/enabled = true
+tracks/3/path = NodePath("Sprite:frame")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
+tracks/3/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [8]
+}
+
+[sub_resource type="Animation" id="Animation_7hffk"]
+resource_name = "caminar_abajo"
+length = 0.8
+loop_mode = 1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Sprite:texture:load_path")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": ["res://.godot/imported/Character_Walk.png-f454a7a29c13b0cf379bdf179ad485f7.ctex"]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("Sprite:hframes")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [4]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("Sprite:vframes")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [4]
+}
+tracks/3/type = "value"
+tracks/3/imported = false
+tracks/3/enabled = true
+tracks/3/path = NodePath("Sprite:frame")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
+tracks/3/keys = {
+"times": PackedFloat32Array(0, 0.2, 0.4, 0.6),
+"transitions": PackedFloat32Array(1, 1, 1, 1),
+"update": 1,
+"values": [12, 13, 14, 15]
+}
+
+[sub_resource type="Animation" id="Animation_ktdj7"]
+resource_name = "caminar_arriba"
+length = 0.8
+loop_mode = 1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Sprite:hframes")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [4]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("Sprite:vframes")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [4]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("Sprite:frame")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0, 0.2, 0.4, 0.6),
+"transitions": PackedFloat32Array(1, 1, 1, 1),
+"update": 1,
+"values": [8, 9, 10, 11]
+}
+
+[sub_resource type="Animation" id="Animation_b7bg2"]
+resource_name = "caminar_derecha"
+length = 0.8
+loop_mode = 1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Sprite:hframes")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [4]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("Sprite:vframes")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [4]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("Sprite:frame")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0, 0.2, 0.4, 0.6),
+"transitions": PackedFloat32Array(1, 1, 1, 1),
+"update": 1,
+"values": [4, 5, 6, 7]
+}
+
+[sub_resource type="Animation" id="Animation_03h6q"]
+resource_name = "caminar_izquierda"
+length = 0.8
+loop_mode = 1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Sprite:hframes")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [4]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("Sprite:vframes")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [4]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("Sprite:frame")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0, 0.2, 0.4, 0.6),
+"transitions": PackedFloat32Array(1, 1, 1, 1),
+"update": 1,
+"values": [0, 1, 2, 3]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_ih85b"]
+_data = {
+&"RESET": SubResource("Animation_abxeu"),
+&"caminar_abajo": SubResource("Animation_7hffk"),
+&"caminar_arriba": SubResource("Animation_ktdj7"),
+&"caminar_derecha": SubResource("Animation_b7bg2"),
+&"caminar_izquierda": SubResource("Animation_03h6q")
+}
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_64tsv"]
 size = Vector2(64, 64)
@@ -30,6 +272,15 @@ boton_ejecutar = NodePath("CapaUI/VBoxContainer/HBoxContainer/Ejecutar")
 consola_visual = NodePath("CapaUI/SalidaConsola")
 ejecutor = NodePath("EjecutorAlgoritmo")
 timer_reinicio = NodePath("TimerReinicio")
+tex_suelo_centro = ExtResource("2_bv6hu")
+tex_borde_sup = ExtResource("3_7hffk")
+tex_borde_inf = ExtResource("4_abxeu")
+tex_borde_izq = ExtResource("5_ktdj7")
+tex_borde_der = ExtResource("6_b7bg2")
+tex_esquina_sup_izq = ExtResource("7_03h6q")
+tex_esquina_sup_der = ExtResource("8_ih85b")
+tex_esquina_inf_izq = ExtResource("9_fe2i8")
+tex_esquina_inf_der = ExtResource("10_utjwa")
 
 [node name="CapaFondo" type="CanvasLayer" parent="."]
 layer = -1
@@ -39,6 +290,8 @@ z_index = -10
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+offset_left = 4.0
+offset_right = 4.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 1
@@ -148,19 +401,29 @@ render_target_update_mode = 4
 [node name="DebugGrilla" type="Node2D" parent="ContenedorJuego/SubViewport/Tablero"]
 script = ExtResource("2_nlnw5")
 
-[node name="MapaMision" type="TileMapLayer" parent="ContenedorJuego/SubViewport/Tablero"]
-tile_set = SubResource("TileSet_kmg2i")
+[node name="MapaMision" type="Node2D" parent="ContenedorJuego/SubViewport/Tablero"]
 
 [node name="Entidades" type="Node2D" parent="ContenedorJuego/SubViewport/Tablero"]
 
-[node name="Jugador" type="CharacterBody2D" parent="ContenedorJuego/SubViewport/Tablero/Entidades" node_paths=PackedStringArray("camara")]
+[node name="Jugador" type="CharacterBody2D" parent="ContenedorJuego/SubViewport/Tablero/Entidades" node_paths=PackedStringArray("camara", "anim_player", "sprite_personaje")]
 scale = Vector2(0.5, 0.5)
 script = ExtResource("3_v32ml")
 camara = NodePath("Camera2D")
+anim_player = NodePath("AnimationPlayer")
+sprite_personaje = NodePath("Sprite")
 
 [node name="Sprite" type="Sprite2D" parent="ContenedorJuego/SubViewport/Tablero/Entidades/Jugador"]
-scale = Vector2(0.5, 0.5)
-texture = ExtResource("1_64tsv")
+position = Vector2(1.1920929e-05, 4.7683716e-06)
+scale = Vector2(2, 1.5)
+texture = ExtResource("14_bv6hu")
+hframes = 4
+vframes = 4
+frame = 8
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="ContenedorJuego/SubViewport/Tablero/Entidades/Jugador"]
+libraries = {
+&"": SubResource("AnimationLibrary_ih85b")
+}
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="ContenedorJuego/SubViewport/Tablero/Entidades/Jugador"]
 shape = SubResource("RectangleShape2D_64tsv")

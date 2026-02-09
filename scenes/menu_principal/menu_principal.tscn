@@ -1,8 +1,15 @@
-[gd_scene load_steps=2 format=3 uid="uid://2d7epc27enga"]
+[gd_scene load_steps=6 format=3 uid="uid://2d7epc27enga"]
 
 [ext_resource type="Script" uid="uid://dy744akcvrh3s" path="res://scenes/menu_principal/menu_principal.gd" id="1_8ncyy"]
+[ext_resource type="Texture2D" uid="uid://bs6w6bpa5g3y6" path="res://assets/logo_juego.png" id="2_logo"]
+[ext_resource type="Texture2D" uid="uid://ddopj1a7llyxi" path="res://assets/ui/background.png" id="3_bg"]
+[ext_resource type="Texture2D" uid="uid://wx55eeehicy4" path="res://assets/ui/grilla_niveles.png" id="3_k8e8i"]
 
-[node name="Menu" type="Control"]
+[sub_resource type="AtlasTexture" id="AtlasTexture_panel"]
+atlas = ExtResource("3_k8e8i")
+region = Rect2(7, 144, 34, 37)
+
+[node name="Menu" type="Control" node_paths=PackedStringArray("label_usuario")]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -10,6 +17,46 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_8ncyy")
+label_usuario = NodePath("LabelUsuario")
+
+[node name="Fondo" type="TextureRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("3_bg")
+expand_mode = 1
+stretch_mode = 6
+
+[node name="FiltroOscuro" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 0.4)
+
+[node name="PanelContenedor" type="NinePatchRect" parent="."]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -178.0
+offset_top = -9.0
+offset_right = 179.0
+offset_bottom = 179.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = SubResource("AtlasTexture_panel")
+patch_margin_left = 20
+patch_margin_top = 20
+patch_margin_right = 20
+patch_margin_bottom = 20
 
 [node name="VBoxContainer2" type="VBoxContainer" parent="."]
 layout_mode = 1
@@ -18,19 +65,53 @@ anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -20.0
-offset_top = -20.0
-offset_right = 20.0
-offset_bottom = 20.0
+offset_left = -150.0
+offset_top = 4.0
+offset_right = 150.0
+offset_bottom = 184.0
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_constants/separation = 15
 alignment = 1
 
 [node name="Jugar" type="Button" parent="VBoxContainer2"]
-custom_minimum_size = Vector2(300, 80)
+custom_minimum_size = Vector2(300, 50)
 layout_mode = 2
-theme_override_font_sizes/font_size = 30
-text = "Jugar (DEMO)"
+theme_override_font_sizes/font_size = 24
+text = "Jugar"
+
+[node name="Salir" type="Button" parent="VBoxContainer2"]
+custom_minimum_size = Vector2(300, 50)
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+text = "Salir"
+
+[node name="LabelUsuario" type="Label" parent="."]
+layout_mode = 1
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 20.0
+offset_top = -40.0
+offset_right = 320.0
+offset_bottom = -10.0
+grow_vertical = 0
+theme_override_font_sizes/font_size = 18
+text = "Alumno: Cargando..."
+
+[node name="Logo" type="TextureRect" parent="."]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -178.0
+offset_top = 98.0
+offset_right = 179.0
+offset_bottom = 272.0
+grow_horizontal = 2
+texture = ExtResource("2_logo")
+expand_mode = 1
+stretch_mode = 5
 
 [connection signal="pressed" from="VBoxContainer2/Jugar" to="." method="_on_jugar_pressed"]
+[connection signal="pressed" from="VBoxContainer2/Salir" to="." method="_on_salir_pressed"]

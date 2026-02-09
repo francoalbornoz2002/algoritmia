@@ -252,6 +252,13 @@ func obtener_id_alumno_actual() -> String:
 	# Devolvemos el ID
 	return db.query_result[0]["id"]
 
+## Obtiene el objeto completo del alumno actual (Nombre, Apellido, etc.)
+func obtener_alumno_actual() -> Dictionary:
+	var exito = db.query("SELECT * FROM alumno LIMIT 1;")
+	if not exito or db.query_result.is_empty():
+		return {}
+	return db.query_result[0]
+
 
 ## Escribe una misión completada en la BD local.
 ## Usa "INSERT OR REPLACE" para sobrescribir si ya existía (ej: la jugó offline 2 veces).

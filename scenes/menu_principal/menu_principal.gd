@@ -1,8 +1,19 @@
 extends Control
 
+@export var label_usuario: Label
+
 func _ready():
 	# Verificamos inactividad al iniciar el menú
 	_verificar_inactividad()
+	_mostrar_datos_alumno()
+
+func _mostrar_datos_alumno():
+	var alumno = DatabaseManager.obtener_alumno_actual()
+	if not alumno.is_empty():
+		var texto = "Alumno: %s %s" % [alumno["nombre"], alumno["apellido"]]
+		if label_usuario: label_usuario.text = texto
+	else:
+		if label_usuario: label_usuario.text = "Alumno: Invitado"
 
 func _verificar_inactividad():
 	# 1. Obtenemos el timestamp de la última vez que jugó (desde la BD local)
@@ -52,19 +63,7 @@ func _iniciar_mision_especial():
 	get_tree().change_scene_to_file("res://scenes/mision_juego/mision_juego.tscn")
 
 func _on_jugar_pressed() -> void:
-	print("--- Iniciando Misión de Campaña (Prueba) ---")
-	
-	# 1. Obtener la misión del catálogo (Usando la clave que definimos)
-	var mision = CatalogoMisiones.obtener_mision("campana_01")
-	
-	if mision == null:
-		print("Error: No se encontró la misión 'campana_01'")
-		return
-	
-	# 2. Inyectar en el catálogo local (Tabla 'misiones')
-	# Requerido para evitar el error de Foreign Key al guardar el progreso
-	DatabaseManager.insertar_mision_demo_catalogo(mision)
-	
-	# 3. Iniciar Juego
-	GameData.mision_seleccionada = mision
-	get_tree().change_scene_to_file("res://scenes/mision_juego/mision_juego.tscn")
+	get_tree().change_scene_to_file("res://scenes/selector_misiones/selector_misiones.tscn")
+
+func _on_salir_pressed() -> void:
+	get_tree().quit()

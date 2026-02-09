@@ -2,7 +2,7 @@ extends Node2D
 
 # --- REFERENCIAS ---
 @export var tablero: Node2D
-@export var mapa_visual: TileMapLayer
+@export var mapa_visual: Node2D
 @export var jugador: CharacterBody2D
 @export var entidades_container: Node2D
 var analista_dificultad: AnalistaDificultad
@@ -23,6 +23,17 @@ var ejecutando_codigo: bool = false
 var sandbox: bool = false
 var juego_fallido: bool = false # Bandera para abortar secuencia si hay Game Over
 var intentos_totales: int = 0
+
+@export_group("Configuración Visual del Mapa")
+@export var tex_suelo_centro: Texture2D
+@export var tex_borde_sup: Texture2D
+@export var tex_borde_inf: Texture2D
+@export var tex_borde_izq: Texture2D
+@export var tex_borde_der: Texture2D
+@export var tex_esquina_sup_izq: Texture2D
+@export var tex_esquina_sup_der: Texture2D
+@export var tex_esquina_inf_izq: Texture2D
+@export var tex_esquina_inf_der: Texture2D
 
 # --- SISTEMA DE MISIONES ---
 var mision_actual_def: DefinicionMision = null
@@ -88,6 +99,9 @@ func cargar_mision(definicion: DefinicionMision):
 	# Pasamos el tamaño del mapa al ejecutor para validaciones estáticas (LP-02)
 	if ejecutor: ejecutor.tamano_mapa_ref = definicion.tamano_mapa
 	
+	# Generamos el suelo visualmente
+	_generar_suelo(definicion.tamano_mapa)
+	
 	# Preparamos el primer caso de prueba visualmente para que el alumno vea el escenario 1
 	_preparar_caso_prueba(0)
 
@@ -129,6 +143,39 @@ func spawn_elemento(pos: Vector2i, tipo):
 	
 	# Registramos en la memoria del GridManager
 	GridManager.registrar_objeto(pos, nuevo_elemento)
+
+func _generar_suelo(tamano: Vector2i):
+	if not mapa_visual: return
+	
+	# Limpiamos los sprites anteriores (hijos del nodo mapa)
+	for child in mapa_visual.get_children():
+		child.queue_free()
+	
+	for x in range(tamano.x):
+		for y in range(tamano.y):
+			var textura_a_usar = tex_suelo_centro
+			
+			# Lógica visual: En GridManager Y=0 es ABAJO (Valle 1), Y=Max es ARRIBA
+			var es_abajo = (y == 0)
+			var es_arriba = (y == tamano.y - 1)
+			var es_izq = (x == 0)
+			var es_der = (x == tamano.x - 1)
+			
+			if es_arriba and es_izq: textura_a_usar = tex_esquina_sup_izq
+			elif es_arriba and es_der: textura_a_usar = tex_esquina_sup_der
+			elif es_abajo and es_izq: textura_a_usar = tex_esquina_inf_izq
+			elif es_abajo and es_der: textura_a_usar = tex_esquina_inf_der
+			elif es_arriba: textura_a_usar = tex_borde_sup
+			elif es_abajo: textura_a_usar = tex_borde_inf
+			elif es_izq: textura_a_usar = tex_borde_izq
+			elif es_der: textura_a_usar = tex_borde_der
+			
+			if textura_a_usar:
+				var sprite = Sprite2D.new()
+				sprite.texture = textura_a_usar
+				# Usamos GridManager para obtener la posición exacta en pixeles
+				sprite.position = GridManager.grid_to_world(Vector2i(x, y))
+				mapa_visual.add_child(sprite)
 
 # --- LÓGICA DE EJECUCIÓN (TEST RUNNER) ---
 func _on_ejecutar_pressed():

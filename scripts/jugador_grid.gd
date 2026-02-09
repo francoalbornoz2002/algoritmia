@@ -7,6 +7,8 @@ const TIEMPO_PAUSA_INSTRUCCION = 0.1
 const TIEMPO_ACCION = 0.5 # Tiempo de espera para recolectar/atacar
 
 @export var camara: Camera2D
+@export var anim_player: AnimationPlayer
+@export var sprite_personaje: Sprite2D
 
 # Estado
 var esta_actuando: bool = false
@@ -14,6 +16,7 @@ var posicion_actual: Vector2i = Vector2i.ZERO
 var direccion_actual: Vector2i = Vector2i(0, 1) # (0, 1) es ARRIBA lógico
 var inventario = {"monedas": 0, "llaves": 0}
 var analista: AnalistaDificultad = null
+var _tween_movimiento: Tween = null
 
 # --- SEÑALES ---
 signal game_over_triggered(mensaje)
@@ -23,7 +26,7 @@ func _ready():
 	# 1. Configuración Inicial de Posición
 	posicion_actual = GridManager.world_to_grid(position)
 	teletransportar_a(posicion_actual)
-	rotation_degrees = 0
+	_actualizar_idle()
 	
 	# 2. --- LÍMITES DE LA CÁMARA ---
 	if camara:
@@ -45,8 +48,10 @@ func avanzar():
 		return
 		
 	var celda_destino = posicion_actual + direccion_actual
+	_reproducir_anim("caminar")
 	await mover_a_celda(celda_destino)
 	await get_tree().create_timer(TIEMPO_PAUSA_INSTRUCCION).timeout
+	_actualizar_idle()
 	return true
 
 func girar_derecha():
@@ -64,10 +69,9 @@ func girar_derecha():
 	
 	print("Girando. Nueva dirección: ", direccion_actual)
 	
-	# 3. Animación de Giro (Tween)
-	var tween = create_tween()
-	tween.tween_property(self, "rotation_degrees", rotation_degrees + 90, TIEMPO_GIRO)
-	await tween.finished
+	# 3. Actualizar animación a la nueva dirección (Idle)
+	_actualizar_idle()
+	await get_tree().create_timer(TIEMPO_GIRO).timeout
 	esta_actuando = false
 	await get_tree().create_timer(TIEMPO_PAUSA_INSTRUCCION).timeout
 
@@ -207,11 +211,13 @@ func atacar():
 	
 	# 3. Éxito: Eliminar Enemigo
 	print("¡Enemigo atacado y derrotado!")
+	_reproducir_anim("atacar")
 	GridManager.quitar_objeto(celda_objetivo)
 	objeto.recoger() # Usamos la animación de desaparecer temporalmente
 	
 	# Pausa para ver la acción
 	await get_tree().create_timer(TIEMPO_ACCION).timeout
+	_actualizar_idle()
 	esta_actuando = false
 
 # --- PRIMITIVAS DEL PSEUDOCÓDIGO (Saltar) ---
@@ -241,18 +247,30 @@ func saltar():
 
 	# 4. Éxito: Movimiento de Salto (Tween complejo que simule salto)
 	print("¡Saltando!")
+	# Como no hay animación de salto, usamos caminar
+	_reproducir_anim("caminar")
 	
 	# Animación de salto simple (Mover Y arriba y luego abajo, mientras avanza X/Y)
 	var destino_pixel = GridManager.grid_to_world(celda_destino)
-	var tween = create_tween()
 	
-	# Animación Salto (Arco)
-	tween.tween_property(self, "position:y", position.y - GridManager.TAMANO_CELDA, TIEMPO_MOVIMIENTO / 2)
-	tween.tween_property(self, "position", destino_pixel, TIEMPO_MOVIMIENTO / 2).set_delay(TIEMPO_MOVIMIENTO / 4)
+	if _tween_movimiento and _tween_movimiento.is_valid():
+		_tween_movimiento.kill()
+	_tween_movimiento = create_tween()
+	
+	# Movimiento lineal hacia el destino
+	_tween_movimiento.tween_property(self , "position", destino_pixel, TIEMPO_MOVIMIENTO)
+	
+	# Simulación de arco de salto (Moviendo el sprite localmente hacia arriba y abajo)
+	if sprite_personaje:
+		var tween_arc = create_tween()
+		var altura_salto = 24 # Pixeles hacia arriba
+		tween_arc.tween_property(sprite_personaje, "position:y", -altura_salto, TIEMPO_MOVIMIENTO / 2).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+		tween_arc.tween_property(sprite_personaje, "position:y", 0, TIEMPO_MOVIMIENTO / 2).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
 	
 	# Actualizamos la posición lógica al final
 	posicion_actual = celda_destino
-	await tween.finished # Esperar animación
+	await _tween_movimiento.finished # Esperar animación
+	_actualizar_idle()
 	esta_actuando = false
 	return true
 
@@ -402,19 +420,28 @@ func mover_a_celda(celda_destino: Vector2i):
 	print("avanzando...")
 	posicion_actual = celda_destino # Actualizamos lógica ya
 	var destino_pixel = GridManager.grid_to_world(celda_destino)
-	var tween = create_tween()
-	tween.tween_property(self, "position", destino_pixel, TIEMPO_MOVIMIENTO)
-	await tween.finished
+	
+	if _tween_movimiento and _tween_movimiento.is_valid():
+		_tween_movimiento.kill()
+	_tween_movimiento = create_tween()
+	_tween_movimiento.tween_property(self , "position", destino_pixel, TIEMPO_MOVIMIENTO)
+	await _tween_movimiento.finished
 	print("ya avanzó...")
 	esta_actuando = false
 
 func teletransportar_a(celda_destino: Vector2i):
+	# 1. Detener cualquier animación o movimiento físico en curso
+	if anim_player:
+		anim_player.stop()
+	if _tween_movimiento and _tween_movimiento.is_valid():
+		_tween_movimiento.kill()
+		
 	posicion_actual = celda_destino
 	position = GridManager.grid_to_world(celda_destino)
 	esta_actuando = false
-	# Resetear rotación y dirección al inicio (Mirando arriba)
-	rotation_degrees = 0
+	# Resetear dirección al inicio (Mirando arriba)
 	direccion_actual = Vector2i(0, 1)
+	_actualizar_idle()
 
 # --- NUEVA FUNCIÓN DE VERIFICACIÓN (Peligro Enemigo/Obstáculo) ---
 func _verificar_peligro_inminente() -> bool:
@@ -464,3 +491,29 @@ func game_over(razon: String):
 func _esperar_muerte():
 	# Esperamos 10 segundos (tiempo de sobra para que queue_free elimine el nodo)
 	await get_tree().create_timer(10.0).timeout
+
+# --- SISTEMA DE ANIMACIONES ---
+
+func _obtener_sufijo_direccion() -> String:
+	# Mapeo de Vector dirección a nombre de animación
+	if direccion_actual == Vector2i(0, 1): return "_arriba"
+	if direccion_actual == Vector2i(0, -1): return "_abajo"
+	if direccion_actual == Vector2i(1, 0): return "_derecha"
+	if direccion_actual == Vector2i(-1, 0): return "_izquierda"
+	return "_abajo" # Default
+
+func _reproducir_anim(nombre_base: String):
+	if not anim_player: return
+	var nombre_final = nombre_base + _obtener_sufijo_direccion()
+	
+	if anim_player.has_animation(nombre_final):
+		anim_player.play(nombre_final)
+	else:
+		# Fallback: Si no existe 'idle_arriba', intentamos poner el primer frame de 'caminar_arriba'
+		var fallback = "caminar" + _obtener_sufijo_direccion()
+		if nombre_base == "idle" and anim_player.has_animation(fallback):
+			anim_player.play(fallback)
+			anim_player.stop() # Nos quedamos en el primer frame de la caminata (pose quieta)
+
+func _actualizar_idle():
+	_reproducir_anim("idle")
