@@ -25,15 +25,15 @@ var juego_fallido: bool = false # Bandera para abortar secuencia si hay Game Ove
 var intentos_totales: int = 0
 
 @export_group("Configuración Visual del Mapa")
-@export var tex_suelo_centro: Texture2D
-@export var tex_borde_sup: Texture2D
-@export var tex_borde_inf: Texture2D
-@export var tex_borde_izq: Texture2D
-@export var tex_borde_der: Texture2D
-@export var tex_esquina_sup_izq: Texture2D
-@export var tex_esquina_sup_der: Texture2D
-@export var tex_esquina_inf_izq: Texture2D
-@export var tex_esquina_inf_der: Texture2D
+@export var tex_suelo_centro: Texture2D # 5, 3
+@export var tex_borde_sup: Texture2D # 6, 5
+@export var tex_borde_inf: Texture2D # 6, 4
+@export var tex_borde_izq: Texture2D # 3, 5
+@export var tex_borde_der: Texture2D # 2, 5
+@export var tex_esquina_sup_izq: Texture2D # 0, 7
+@export var tex_esquina_sup_der: Texture2D # 1, 7
+@export var tex_esquina_inf_izq: Texture2D # 5, 7
+@export var tex_esquina_inf_der: Texture2D # 4 ,7
 
 # --- SISTEMA DE MISIONES ---
 var mision_actual_def: DefinicionMision = null

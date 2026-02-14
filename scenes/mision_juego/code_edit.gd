@@ -1,12 +1,23 @@
 extends CodeEdit
 
 func _ready():
+	# --- 1. CONFIGURACIÓN VISUAL DEL EDITOR (FONDO CLARO) ---
 	
-	# --- CONFIGURAR EL RESALTADOR (HIGHLIGHTER) ---
+	# Color del texto base (Gris casi negro)
+	add_theme_color_override("font_color", Color("24292e"))
+	# Color de la línea actual (Un sombreado muy suave para resaltar dónde escribes)
+	add_theme_color_override("current_line_color", Color("00000064"))
+	
+	# --- 2. CONFIGURAR EL RESALTADOR (HIGHLIGHTER) ---
 	var highlighter = CodeHighlighter.new()
 	
-	# 1. Palabras Reservadas (Estructura) - Color Púrpura/Rosa
-	var color_estructura = Color("ff7085") # Un rosado tipo GDScript
+	# Colores Dinámicos Globales
+	highlighter.symbol_color = Color("d73a49") # Rojo vinotinto para: = < > ! :
+	highlighter.number_color = Color("005cc5") # Azul intenso para los números
+	highlighter.member_variable_color = Color("24292e") # Variables en el color base
+	
+	# A. Palabras Reservadas (Estructura) - Púrpura Profundo
+	var color_estructura = Color("502b90ff")
 	highlighter.add_keyword_color("Inicio", color_estructura)
 	highlighter.add_keyword_color("Fin", color_estructura)
 	highlighter.add_keyword_color("Si", color_estructura)
@@ -18,13 +29,13 @@ func _ready():
 	highlighter.add_keyword_color("var", color_estructura)
 	highlighter.add_keyword_color("proceso", color_estructura)
 	
-	# 2. Para tipos
-	var color_tipos = Color("008650ff")
+	# B. Para tipos de datos - Verde Bosque
+	var color_tipos = Color("22863a")
 	highlighter.add_keyword_color("entero", color_tipos)
 	highlighter.add_keyword_color("real", color_tipos)
 
-	# 3. Funciones/Instrucciones (Acciones) - Color Azul/Celeste
-	var color_accion = Color("42ffc2") # Un cyan brillante
+	# C. Funciones/Instrucciones (Acciones) - Azul Marino
+	var color_accion = Color("0050a1")
 	highlighter.add_keyword_color("avanzar", color_accion)
 	highlighter.add_keyword_color("derecha", color_accion)
 	highlighter.add_keyword_color("saltar", color_accion)
@@ -34,8 +45,8 @@ func _ready():
 	highlighter.add_keyword_color("abrirCofre", color_accion)
 	highlighter.add_keyword_color("activarPuente", color_accion)
 	
-	# 3. Sensores (Retornan valor) - Color Naranja
-	var color_sensor = Color("ffbd42")
+	# D. Sensores (Retornan valor) - Marrón/Ocre Quemado
+	var color_sensor = Color("a04100")
 	highlighter.add_keyword_color("hayMoneda", color_sensor)
 	highlighter.add_keyword_color("hayLlave", color_sensor)
 	highlighter.add_keyword_color("hayCofre", color_sensor)
@@ -47,11 +58,11 @@ func _ready():
 	highlighter.add_keyword_color("tengoMoneda", color_sensor)
 	highlighter.add_keyword_color("tengoLlave", color_sensor)
 
-	# 4. Comentarios - Color Gris
-	highlighter.add_color_region("#", "", Color("6e6e6e"), true) # True = hasta fin de linea
+	# E. Comentarios - Gris Medio
+	highlighter.add_color_region("#", "", Color("6a737d"), true)
 	
 	# Aplicamos el resaltador al editor
 	syntax_highlighter = highlighter
 
-	# Texto por defecto (Placeholder)
-	text = "Inicio\n\t# Escribe tu algoritmo aquí\n\t\nFin"
+	# Texto por defecto
+	text = "Inicio\n\t# Escribe tu algoritmo aquí\n\tvar puntos = 10\n\t\n\tSi hayMoneda entonces\n\t\trecogerMoneda\n\tFin\nFin"

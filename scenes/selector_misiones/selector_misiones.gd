@@ -36,6 +36,11 @@ func _cargar_misiones():
 	
 	var indice = 1
 	for mision in misiones:
+		var mision_a_usar = mision
+		# HARDCODE: Forzamos que el Nivel 1 use la misión de prueba configurada
+		if indice == 1:
+			mision_a_usar = MisionesCampana.crear_mision_01_bucle_basico()
+
 		var btn = TextureButton.new()
 		btn.focus_mode = Control.FOCUS_NONE
 		
@@ -65,8 +70,13 @@ func _cargar_misiones():
 		lbl_num.add_theme_color_override("font_outline_color", Color.BLACK)
 		btn.add_child(lbl_num)
 		
+		# HARDCODE: Solo habilitar la primera misión para pruebas
+		if indice > 1:
+			btn.disabled = true
+			btn.modulate = Color(0.5, 0.5, 0.5, 0.6) # Feedback visual de bloqueado
+		
 		# Conectar señal pasando la misión como argumento
-		btn.pressed.connect(_abrir_modal.bind(mision))
+		btn.pressed.connect(_abrir_modal.bind(mision_a_usar))
 		
 		grid_container.add_child(btn)
 		indice += 1

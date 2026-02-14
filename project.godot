@@ -8,11 +8,15 @@
 
 config_version=5
 
+[animation]
+
+compatibility/default_parent_skeleton_in_mesh_instance_3d=true
+
 [application]
 
 config/name="Algoritmia"
 run/main_scene="uid://d1h87sddhjkje"
-config/features=PackedStringArray("4.5", "GL Compatibility")
+config/features=PackedStringArray("4.6", "GL Compatibility")
 config/icon="res://icon.svg"
 
 [autoload]
@@ -20,6 +24,10 @@ config/icon="res://icon.svg"
 DatabaseManager="*res://database_manager.gd"
 GestorSincronizacion="*res://scripts/gestor_sincronizacion.gd"
 GameData="*res://scripts/game_data.gd"
+
+[display]
+
+window/canvas_textures/default_texture_filter=1
 
 [editor_plugins]
 
@@ -65,5 +73,6 @@ activar_puente={
 
 [rendering]
 
+textures/canvas_textures/default_texture_filter=0
 renderer/rendering_method="gl_compatibility"
 renderer/rendering_method.mobile="gl_compatibility"

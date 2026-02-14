@@ -1,22 +1,18 @@
-[gd_scene load_steps=7 format=3 uid="uid://dxankpqqxjxoj"]
+[gd_scene format=3 uid="uid://dxankpqqxjxoj"]
 
 [ext_resource type="Script" uid="uid://co2tm7sj6dom" path="res://scenes/selector_misiones/selector_misiones.gd" id="1_4grjp"]
 [ext_resource type="Texture2D" uid="uid://wx55eeehicy4" path="res://assets/ui/grilla_niveles.png" id="2_0l5q7"]
 [ext_resource type="Texture2D" uid="uid://ddopj1a7llyxi" path="res://assets/ui/background.png" id="3_bg"]
 
-[sub_resource type="AtlasTexture" id="AtlasTexture_icon"]
+[sub_resource type="AtlasTexture" id="AtlasTexture_5rqnv"]
 atlas = ExtResource("2_0l5q7")
 region = Rect2(321, 160, 30, 31)
 
-[sub_resource type="AtlasTexture" id="AtlasTexture_5rqnv"]
-atlas = ExtResource("2_0l5q7")
-region = Rect2(353, 160, 30, 31)
-
 [sub_resource type="AtlasTexture" id="AtlasTexture_l00ed"]
 atlas = ExtResource("2_0l5q7")
-region = Rect2(7, 0, 114, 133)
+region = Rect2(7, 144, 34, 37)
 
-[node name="SelectorMisiones" type="Control" node_paths=PackedStringArray("grid_container", "modal_control", "lbl_titulo", "lbl_dificultad", "lbl_descripcion", "btn_jugar_modal")]
+[node name="SelectorMisiones" type="Control" unique_id=2020590789 node_paths=PackedStringArray("grid_container", "modal_control", "lbl_titulo", "lbl_dificultad", "lbl_descripcion", "btn_jugar_modal")]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -30,11 +26,10 @@ lbl_titulo = NodePath("CapaModal/ControlModal/PanelFondo/VBoxContainer/Titulo")
 lbl_dificultad = NodePath("CapaModal/ControlModal/PanelFondo/VBoxContainer/Dificultad")
 lbl_descripcion = NodePath("CapaModal/ControlModal/PanelFondo/VBoxContainer/Descripcion")
 btn_jugar_modal = NodePath("CapaModal/ControlModal/PanelFondo/VBoxContainer/BotonJugar")
-tex_nivel_icono = SubResource("AtlasTexture_icon")
-tex_nivel_pressed = SubResource("AtlasTexture_5rqnv")
+tex_nivel_icono = SubResource("AtlasTexture_5rqnv")
 metadata/_edit_lock_ = true
 
-[node name="Fondo" type="TextureRect" parent="."]
+[node name="Fondo" type="TextureRect" parent="." unique_id=46024753]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -45,7 +40,7 @@ texture = ExtResource("3_bg")
 expand_mode = 1
 stretch_mode = 6
 
-[node name="FiltroOscuro" type="ColorRect" parent="."]
+[node name="FiltroOscuro" type="ColorRect" parent="." unique_id=1993685056]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -54,7 +49,7 @@ grow_horizontal = 2
 grow_vertical = 2
 color = Color(0, 0, 0, 0.4)
 
-[node name="Volver" type="Button" parent="."]
+[node name="Volver" type="Button" parent="." unique_id=1286953210]
 layout_mode = 0
 offset_left = 8.0
 offset_top = 8.0
@@ -63,7 +58,7 @@ offset_bottom = 39.0
 focus_mode = 0
 text = "Volver"
 
-[node name="MisDificultades" type="Button" parent="."]
+[node name="MisDificultades" type="Button" parent="." unique_id=242929148]
 layout_mode = 1
 anchors_preset = 1
 anchor_left = 1.0
@@ -76,7 +71,7 @@ grow_horizontal = 0
 focus_mode = 0
 text = "MD"
 
-[node name="MiProgreso" type="Button" parent="."]
+[node name="MiProgreso" type="Button" parent="." unique_id=2001971542]
 layout_mode = 1
 anchors_preset = 1
 anchor_left = 1.0
@@ -89,7 +84,7 @@ grow_horizontal = 0
 focus_mode = 0
 text = "MP"
 
-[node name="PanelContainer" type="PanelContainer" parent="."]
+[node name="PanelContainer" type="PanelContainer" parent="." unique_id=95483200]
 layout_mode = 1
 anchors_preset = 5
 anchor_left = 0.5
@@ -100,13 +95,13 @@ offset_right = 249.0
 offset_bottom = 48.0
 grow_horizontal = 2
 
-[node name="LabelSelector" type="Label" parent="PanelContainer"]
+[node name="LabelSelector" type="Label" parent="PanelContainer" unique_id=50690986]
 layout_mode = 2
 text = "Selector de Misiones"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="MainCenterContainer" type="CenterContainer" parent="."]
+[node name="MainCenterContainer" type="CenterContainer" parent="." unique_id=156692791]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -118,17 +113,17 @@ offset_bottom = -20.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="PanelNiveles" type="NinePatchRect" parent="MainCenterContainer"]
+[node name="PanelNiveles" type="NinePatchRect" parent="MainCenterContainer" unique_id=1486766555]
 custom_minimum_size = Vector2(550, 550)
 layout_mode = 2
 texture = SubResource("AtlasTexture_l00ed")
-region_rect = Rect2(0, 0, 114, 133)
-patch_margin_left = 15
-patch_margin_top = 15
-patch_margin_right = 15
-patch_margin_bottom = 15
+region_rect = Rect2(0, 0, 34, 37)
+patch_margin_left = 5
+patch_margin_top = 16
+patch_margin_right = 5
+patch_margin_bottom = 5
 
-[node name="CenterContainer" type="CenterContainer" parent="MainCenterContainer/PanelNiveles"]
+[node name="CenterContainer" type="CenterContainer" parent="MainCenterContainer/PanelNiveles" unique_id=718809810]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -136,16 +131,17 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="GridContainer" type="GridContainer" parent="MainCenterContainer/PanelNiveles/CenterContainer"]
+[node name="GridContainer" type="GridContainer" parent="MainCenterContainer/PanelNiveles/CenterContainer" unique_id=262241618]
 layout_mode = 2
 theme_override_constants/h_separation = 15
 theme_override_constants/v_separation = 15
 columns = 5
 
-[node name="CapaModal" type="CanvasLayer" parent="."]
+[node name="CapaModal" type="CanvasLayer" parent="." unique_id=334615294]
 layer = 10
+visible = false
 
-[node name="ControlModal" type="Control" parent="CapaModal"]
+[node name="ControlModal" type="Control" parent="CapaModal" unique_id=1214205443]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -153,7 +149,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="FondoOscuro" type="ColorRect" parent="CapaModal/ControlModal"]
+[node name="FondoOscuro" type="ColorRect" parent="CapaModal/ControlModal" unique_id=1405458080]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -162,7 +158,7 @@ grow_horizontal = 2
 grow_vertical = 2
 color = Color(0, 0, 0, 0.686275)
 
-[node name="PanelFondo" type="NinePatchRect" parent="CapaModal/ControlModal"]
+[node name="PanelFondo" type="NinePatchRect" parent="CapaModal/ControlModal" unique_id=1257696155]
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
@@ -177,12 +173,12 @@ grow_horizontal = 2
 grow_vertical = 2
 texture = SubResource("AtlasTexture_l00ed")
 region_rect = Rect2(0, 0, 114, 133)
-patch_margin_left = 15
+patch_margin_left = 6
 patch_margin_top = 15
-patch_margin_right = 15
-patch_margin_bottom = 15
+patch_margin_right = 12
+patch_margin_bottom = 5
 
-[node name="VBoxContainer" type="VBoxContainer" parent="CapaModal/ControlModal/PanelFondo"]
+[node name="VBoxContainer" type="VBoxContainer" parent="CapaModal/ControlModal/PanelFondo" unique_id=51688696]
 layout_mode = 1
 anchors_preset = -1
 anchor_right = 1.0
@@ -195,7 +191,7 @@ grow_horizontal = 2
 grow_vertical = 2
 theme_override_constants/separation = 15
 
-[node name="Titulo" type="Label" parent="CapaModal/ControlModal/PanelFondo/VBoxContainer"]
+[node name="Titulo" type="Label" parent="CapaModal/ControlModal/PanelFondo/VBoxContainer" unique_id=566420730]
 layout_mode = 2
 theme_override_colors/font_color = Color(0, 0, 0, 1)
 theme_override_font_sizes/font_size = 16
@@ -203,14 +199,14 @@ text = "Título de la Misión"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="Dificultad" type="Label" parent="CapaModal/ControlModal/PanelFondo/VBoxContainer"]
+[node name="Dificultad" type="Label" parent="CapaModal/ControlModal/PanelFondo/VBoxContainer" unique_id=1725535791]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.2, 0.2, 0.2, 1)
 theme_override_font_sizes/font_size = 14
 text = "Dificultad: Fácil"
 horizontal_alignment = 1
 
-[node name="Descripcion" type="Label" parent="CapaModal/ControlModal/PanelFondo/VBoxContainer"]
+[node name="Descripcion" type="Label" parent="CapaModal/ControlModal/PanelFondo/VBoxContainer" unique_id=233551957]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
@@ -220,14 +216,14 @@ text = "Descripción detallada de la misión..."
 autowrap_mode = 3
 justification_flags = 160
 
-[node name="BotonJugar" type="Button" parent="CapaModal/ControlModal/PanelFondo/VBoxContainer"]
+[node name="BotonJugar" type="Button" parent="CapaModal/ControlModal/PanelFondo/VBoxContainer" unique_id=866610285]
 custom_minimum_size = Vector2(0, 50)
 layout_mode = 2
-theme_override_font_sizes/font_size = 24
 focus_mode = 0
+theme_override_font_sizes/font_size = 24
 text = "JUGAR"
 
-[node name="BotonCerrar" type="Button" parent="CapaModal/ControlModal/PanelFondo"]
+[node name="BotonCerrar" type="Button" parent="CapaModal/ControlModal/PanelFondo" unique_id=1976227561]
 layout_mode = 1
 anchors_preset = 1
 anchor_left = 1.0

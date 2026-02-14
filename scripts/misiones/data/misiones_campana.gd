@@ -3,37 +3,40 @@ class_name MisionesCampana extends RefCounted
 # Misión 1: Introducción a Bucles (Mientras)
 static func crear_mision_01_bucle_basico() -> DefinicionMision:
 	var mision = DefinicionMision.new()
-	# UUID fijo para sincronización (Ejemplo)
-	mision.id = "9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d" # UUID v4 válido y fijo
-	mision.titulo = "Mision Campaña (Demo)"
-	mision.dificultad_mision = "Facil"
-	mision.descripcion = "Recorre todo el sendero 1 recolectando las monedas que encuentres en el camino."
+	mision.id = "9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d"
+	mision.titulo = "Misión 1"
+	mision.descripcion = "Recorre el Sendero 3. Tu objetivo es recolecta todas las monedas, elimina a cualquier enemigo y elude obstáculos."
 	mision.tamano_mapa = Vector2i(25, 25)
-	
-	# --- CASO 1: Distancia Corta (5 pasos) ---
+	mision.dificultad_mision = "Media"
+
+	# CASO 1: 5 monedas y 2 enemigos en Sendero 3 (x=2)
 	var caso1 = CasoPruebaMision.new()
-	caso1.inicio_jugador = Vector2i(0, 0) # Sendero 1, Valle 1 (Base 0)
-	
-	# Colocamos la moneda en (0, 4) (Sendero 1, Valle 5)
-	caso1.agregar_elemento(ElementoTablero.Tipo.MONEDA, Vector2i(0, 4))
-	
-	# Condición: Debe tener 1 moneda
-	caso1.agregar_condicion(CondicionMision.Recolectar.new("monedas", 1))
-	
+	caso1.inicio_jugador = Vector2i(2, 0) # Sendero 3, Valle 1
+
+	# Distribuimos 5 monedas
+	for y in [2, 5, 8, 11, 14]:
+		caso1.agregar_elemento(ElementoTablero.Tipo.MONEDA, Vector2i(2, y))
+
+	# 2 Enemigos
+	caso1.agregar_elemento(ElementoTablero.Tipo.ENEMIGO, Vector2i(2, 4))
+	caso1.agregar_elemento(ElementoTablero.Tipo.ENEMIGO, Vector2i(2, 10))
+
+	caso1.agregar_condicion(CondicionMision.Recolectar.new("monedas", 5))
+	caso1.agregar_condicion(CondicionMision.EliminarEnemigos.new())
 	mision.casos_de_prueba.append(caso1)
-	
-	# --- CASO 2: Distancia Larga (12 pasos) ---
+
+	# CASO 2: Sin monedas, solo enemigos y obstáculos (espacio de 2)
 	var caso2 = CasoPruebaMision.new()
-	caso2.inicio_jugador = Vector2i(0, 0)
-	
-	# Colocamos la moneda más lejos (0, 11) (Sendero 1, Valle 12)
-	caso2.agregar_elemento(ElementoTablero.Tipo.MONEDA, Vector2i(0, 11))
-	
-	# Misma condición
-	caso2.agregar_condicion(CondicionMision.Recolectar.new("monedas", 1))
-	
+	caso2.inicio_jugador = Vector2i(2, 0)
+
+	# Enemigos y Obstáculos con 2 espacios de separación (y=3, 6, 9, 12)
+	caso2.agregar_elemento(ElementoTablero.Tipo.ENEMIGO, Vector2i(2, 3))
+	caso2.agregar_elemento(ElementoTablero.Tipo.OBSTACULO, Vector2i(2, 6))
+	caso2.agregar_elemento(ElementoTablero.Tipo.ENEMIGO, Vector2i(2, 9))
+	caso2.agregar_elemento(ElementoTablero.Tipo.OBSTACULO, Vector2i(2, 12))
+
+	caso2.agregar_condicion(CondicionMision.EliminarEnemigos.new())
 	mision.casos_de_prueba.append(caso2)
-	
 	return mision
 
 # ==========================================

@@ -4,6 +4,9 @@ extends Node
 const URL_LOTE_MISIONES = "http://localhost:3000/api/progress/submit-missions"
 const URL_LOTE_DIFICULTADES = "http://localhost:3000/api/difficulties/submit-difficulties"
 
+# --- Señales ---
+signal sincronizacion_finalizada(exito: bool)
+
 # --- Nodos Internos ---
 var http_request: HTTPRequest
 var timer: Timer
@@ -83,7 +86,7 @@ func sincronizar_pendientes():
 			
 			# Diferenciamos si es especial o normal
 			# (Sabemos que es especial si tiene la clave "nombre", que la tabla normal no tiene)
-			if item_db.has("nombre"): 
+			if item_db.has("nombre"):
 				payload["idMision"] = item_db["id"] # UUID generado
 				payload["esMisionEspecial"] = true
 				payload["nombre"] = item_db["nombre"]
@@ -117,6 +120,7 @@ func sincronizar_pendientes():
 
 	# --- NADA QUE HACER ---
 	esta_sincronizando = false # Abrimos el sincronizador
+	sincronizacion_finalizada.emit(true)
 	
 	## HELPER: Envía la petición HTTP
 func _enviar_peticion(url: String, lote_datos: Array):
@@ -141,7 +145,7 @@ func _enviar_peticion(url: String, lote_datos: Array):
 # --- El Callback (Respuesta del servidor) ---
 
 func _on_http_request_completado(result, response_code, headers, body):
-	if not esta_sincronizando: return 
+	if not esta_sincronizando: return
 
 	var tarea_terminada = tarea_en_progreso
 	var lote_terminado = _lote_en_progreso.duplicate()

@@ -212,6 +212,28 @@ func poblar_datos_login(datos_login: Dictionary) -> bool:
 	print("Datos de login poblados exitosamente en la BD local.")
 	return true
 
+## Limpia los datos de la sesión actual (alumno y progreso local).
+## Mantiene las tablas de catálogo (misiones y dificultades).
+func limpiar_datos_sesion() -> bool:
+	print("DBManager: Cerrando sesión y limpiando tablas locales...")
+	if not db.query("BEGIN TRANSACTION;"):
+		return false
+
+	var sql_limpieza = """
+	DELETE FROM alumno;
+	DELETE FROM misiones_completadas_local;
+	DELETE FROM dificultad_alumno_local;
+	DELETE FROM misiones_especiales_local;
+	"""
+	
+	if not db.query(sql_limpieza):
+		print("ERROR (DBManager): No se pudieron limpiar las tablas. ", db.error_message)
+		db.query("ROLLBACK;") # Revertimos en caso de error
+		return false
+		
+	db.query("COMMIT;")
+	return true
+
 ## Devuelve un Array de Diccionarios con todas las misiones.
 func obtener_misiones() -> Array:
 	# Hacemos la consulta

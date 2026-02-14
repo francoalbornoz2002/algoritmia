@@ -169,7 +169,7 @@ static func generar_mision_compleja(nivel_dificultad: int = DIFICULTAD_MEDIA) ->
 # Crea una misión especial por inactividad (Doble XP/Estrellas)
 static func generar_mision_especial_inactividad() -> DefinicionMision:
 	# 1. Generamos la misión base (el puzzle)
-	var mision = generar_mision_compleja(DIFICULTAD_MEDIA)
+	var mision = generar_mision_compleja(DIFICULTAD_FACIL)
 	
 	# 2. Personalizamos el título
 	mision.titulo = "Misión de Retorno"
