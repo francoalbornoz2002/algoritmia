@@ -363,18 +363,18 @@ func agregar_mensaje_consola(mensaje: String, tipo: String = "NORMAL"):
 	
 	if not consola_visual: return
 	
-	var color_hex = "#FFFFFF"
+	var color_hex = "#333333"
 	var prefijo = "> "
 	
 	match tipo:
 		"ERROR":
-			color_hex = "#FF5555"
+			color_hex = "#CC0000"
 			prefijo = "[ERROR] "
 		"OUTPUT":
-			color_hex = "#55FFFF"
+			color_hex = "#0066CC"
 			prefijo = ""
 		"SISTEMA":
-			color_hex = "#FFFF55"
+			color_hex = "#AA6600"
 			prefijo = "[SISTEMA] "
 			
 	var texto_final = "[color=" + color_hex + "]" + prefijo + mensaje + "[/color]"

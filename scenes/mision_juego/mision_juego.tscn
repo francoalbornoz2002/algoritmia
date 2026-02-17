@@ -4,10 +4,13 @@
 [ext_resource type="Script" uid="uid://bmnei8fvcjj7b" path="res://scenes/mision_juego/debug_grilla.gd" id="2_nlnw5"]
 [ext_resource type="Script" uid="uid://b5pfn0gr0oaia" path="res://scenes/mision_juego/code_edit.gd" id="2_u8nxi"]
 [ext_resource type="Script" uid="uid://bjikulbhte535" path="res://scripts/jugador_grid.gd" id="3_v32ml"]
+[ext_resource type="Texture2D" uid="uid://bj0t8vwiwls4a" path="res://assets/elements/book_01d.png" id="4_nc8ia"]
+[ext_resource type="Texture2D" uid="uid://cqi56hhs1vqf4" path="res://assets/ui/botones.png" id="4_ucccc"]
 [ext_resource type="TileSet" uid="uid://cktadqkmd3jl7" path="res://assets/tileset/campo.tres" id="5_pg1fb"]
 [ext_resource type="Script" uid="uid://dbkn78vqq1sy4" path="res://scenes/mision_juego/ejecutor_algoritmo.gd" id="6_xnhqp"]
 [ext_resource type="Texture2D" uid="uid://bo8u6t8y4wkqr" path="res://assets/ui/varios.png" id="11_7hffk"]
 [ext_resource type="Texture2D" uid="uid://3lax3avyhii" path="res://assets/character/Character_Walk.png" id="14_bv6hu"]
+[ext_resource type="Texture2D" uid="uid://by8uc6vep3ucc" path="res://assets/backgrounds/in-game.png" id="15_bg_ingame"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_abxeu"]
 atlas = ExtResource("11_7hffk")
@@ -21,8 +24,67 @@ texture_margin_right = 4.0
 texture_margin_bottom = 5.0
 region_rect = Rect2(0, 0, 34, 37)
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_xnhqp"]
-bg_color = Color(0.2509804, 0.2509804, 0.2509804, 1)
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_0bcbp"]
+texture = ExtResource("4_nc8ia")
+region_rect = Rect2(4, 0, 24, 32)
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_bv6hu"]
+texture = ExtResource("4_nc8ia")
+region_rect = Rect2(4, 0, 24, 32)
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_7hffk"]
+texture = ExtResource("4_nc8ia")
+region_rect = Rect2(4, 0, 24, 32)
+modulate_color = Color(1.5, 1.5, 1.5, 1)
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_abxeu"]
+texture = ExtResource("4_nc8ia")
+region_rect = Rect2(4, 0, 24, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_nc8ia"]
+atlas = ExtResource("4_ucccc")
+region = Rect2(343, 305, 9, 14)
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_mfbms"]
+texture = SubResource("AtlasTexture_nc8ia")
+region_rect = Rect2(0, 0, 9, 14)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_ucccc"]
+atlas = ExtResource("4_ucccc")
+region = Rect2(359, 306, 9, 13)
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_nc8ia"]
+texture = SubResource("AtlasTexture_ucccc")
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_mfbms"]
+atlas = ExtResource("4_ucccc")
+region = Rect2(375, 305, 9, 14)
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_prbhx"]
+texture = SubResource("AtlasTexture_mfbms")
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_prbhx"]
+atlas = ExtResource("4_ucccc")
+region = Rect2(391, 306, 9, 13)
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_drcm8"]
+texture = SubResource("AtlasTexture_prbhx")
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_03h6q"]
+texture = SubResource("AtlasTexture_nc8ia")
+region_rect = Rect2(0, 0, 9, 14)
+modulate_color = Color(0.62908286, 0.62908286, 0.62908286, 1)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_ktdj7"]
+atlas = ExtResource("11_7hffk")
+region = Rect2(199, 48, 34, 37)
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_b7bg2"]
+texture = SubResource("AtlasTexture_ktdj7")
+texture_margin_left = 5.0
+texture_margin_top = 16.0
+texture_margin_right = 5.0
+texture_margin_bottom = 5.0
 
 [sub_resource type="Animation" id="Animation_abxeu"]
 length = 0.001
@@ -269,15 +331,15 @@ region = Rect2(203, 155, 26, 26)
 
 [node name="MisionJuego" type="Node2D" unique_id=1305528108 node_paths=PackedStringArray("tablero", "mapa_visual", "jugador", "entidades_container", "label_mision", "label_dificultad", "label_descripcion", "code_edit", "boton_ejecutar", "consola_visual", "ejecutor", "timer_reinicio")]
 script = ExtResource("1_kmg2i")
-tablero = NodePath("ContenedorJuego/SubViewport/Tablero")
-mapa_visual = NodePath("ContenedorJuego/SubViewport/Tablero/MapaMision")
-jugador = NodePath("ContenedorJuego/SubViewport/Tablero/Entidades/Jugador")
-entidades_container = NodePath("ContenedorJuego/SubViewport/Tablero/Entidades")
+tablero = NodePath("CapaUI/ContenedorJuego/SubViewport/Tablero")
+mapa_visual = NodePath("CapaUI/ContenedorJuego/SubViewport/Tablero/MapaMision")
+jugador = NodePath("CapaUI/ContenedorJuego/SubViewport/Tablero/Entidades/Jugador")
+entidades_container = NodePath("CapaUI/ContenedorJuego/SubViewport/Tablero/Entidades")
 label_mision = NodePath("CapaUI/Panel/VBoxContainer/HBoxContainer/LabelMision")
 label_dificultad = NodePath("CapaUI/Panel/VBoxContainer/HBoxContainer/LabelDificultad")
 label_descripcion = NodePath("CapaUI/Panel/VBoxContainer/LabelDescripción")
-code_edit = NodePath("CapaUI/VBoxContainer/CodeEdit")
-boton_ejecutar = NodePath("CapaUI/VBoxContainer/HBoxContainer/Ejecutar")
+code_edit = NodePath("CapaUI/ZonaCodigo/CodeEdit")
+boton_ejecutar = NodePath("CapaUI/ZonaCodigo/CodeEdit/HBoxContainer/Ejecutar")
 consola_visual = NodePath("CapaUI/SalidaConsola")
 ejecutor = NodePath("EjecutorAlgoritmo")
 timer_reinicio = NodePath("TimerReinicio")
@@ -290,37 +352,42 @@ tiles_borde_der = Array[Vector2i]([Vector2i(2, 4), Vector2i(2, 5), Vector2i(2, 6
 [node name="CapaFondo" type="CanvasLayer" parent="." unique_id=833086900]
 layer = -1
 
-[node name="Fondo" type="ColorRect" parent="CapaFondo" unique_id=120263195]
+[node name="Fondo" type="TextureRect" parent="CapaFondo" unique_id=120263195]
 z_index = -10
-anchors_preset = -1
-anchor_left = -0.0034722222
-anchor_right = 0.9965278
+anchors_preset = 15
+anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = 4.0
-offset_right = 4.0
 grow_horizontal = 2
 grow_vertical = 2
-mouse_filter = 1
-color = Color(0.1254902, 0.1254902, 0.1254902, 1)
-metadata/_edit_use_anchors_ = true
+texture = ExtResource("15_bg_ingame")
+expand_mode = 1
+stretch_mode = 6
 
 [node name="CapaUI" type="CanvasLayer" parent="." unique_id=1514771151]
 
 [node name="Panel" type="Panel" parent="CapaUI" unique_id=900771985]
-offset_left = 32.0
-offset_top = 8.0
-offset_right = 1120.0
-offset_bottom = 120.0
+anchors_preset = -1
+anchor_right = 1.0
+anchor_bottom = 0.15
+offset_left = 10.0
+offset_top = 10.0
+offset_right = -10.0
+offset_bottom = -10.0
 mouse_filter = 1
 theme_override_styles/panel = SubResource("StyleBoxTexture_ktdj7")
 
 [node name="VBoxContainer" type="VBoxContainer" parent="CapaUI/Panel" unique_id=1961869032]
 layout_mode = 1
-offset_left = 8.0
-offset_top = 5.0
-offset_right = 1084.0
-offset_bottom = 109.0
-theme_override_constants/separation = 20
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 10.0
+offset_top = 2.0
+offset_right = -10.0
+offset_bottom = -8.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 9
 
 [node name="HBoxContainer" type="HBoxContainer" parent="CapaUI/Panel/VBoxContainer" unique_id=1035983194]
 layout_mode = 2
@@ -342,27 +409,29 @@ theme_override_font_sizes/font_size = 16
 text = "Dificultad"
 
 [node name="LabelDescripción" type="Label" parent="CapaUI/Panel/VBoxContainer" unique_id=428221496]
-custom_minimum_size = Vector2(0, 60)
 layout_mode = 2
-theme_override_font_sizes/font_size = 14
+size_flags_vertical = 3
+theme_override_font_sizes/font_size = 12
 text = "Descripción de la misión"
 autowrap_mode = 3
-max_lines_visible = 4
+text_overrun_behavior = 3
 
-[node name="VBoxContainer" type="VBoxContainer" parent="CapaUI" unique_id=593664207]
+[node name="ZonaCodigo" type="VBoxContainer" parent="CapaUI" unique_id=593664207]
 anchors_preset = -1
-anchor_top = 0.15900001
-anchor_bottom = 0.15900001
-offset_left = 32.0
-offset_top = 22.967995
-offset_right = 480.0
-offset_bottom = 537.968
+anchor_top = 0.15
+anchor_right = 0.4
+anchor_bottom = 1.0
+offset_left = 10.0
+offset_top = 10.0
+offset_right = -10.0
+offset_bottom = -10.0
 grow_vertical = 2
 theme_override_constants/separation = 4
 
-[node name="CodeEdit" type="CodeEdit" parent="CapaUI/VBoxContainer" unique_id=736348175]
+[node name="CodeEdit" type="CodeEdit" parent="CapaUI/ZonaCodigo" unique_id=736348175]
 custom_minimum_size = Vector2(0, 480)
 layout_mode = 2
+size_flags_vertical = 3
 theme_override_colors/caret_color = Color(0.84313726, 0.22745098, 0.28627452, 1)
 theme_override_constants/caret_width = 3
 theme_override_font_sizes/font_size = 14
@@ -374,69 +443,95 @@ indent_size = 2
 auto_brace_completion_highlight_matching = true
 script = ExtResource("2_u8nxi")
 
-[node name="HBoxContainer" type="HBoxContainer" parent="CapaUI/VBoxContainer" unique_id=1233336461]
-layout_mode = 2
+[node name="HBoxContainer" type="HBoxContainer" parent="CapaUI/ZonaCodigo/CodeEdit" unique_id=1233336461]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -456.0
+offset_top = 8.0
+offset_right = -8.0
+offset_bottom = 40.0
+grow_horizontal = 0
+theme_override_constants/separation = 12
 alignment = 2
 
-[node name="ManualHeroe" type="Button" parent="CapaUI/VBoxContainer/HBoxContainer" unique_id=132948878]
-custom_minimum_size = Vector2(100, 0)
+[node name="Manual" type="Button" parent="CapaUI/ZonaCodigo/CodeEdit/HBoxContainer" unique_id=1671408763]
+custom_minimum_size = Vector2(32, 32)
 layout_mode = 2
-focus_mode = 1
-text = "Manual"
+theme_override_styles/normal = SubResource("StyleBoxTexture_0bcbp")
+theme_override_styles/pressed = SubResource("StyleBoxTexture_bv6hu")
+theme_override_styles/hover = SubResource("StyleBoxTexture_7hffk")
+theme_override_styles/hover_pressed = SubResource("StyleBoxTexture_abxeu")
 
-[node name="Ejecutar" type="Button" parent="CapaUI/VBoxContainer/HBoxContainer" unique_id=892935726]
-custom_minimum_size = Vector2(120, 0)
+[node name="Ejecutar" type="Button" parent="CapaUI/ZonaCodigo/CodeEdit/HBoxContainer" unique_id=892935726]
+custom_minimum_size = Vector2(32, 32)
 layout_mode = 2
 focus_mode = 1
-text = "Ejecutar"
+theme_override_styles/normal = SubResource("StyleBoxTexture_mfbms")
+theme_override_styles/pressed = SubResource("StyleBoxTexture_nc8ia")
+theme_override_styles/hover = SubResource("StyleBoxTexture_prbhx")
+theme_override_styles/hover_pressed = SubResource("StyleBoxTexture_drcm8")
+theme_override_styles/disabled = SubResource("StyleBoxTexture_03h6q")
 
 [node name="SalidaConsola" type="RichTextLabel" parent="CapaUI" unique_id=1612452036]
-offset_left = 512.0
-offset_top = 524.0
-offset_right = 1120.0
-offset_bottom = 635.0
+anchors_preset = -1
+anchor_left = 0.4
+anchor_top = 0.8
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 10.0
+offset_top = 10.0
+offset_right = -10.0
+offset_bottom = -10.0
 focus_mode = 2
 theme_override_font_sizes/normal_font_size = 12
 theme_override_font_sizes/bold_font_size = 12
 theme_override_font_sizes/bold_italics_font_size = 12
 theme_override_font_sizes/italics_font_size = 12
 theme_override_font_sizes/mono_font_size = 12
-theme_override_styles/normal = SubResource("StyleBoxFlat_xnhqp")
+theme_override_styles/normal = SubResource("StyleBoxTexture_b7bg2")
 bbcode_enabled = true
+text = "ASFASFQCCASC"
 scroll_following = true
 selection_enabled = true
 drag_and_drop_selection_enabled = false
 
-[node name="ContenedorJuego" type="SubViewportContainer" parent="." unique_id=1107520454]
-offset_left = 512.0
-offset_top = 128.0
-offset_right = 1120.0
-offset_bottom = 512.0
+[node name="ContenedorJuego" type="SubViewportContainer" parent="CapaUI" unique_id=1107520454]
+anchors_preset = -1
+anchor_left = 0.4
+anchor_top = 0.15
+anchor_right = 1.0
+anchor_bottom = 0.8
+offset_left = 10.0
+offset_top = 10.0
+offset_right = -10.0
+offset_bottom = -10.0
 stretch = true
 
-[node name="SubViewport" type="SubViewport" parent="ContenedorJuego" unique_id=1488676039]
+[node name="SubViewport" type="SubViewport" parent="CapaUI/ContenedorJuego" unique_id=1488676039]
 handle_input_locally = false
-size = Vector2i(608, 384)
+size = Vector2i(671, 401)
 render_target_update_mode = 4
 
-[node name="Tablero" type="Node2D" parent="ContenedorJuego/SubViewport" unique_id=664442654]
+[node name="Tablero" type="Node2D" parent="CapaUI/ContenedorJuego/SubViewport" unique_id=664442654]
 
-[node name="DebugGrilla" type="Node2D" parent="ContenedorJuego/SubViewport/Tablero" unique_id=338950392]
+[node name="DebugGrilla" type="Node2D" parent="CapaUI/ContenedorJuego/SubViewport/Tablero" unique_id=338950392]
 script = ExtResource("2_nlnw5")
 
-[node name="MapaMision" type="TileMapLayer" parent="ContenedorJuego/SubViewport/Tablero" unique_id=555796652]
+[node name="MapaMision" type="TileMapLayer" parent="CapaUI/ContenedorJuego/SubViewport/Tablero" unique_id=555796652]
 tile_set = ExtResource("5_pg1fb")
 
-[node name="Entidades" type="Node2D" parent="ContenedorJuego/SubViewport/Tablero" unique_id=902574647]
+[node name="Entidades" type="Node2D" parent="CapaUI/ContenedorJuego/SubViewport/Tablero" unique_id=902574647]
 
-[node name="Jugador" type="CharacterBody2D" parent="ContenedorJuego/SubViewport/Tablero/Entidades" unique_id=1778988735 node_paths=PackedStringArray("camara", "anim_player", "sprite_personaje")]
+[node name="Jugador" type="CharacterBody2D" parent="CapaUI/ContenedorJuego/SubViewport/Tablero/Entidades" unique_id=1778988735 node_paths=PackedStringArray("camara", "anim_player", "sprite_personaje")]
 scale = Vector2(0.5, 0.5)
 script = ExtResource("3_v32ml")
 camara = NodePath("Camera2D")
 anim_player = NodePath("AnimationPlayer")
 sprite_personaje = NodePath("Sprite")
 
-[node name="Sprite" type="Sprite2D" parent="ContenedorJuego/SubViewport/Tablero/Entidades/Jugador" unique_id=773316303]
+[node name="Sprite" type="Sprite2D" parent="CapaUI/ContenedorJuego/SubViewport/Tablero/Entidades/Jugador" unique_id=773316303]
 position = Vector2(1.1920929e-05, 4.7683716e-06)
 scale = Vector2(2, 1.5)
 texture = ExtResource("14_bv6hu")
@@ -444,21 +539,26 @@ hframes = 4
 vframes = 4
 frame = 8
 
-[node name="AnimationPlayer" type="AnimationPlayer" parent="ContenedorJuego/SubViewport/Tablero/Entidades/Jugador" unique_id=28535542]
+[node name="AnimationPlayer" type="AnimationPlayer" parent="CapaUI/ContenedorJuego/SubViewport/Tablero/Entidades/Jugador" unique_id=28535542]
 libraries/ = SubResource("AnimationLibrary_ih85b")
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="ContenedorJuego/SubViewport/Tablero/Entidades/Jugador" unique_id=1139548781]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="CapaUI/ContenedorJuego/SubViewport/Tablero/Entidades/Jugador" unique_id=1139548781]
 shape = SubResource("RectangleShape2D_64tsv")
 
-[node name="Camera2D" type="Camera2D" parent="ContenedorJuego/SubViewport/Tablero/Entidades/Jugador" unique_id=1329317159]
+[node name="Camera2D" type="Camera2D" parent="CapaUI/ContenedorJuego/SubViewport/Tablero/Entidades/Jugador" unique_id=1329317159]
 limit_smoothed = true
 position_smoothing_enabled = true
 
-[node name="NinePatchRect" type="NinePatchRect" parent="." unique_id=1512537086]
-offset_left = 512.0
-offset_top = 128.0
-offset_right = 1120.0
-offset_bottom = 512.0
+[node name="NinePatchRect" type="NinePatchRect" parent="CapaUI" unique_id=1512537086]
+anchors_preset = -1
+anchor_left = 0.4
+anchor_top = 0.15
+anchor_right = 1.0
+anchor_bottom = 0.8
+offset_left = 10.0
+offset_top = 10.0
+offset_right = -10.0
+offset_bottom = -10.0
 texture = SubResource("AtlasTexture_7hffk")
 draw_center = false
 region_rect = Rect2(0, 0, 26, 26)
