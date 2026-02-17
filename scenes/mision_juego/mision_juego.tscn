@@ -5,6 +5,7 @@
 [ext_resource type="Script" uid="uid://b5pfn0gr0oaia" path="res://scenes/mision_juego/code_edit.gd" id="2_u8nxi"]
 [ext_resource type="Script" uid="uid://bjikulbhte535" path="res://scripts/jugador_grid.gd" id="3_v32ml"]
 [ext_resource type="Texture2D" uid="uid://bj0t8vwiwls4a" path="res://assets/elements/book_01d.png" id="4_nc8ia"]
+[ext_resource type="Texture2D" uid="uid://b4tuo0lkwntrc" path="res://assets/ui/botones-izquierda.png" id="4_prbhx"]
 [ext_resource type="Texture2D" uid="uid://cqi56hhs1vqf4" path="res://assets/ui/botones.png" id="4_ucccc"]
 [ext_resource type="TileSet" uid="uid://cktadqkmd3jl7" path="res://assets/tileset/campo.tres" id="5_pg1fb"]
 [ext_resource type="Script" uid="uid://dbkn78vqq1sy4" path="res://scenes/mision_juego/ejecutor_algoritmo.gd" id="6_xnhqp"]
@@ -23,6 +24,34 @@ texture_margin_top = 7.0
 texture_margin_right = 4.0
 texture_margin_bottom = 5.0
 region_rect = Rect2(0, 0, 34, 37)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_drcm8"]
+atlas = ExtResource("4_prbhx")
+region = Rect2(289, 51, 14, 13)
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_ih85b"]
+texture = SubResource("AtlasTexture_drcm8")
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_kok7b"]
+atlas = ExtResource("4_prbhx")
+region = Rect2(290, 35, 13, 13)
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_fe2i8"]
+texture = SubResource("AtlasTexture_kok7b")
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_7hr4l"]
+atlas = ExtResource("4_prbhx")
+region = Rect2(289, 19, 14, 13)
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_utjwa"]
+texture = SubResource("AtlasTexture_7hr4l")
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_h0y7o"]
+atlas = ExtResource("4_prbhx")
+region = Rect2(290, 3, 13, 13)
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_pv4yw"]
+texture = SubResource("AtlasTexture_h0y7o")
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_0bcbp"]
 texture = ExtResource("4_nc8ia")
@@ -329,7 +358,7 @@ size = Vector2(64, 64)
 atlas = ExtResource("11_7hffk")
 region = Rect2(203, 155, 26, 26)
 
-[node name="MisionJuego" type="Node2D" unique_id=1305528108 node_paths=PackedStringArray("tablero", "mapa_visual", "jugador", "entidades_container", "label_mision", "label_dificultad", "label_descripcion", "code_edit", "boton_ejecutar", "consola_visual", "ejecutor", "timer_reinicio")]
+[node name="MisionJuego" type="Node2D" unique_id=1305528108 node_paths=PackedStringArray("tablero", "mapa_visual", "jugador", "entidades_container", "label_mision", "label_dificultad", "label_descripcion", "code_edit", "boton_ejecutar", "boton_volver", "consola_visual", "ejecutor", "timer_reinicio")]
 script = ExtResource("1_kmg2i")
 tablero = NodePath("CapaUI/ContenedorJuego/SubViewport/Tablero")
 mapa_visual = NodePath("CapaUI/ContenedorJuego/SubViewport/Tablero/MapaMision")
@@ -340,6 +369,7 @@ label_dificultad = NodePath("CapaUI/Panel/VBoxContainer/HBoxContainer/LabelDific
 label_descripcion = NodePath("CapaUI/Panel/VBoxContainer/LabelDescripción")
 code_edit = NodePath("CapaUI/ZonaCodigo/CodeEdit")
 boton_ejecutar = NodePath("CapaUI/ZonaCodigo/CodeEdit/HBoxContainer/Ejecutar")
+boton_volver = NodePath("CapaUI/Panel/VBoxContainer/HBoxContainer/BotonVolver")
 consola_visual = NodePath("CapaUI/SalidaConsola")
 ejecutor = NodePath("EjecutorAlgoritmo")
 timer_reinicio = NodePath("TimerReinicio")
@@ -381,9 +411,9 @@ layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = 10.0
+offset_left = 6.0
 offset_top = 2.0
-offset_right = -10.0
+offset_right = -6.0
 offset_bottom = -8.0
 grow_horizontal = 2
 grow_vertical = 2
@@ -391,7 +421,18 @@ theme_override_constants/separation = 9
 
 [node name="HBoxContainer" type="HBoxContainer" parent="CapaUI/Panel/VBoxContainer" unique_id=1035983194]
 layout_mode = 2
-theme_override_constants/separation = 6
+theme_override_constants/separation = 12
+
+[node name="BotonVolver" type="Button" parent="CapaUI/Panel/VBoxContainer/HBoxContainer" unique_id=2024051201]
+custom_minimum_size = Vector2(24, 20)
+layout_mode = 2
+size_flags_vertical = 8
+tooltip_text = "Volver al selector"
+focus_mode = 0
+theme_override_styles/normal = SubResource("StyleBoxTexture_ih85b")
+theme_override_styles/pressed = SubResource("StyleBoxTexture_fe2i8")
+theme_override_styles/hover = SubResource("StyleBoxTexture_utjwa")
+theme_override_styles/hover_pressed = SubResource("StyleBoxTexture_pv4yw")
 
 [node name="LabelMision" type="Label" parent="CapaUI/Panel/VBoxContainer/HBoxContainer" unique_id=1836546342]
 layout_mode = 2
@@ -492,7 +533,6 @@ theme_override_font_sizes/italics_font_size = 12
 theme_override_font_sizes/mono_font_size = 12
 theme_override_styles/normal = SubResource("StyleBoxTexture_b7bg2")
 bbcode_enabled = true
-text = "ASFASFQCCASC"
 scroll_following = true
 selection_enabled = true
 drag_and_drop_selection_enabled = false

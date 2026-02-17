@@ -1,12 +1,11 @@
 [gd_resource type="Theme" format=3 uid="uid://b15du5cfuk0ig"]
 
-[ext_resource type="Texture2D" uid="uid://bj0t8vwiwls4a" path="res://assets/elements/book_01d.png" id="1_2japo"]
 [ext_resource type="Texture2D" uid="uid://cqi56hhs1vqf4" path="res://assets/ui/botones.png" id="1_xu03x"]
 [ext_resource type="Texture2D" uid="uid://bo8u6t8y4wkqr" path="res://assets/ui/varios.png" id="2_7hr4l"]
 [ext_resource type="FontFile" uid="uid://c1rri638e47ue" path="res://assets/Monocraft.ttf" id="2_7i3wi"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_7hr4l"]
-atlas = ExtResource("1_2japo")
+atlas = ExtResource("1_xu03x")
 region = Rect2(114, 500, 43, 14)
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_2japo"]

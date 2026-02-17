@@ -13,6 +13,7 @@ var analista_dificultad: AnalistaDificultad
 @export var label_descripcion: Label
 @export var code_edit: CodeEdit
 @export var boton_ejecutar: Button
+@export var boton_volver: Button
 @export var consola_visual: RichTextLabel
 
 @export var ejecutor: Node
@@ -53,6 +54,9 @@ func _ready():
 	# 2. Conexiones
 	if not boton_ejecutar.pressed.is_connected(_on_ejecutar_pressed):
 		boton_ejecutar.pressed.connect(_on_ejecutar_pressed)
+	
+	if boton_volver and not boton_volver.pressed.is_connected(_volver_al_menu):
+		boton_volver.pressed.connect(_volver_al_menu)
 	
 	timer_reinicio.one_shot = true
 	if not timer_reinicio.timeout.is_connected(_on_reiniciar_mision):
