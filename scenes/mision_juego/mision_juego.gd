@@ -2,7 +2,7 @@ extends Node2D
 
 # --- REFERENCIAS ---
 @export var tablero: Node2D
-@export var mapa_visual: Node2D
+@export var mapa_visual: TileMapLayer
 @export var jugador: CharacterBody2D
 @export var entidades_container: Node2D
 var analista_dificultad: AnalistaDificultad
@@ -25,15 +25,15 @@ var juego_fallido: bool = false # Bandera para abortar secuencia si hay Game Ove
 var intentos_totales: int = 0
 
 @export_group("Configuración Visual del Mapa")
-@export var tex_suelo_centro: Texture2D # 5, 3
-@export var tex_borde_sup: Texture2D # 6, 5
-@export var tex_borde_inf: Texture2D # 6, 4
-@export var tex_borde_izq: Texture2D # 3, 5
-@export var tex_borde_der: Texture2D # 2, 5
-@export var tex_esquina_sup_izq: Texture2D # 0, 7
-@export var tex_esquina_sup_der: Texture2D # 1, 7
-@export var tex_esquina_inf_izq: Texture2D # 5, 7
-@export var tex_esquina_inf_der: Texture2D # 4 ,7
+@export var tiles_suelo_centro: Array[Vector2i] = [Vector2i(5, 3)]
+@export var tiles_borde_sup: Array[Vector2i] = [Vector2i(6, 5)]
+@export var tiles_borde_inf: Array[Vector2i] = [Vector2i(6, 4)]
+@export var tiles_borde_izq: Array[Vector2i] = [Vector2i(3, 5)]
+@export var tiles_borde_der: Array[Vector2i] = [Vector2i(2, 5)]
+@export var tile_esquina_sup_izq: Vector2i = Vector2i(0, 7)
+@export var tile_esquina_sup_der: Vector2i = Vector2i(1, 7)
+@export var tile_esquina_inf_izq: Vector2i = Vector2i(5, 7)
+@export var tile_esquina_inf_der: Vector2i = Vector2i(4, 7)
 
 # --- SISTEMA DE MISIONES ---
 var mision_actual_def: DefinicionMision = null
@@ -147,13 +147,14 @@ func spawn_elemento(pos: Vector2i, tipo):
 func _generar_suelo(tamano: Vector2i):
 	if not mapa_visual: return
 	
-	# Limpiamos los sprites anteriores (hijos del nodo mapa)
-	for child in mapa_visual.get_children():
-		child.queue_free()
+	# 1. Limpiamos el TileMapLayer de cualquier celda previa
+	mapa_visual.clear()
 	
 	for x in range(tamano.x):
 		for y in range(tamano.y):
-			var textura_a_usar = tex_suelo_centro
+			var coords_atlas = Vector2i(0, 0)
+			if not tiles_suelo_centro.is_empty():
+				coords_atlas = tiles_suelo_centro.pick_random()
 			
 			# Lógica visual: En GridManager Y=0 es ABAJO (Valle 1), Y=Max es ARRIBA
 			var es_abajo = (y == 0)
@@ -161,21 +162,25 @@ func _generar_suelo(tamano: Vector2i):
 			var es_izq = (x == 0)
 			var es_der = (x == tamano.x - 1)
 			
-			if es_arriba and es_izq: textura_a_usar = tex_esquina_sup_izq
-			elif es_arriba and es_der: textura_a_usar = tex_esquina_sup_der
-			elif es_abajo and es_izq: textura_a_usar = tex_esquina_inf_izq
-			elif es_abajo and es_der: textura_a_usar = tex_esquina_inf_der
-			elif es_arriba: textura_a_usar = tex_borde_sup
-			elif es_abajo: textura_a_usar = tex_borde_inf
-			elif es_izq: textura_a_usar = tex_borde_izq
-			elif es_der: textura_a_usar = tex_borde_der
+			if es_arriba and es_izq: coords_atlas = tile_esquina_sup_izq
+			elif es_arriba and es_der: coords_atlas = tile_esquina_sup_der
+			elif es_abajo and es_izq: coords_atlas = tile_esquina_inf_izq
+			elif es_abajo and es_der: coords_atlas = tile_esquina_inf_der
+			elif es_arriba:
+				if not tiles_borde_sup.is_empty(): coords_atlas = tiles_borde_sup.pick_random()
+			elif es_abajo:
+				if not tiles_borde_inf.is_empty(): coords_atlas = tiles_borde_inf.pick_random()
+			elif es_izq:
+				if not tiles_borde_izq.is_empty(): coords_atlas = tiles_borde_izq.pick_random()
+			elif es_der:
+				if not tiles_borde_der.is_empty(): coords_atlas = tiles_borde_der.pick_random()
 			
-			if textura_a_usar:
-				var sprite = Sprite2D.new()
-				sprite.texture = textura_a_usar
-				# Usamos GridManager para obtener la posición exacta en pixeles
-				sprite.position = GridManager.grid_to_world(Vector2i(x, y))
-				mapa_visual.add_child(sprite)
+			# 2. Calculamos la posición visual en el TileMap (invirtiendo Y para que coincida con GridManager)
+			var fila_visual = (GridManager.FILAS_MAX - 1) - y
+			var pos_mapa = Vector2i(x, fila_visual)
+			
+			# 3. Pintamos la celda en el TileMapLayer (source_id 0 es el Atlas por defecto)
+			mapa_visual.set_cell(pos_mapa, 0, coords_atlas)
 
 # --- LÓGICA DE EJECUCIÓN (TEST RUNNER) ---
 func _on_ejecutar_pressed():

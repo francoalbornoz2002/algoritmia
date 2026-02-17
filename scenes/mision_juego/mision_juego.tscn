@@ -1,19 +1,11 @@
 [gd_scene format=3 uid="uid://2jepe683syd0"]
 
 [ext_resource type="Script" uid="uid://bxur2wp0du33t" path="res://scenes/mision_juego/mision_juego.gd" id="1_kmg2i"]
-[ext_resource type="Texture2D" uid="uid://cy7w5a7mu2a5i" path="res://assets/tileset/FieldsTile_59.png" id="2_bv6hu"]
 [ext_resource type="Script" uid="uid://bmnei8fvcjj7b" path="res://scenes/mision_juego/debug_grilla.gd" id="2_nlnw5"]
 [ext_resource type="Script" uid="uid://b5pfn0gr0oaia" path="res://scenes/mision_juego/code_edit.gd" id="2_u8nxi"]
-[ext_resource type="Texture2D" uid="uid://ua4rfg7rv4kd" path="res://assets/tileset/FieldsTile_35.png" id="3_7hffk"]
 [ext_resource type="Script" uid="uid://bjikulbhte535" path="res://scripts/jugador_grid.gd" id="3_v32ml"]
-[ext_resource type="Texture2D" uid="uid://btnjemot3nump" path="res://assets/tileset/FieldsTile_04.png" id="4_abxeu"]
-[ext_resource type="Texture2D" uid="uid://ogxf0udhnw2c" path="res://assets/tileset/FieldsTile_21.png" id="5_ktdj7"]
-[ext_resource type="Texture2D" uid="uid://c657d3a5fclrp" path="res://assets/tileset/FieldsTile_17.png" id="6_b7bg2"]
+[ext_resource type="TileSet" uid="uid://cktadqkmd3jl7" path="res://assets/tileset/campo.tres" id="5_pg1fb"]
 [ext_resource type="Script" uid="uid://dbkn78vqq1sy4" path="res://scenes/mision_juego/ejecutor_algoritmo.gd" id="6_xnhqp"]
-[ext_resource type="Texture2D" uid="uid://b0w53vrxoff2w" path="res://assets/tileset/FieldsTile_06.png" id="7_03h6q"]
-[ext_resource type="Texture2D" uid="uid://uved6jpsosyv" path="res://assets/tileset/FieldsTile_12.png" id="8_ih85b"]
-[ext_resource type="Texture2D" uid="uid://cdmemmltqvobs" path="res://assets/tileset/FieldsTile_26.png" id="9_fe2i8"]
-[ext_resource type="Texture2D" uid="uid://dtp0hajxbrjq4" path="res://assets/tileset/FieldsTile_28.png" id="10_utjwa"]
 [ext_resource type="Texture2D" uid="uid://bo8u6t8y4wkqr" path="res://assets/ui/varios.png" id="11_7hffk"]
 [ext_resource type="Texture2D" uid="uid://3lax3avyhii" path="res://assets/character/Character_Walk.png" id="14_bv6hu"]
 
@@ -289,15 +281,11 @@ boton_ejecutar = NodePath("CapaUI/VBoxContainer/HBoxContainer/Ejecutar")
 consola_visual = NodePath("CapaUI/SalidaConsola")
 ejecutor = NodePath("EjecutorAlgoritmo")
 timer_reinicio = NodePath("TimerReinicio")
-tex_suelo_centro = ExtResource("2_bv6hu")
-tex_borde_sup = ExtResource("3_7hffk")
-tex_borde_inf = ExtResource("4_abxeu")
-tex_borde_izq = ExtResource("5_ktdj7")
-tex_borde_der = ExtResource("6_b7bg2")
-tex_esquina_sup_izq = ExtResource("7_03h6q")
-tex_esquina_sup_der = ExtResource("8_ih85b")
-tex_esquina_inf_izq = ExtResource("9_fe2i8")
-tex_esquina_inf_der = ExtResource("10_utjwa")
+tiles_suelo_centro = Array[Vector2i]([Vector2i(0, 3), Vector2i(1, 3), Vector2i(2, 3), Vector2i(3, 3), Vector2i(4, 3), Vector2i(5, 3), Vector2i(6, 3), Vector2i(7, 3), Vector2i(0, 4), Vector2i(1, 4), Vector2i(0, 5), Vector2i(1, 5), Vector2i(0, 6), Vector2i(1, 6), Vector2i(0, 0), Vector2i(1, 0), Vector2i(2, 0), Vector2i(3, 0), Vector2i(4, 0), Vector2i(5, 0), Vector2i(6, 0), Vector2i(7, 0), Vector2i(0, 1), Vector2i(1, 1), Vector2i(2, 1), Vector2i(3, 1), Vector2i(4, 1), Vector2i(5, 1), Vector2i(6, 1), Vector2i(7, 1), Vector2i(0, 2), Vector2i(1, 2), Vector2i(2, 2), Vector2i(3, 2), Vector2i(4, 2), Vector2i(5, 2), Vector2i(6, 2), Vector2i(7, 2)])
+tiles_borde_sup = Array[Vector2i]([Vector2i(4, 5), Vector2i(5, 5), Vector2i(6, 5), Vector2i(7, 5)])
+tiles_borde_inf = Array[Vector2i]([Vector2i(4, 4), Vector2i(5, 4), Vector2i(6, 4), Vector2i(7, 4)])
+tiles_borde_izq = Array[Vector2i]([Vector2i(3, 4), Vector2i(3, 5), Vector2i(3, 6), Vector2i(3, 7)])
+tiles_borde_der = Array[Vector2i]([Vector2i(2, 4), Vector2i(2, 5), Vector2i(2, 6), Vector2i(2, 7)])
 
 [node name="CapaFondo" type="CanvasLayer" parent="." unique_id=833086900]
 layer = -1
@@ -436,7 +424,8 @@ render_target_update_mode = 4
 [node name="DebugGrilla" type="Node2D" parent="ContenedorJuego/SubViewport/Tablero" unique_id=338950392]
 script = ExtResource("2_nlnw5")
 
-[node name="MapaMision" type="Node2D" parent="ContenedorJuego/SubViewport/Tablero" unique_id=555796652]
+[node name="MapaMision" type="TileMapLayer" parent="ContenedorJuego/SubViewport/Tablero" unique_id=555796652]
+tile_set = ExtResource("5_pg1fb")
 
 [node name="Entidades" type="Node2D" parent="ContenedorJuego/SubViewport/Tablero" unique_id=902574647]
 

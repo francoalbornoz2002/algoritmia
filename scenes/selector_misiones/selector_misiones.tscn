@@ -3,14 +3,15 @@
 [ext_resource type="Script" uid="uid://co2tm7sj6dom" path="res://scenes/selector_misiones/selector_misiones.gd" id="1_4grjp"]
 [ext_resource type="Texture2D" uid="uid://wx55eeehicy4" path="res://assets/ui/grilla_niveles.png" id="2_0l5q7"]
 [ext_resource type="Texture2D" uid="uid://ddopj1a7llyxi" path="res://assets/ui/background.png" id="3_bg"]
+[ext_resource type="Texture2D" uid="uid://csj2eg15lvi1e" path="res://assets/ui/configuracion.png" id="4_5rqnv"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_5rqnv"]
 atlas = ExtResource("2_0l5q7")
 region = Rect2(321, 160, 30, 31)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_l00ed"]
-atlas = ExtResource("2_0l5q7")
-region = Rect2(7, 144, 34, 37)
+atlas = ExtResource("4_5rqnv")
+region = Rect2(7, 0, 98, 149)
 
 [node name="SelectorMisiones" type="Control" unique_id=2020590789 node_paths=PackedStringArray("grid_container", "modal_control", "lbl_titulo", "lbl_dificultad", "lbl_descripcion", "btn_jugar_modal")]
 layout_mode = 3
@@ -139,7 +140,6 @@ columns = 5
 
 [node name="CapaModal" type="CanvasLayer" parent="." unique_id=334615294]
 layer = 10
-visible = false
 
 [node name="ControlModal" type="Control" parent="CapaModal" unique_id=1214205443]
 layout_mode = 3
@@ -172,9 +172,9 @@ offset_bottom = 212.0
 grow_horizontal = 2
 grow_vertical = 2
 texture = SubResource("AtlasTexture_l00ed")
-region_rect = Rect2(0, 0, 114, 133)
-patch_margin_left = 6
-patch_margin_top = 15
+region_rect = Rect2(0, 0, 98, 149)
+patch_margin_left = 5
+patch_margin_top = 16
 patch_margin_right = 12
 patch_margin_bottom = 5
 
@@ -194,6 +194,7 @@ theme_override_constants/separation = 15
 [node name="Titulo" type="Label" parent="CapaModal/ControlModal/PanelFondo/VBoxContainer" unique_id=566420730]
 layout_mode = 2
 theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 0
 theme_override_font_sizes/font_size = 16
 text = "Título de la Misión"
 horizontal_alignment = 1
@@ -210,7 +211,6 @@ horizontal_alignment = 1
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
-theme_override_colors/font_color = Color(0, 0, 0, 1)
 theme_override_font_sizes/font_size = 12
 text = "Descripción detallada de la misión..."
 autowrap_mode = 3
