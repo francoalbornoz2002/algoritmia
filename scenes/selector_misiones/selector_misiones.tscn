@@ -193,16 +193,16 @@ theme_override_constants/separation = 15
 
 [node name="Titulo" type="Label" parent="CapaModal/ControlModal/PanelFondo/VBoxContainer" unique_id=566420730]
 layout_mode = 2
-theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_colors/font_color = Color(0.235294, 0.145098, 0.0980392, 1)
 theme_override_constants/outline_size = 0
-theme_override_font_sizes/font_size = 16
+theme_override_font_sizes/font_size = 22
 text = "Título de la Misión"
 horizontal_alignment = 1
 vertical_alignment = 1
 
 [node name="Dificultad" type="Label" parent="CapaModal/ControlModal/PanelFondo/VBoxContainer" unique_id=1725535791]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.2, 0.2, 0.2, 1)
+theme_override_colors/font_color = Color(0.364706, 0.25098, 0.188235, 1)
 theme_override_font_sizes/font_size = 14
 text = "Dificultad: Fácil"
 horizontal_alignment = 1
@@ -211,7 +211,8 @@ horizontal_alignment = 1
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
-theme_override_font_sizes/font_size = 12
+theme_override_colors/font_color = Color(0.235294, 0.145098, 0.0980392, 1)
+theme_override_font_sizes/font_size = 14
 text = "Descripción detallada de la misión..."
 autowrap_mode = 3
 justification_flags = 160

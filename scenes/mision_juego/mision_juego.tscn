@@ -882,7 +882,7 @@ metadata/_edit_lock_ = true
 [node name="Panel" type="Panel" parent="CapaUI" unique_id=900771985]
 anchors_preset = -1
 anchor_right = 1.0
-anchor_bottom = 0.15
+anchor_bottom = 0.2
 offset_left = 10.0
 offset_top = 10.0
 offset_right = -10.0
@@ -896,12 +896,12 @@ anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 offset_left = 6.0
-offset_top = 2.0
+offset_top = 6.0
 offset_right = -6.0
-offset_bottom = -8.0
+offset_bottom = -4.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_constants/separation = 9
+theme_override_constants/separation = 12
 
 [node name="HBoxContainer" type="HBoxContainer" parent="CapaUI/Panel/VBoxContainer" unique_id=1035983194]
 layout_mode = 2
@@ -920,22 +920,27 @@ theme_override_styles/hover_pressed = SubResource("StyleBoxTexture_pv4yw")
 
 [node name="LabelMision" type="Label" parent="CapaUI/Panel/VBoxContainer/HBoxContainer" unique_id=1836546342]
 layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_font_sizes/font_size = 16
 text = "Nombre mision"
 
 [node name="LabelMision2" type="Label" parent="CapaUI/Panel/VBoxContainer/HBoxContainer" unique_id=1501458793]
 layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_font_sizes/font_size = 16
 text = "-"
 
 [node name="LabelDificultad" type="Label" parent="CapaUI/Panel/VBoxContainer/HBoxContainer" unique_id=641477209]
 layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_font_sizes/font_size = 16
 text = "Dificultad"
 
 [node name="LabelDescripción" type="Label" parent="CapaUI/Panel/VBoxContainer" unique_id=428221496]
 layout_mode = 2
 size_flags_vertical = 3
+theme_override_colors/font_color = Color(0.235294, 0.145098, 0.0980392, 1)
+theme_override_constants/outline_size = 0
 theme_override_font_sizes/font_size = 12
 text = "Descripción de la misión"
 autowrap_mode = 3
@@ -943,7 +948,7 @@ text_overrun_behavior = 3
 
 [node name="ZonaCodigo" type="VBoxContainer" parent="CapaUI" unique_id=593664207]
 anchors_preset = -1
-anchor_top = 0.15
+anchor_top = 0.2
 anchor_right = 0.4
 anchor_bottom = 1.0
 offset_left = 10.0
@@ -1024,7 +1029,7 @@ drag_and_drop_selection_enabled = false
 [node name="ContenedorJuego" type="SubViewportContainer" parent="CapaUI" unique_id=1107520454]
 anchors_preset = -1
 anchor_left = 0.4
-anchor_top = 0.15
+anchor_top = 0.2
 anchor_right = 1.0
 anchor_bottom = 0.8
 offset_left = 10.0
@@ -1035,7 +1040,7 @@ stretch = true
 
 [node name="SubViewport" type="SubViewport" parent="CapaUI/ContenedorJuego" unique_id=1488676039]
 handle_input_locally = false
-size = Vector2i(671, 401)
+size = Vector2i(671, 368)
 render_target_update_mode = 4
 
 [node name="Tablero" type="Node2D" parent="CapaUI/ContenedorJuego/SubViewport" unique_id=664442654]
@@ -1049,6 +1054,7 @@ tile_set = ExtResource("5_pg1fb")
 [node name="Entidades" type="Node2D" parent="CapaUI/ContenedorJuego/SubViewport/Tablero" unique_id=902574647]
 
 [node name="Jugador" type="CharacterBody2D" parent="CapaUI/ContenedorJuego/SubViewport/Tablero/Entidades" unique_id=1778988735 node_paths=PackedStringArray("camara", "anim_player", "sprite_personaje")]
+z_index = 1
 scale = Vector2(0.5, 0.5)
 script = ExtResource("3_v32ml")
 camara = NodePath("Camera2D")
@@ -1074,7 +1080,7 @@ position_smoothing_enabled = true
 [node name="BordeTablero" type="NinePatchRect" parent="CapaUI" unique_id=1512537086]
 anchors_preset = -1
 anchor_left = 0.4
-anchor_top = 0.15
+anchor_top = 0.2
 anchor_right = 1.0
 anchor_bottom = 0.8
 offset_left = 10.0

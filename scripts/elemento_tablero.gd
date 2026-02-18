@@ -44,21 +44,31 @@ func _actualizar_visual():
 	
 	# Reset modulate para que la textura se vea con sus colores originales
 	sprite.modulate = Color.WHITE
+	sprite.scale = Vector2.ONE
 	sprite.hframes = 1
 	sprite.vframes = 1
 	sprite.frame = 0
+	# Desactivamos region por defecto para que funcionen las animaciones basadas en frames (Enemigos, Cofres, Llaves)
+	sprite.region_enabled = false
 	
 	if anim_player and tipo != Tipo.ENEMIGO: anim_player.stop()
 	
 	match tipo:
 		Tipo.MONEDA:
-			if tex_moneda: sprite.texture = tex_moneda
+			sprite.region_enabled = true
+			if anim_player and anim_player.has_animation("moneda_idle"):
+				anim_player.play("moneda_idle")
+			elif tex_moneda: sprite.texture = tex_moneda
 			else: sprite.modulate = Color.YELLOW
 		Tipo.LLAVE:
-			if tex_llave: sprite.texture = tex_llave
+			if anim_player and anim_player.has_animation("llave_idle"):
+				anim_player.play("llave_idle")
+			elif tex_llave: sprite.texture = tex_llave
 			else: sprite.modulate = Color.ORANGE
 		Tipo.COFRE:
-			if tex_cofre: sprite.texture = tex_cofre
+			if anim_player and anim_player.has_animation("cofre_cerrado"):
+				anim_player.play("cofre_cerrado")
+			elif tex_cofre: sprite.texture = tex_cofre
 			else: sprite.modulate = Color.BROWN
 		Tipo.ENEMIGO:
 			if anim_player:
@@ -78,11 +88,15 @@ func _actualizar_visual():
 			if tex_obstaculo: sprite.texture = tex_obstaculo
 			else: sprite.modulate = Color.BLACK
 		Tipo.PUENTE:
+			sprite.scale = Vector2(0.8, 0.8)
 			if esta_activo:
 				if tex_puente_activo: sprite.texture = tex_puente_activo
 				else: sprite.modulate = Color.BLUE.lerp(Color.WHITE, 0.7)
 			else:
-				if tex_puente_inactivo: sprite.texture = tex_puente_inactivo
+				if tex_puente_inactivo:
+					sprite.texture = tex_puente_inactivo
+					# Tinte rojizo para indicar que está inactivo
+					sprite.modulate = Color(1, 0.5, 0.5)
 				else: sprite.modulate = Color.BLUE
 
 func activar():
@@ -105,8 +119,10 @@ func recoger():
 
 # Función para abrir cofre (cambia visualmente o desaparece)
 func abrir_cofre():
-	# Por ahora lo desaparecemos, luego pondremos sprite de cofre abierto
-	recoger()
+	if anim_player and anim_player.has_animation("cofre_abrir"):
+		anim_player.play("cofre_abrir")
+	else:
+		recoger()
 
 # --- NUEVA FUNCIÓN DE TRADUCCIÓN ---
 static func obtener_nombre_tipo(valor: int) -> String:

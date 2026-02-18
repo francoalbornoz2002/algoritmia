@@ -92,9 +92,6 @@ func registrar_accion(accion: String):
 		# Opcional: Podríamos pedir al Ejecutor que detenga el script aquí
 		return
 
-	# 2. ANÁLISIS DE REDUNDANCIA (SL-01)
-	_analizar_redundancia(accion)
-	
 	historial_acciones.append(accion)
 
 	# 3. ANÁLISIS DE VALIDACIÓN PREVIA (SL-02 y SL-03)
@@ -102,32 +99,6 @@ func registrar_accion(accion: String):
 	
 	# 4. ANÁLISIS LÓGICA PROPOSICIONAL (LP-01) <--- NUEVO
 	_analizar_logica_operadores(accion)
-
-# --- LÓGICA DE DETECCIÓN DE PATRONES ---
-func _analizar_redundancia(accion_actual: String):
-	if historial_acciones.is_empty(): return
-	
-	# Miramos hacia atrás para ver repeticiones
-	var repeticiones = 0
-	# Recorremos inversamente
-	for i in range(historial_acciones.size() - 1, -1, -1):
-		if historial_acciones[i] == accion_actual:
-			repeticiones += 1
-		else:
-			break # Se cortó la racha
-	
-	# La acción actual sería la (repeticiones + 1)
-	var racha_actual = repeticiones + 1
-	
-	# UMBRALES DE REDUNDANCIA
-	# Para movimiento ("avanzar"), somos más permisivos: 3 o más es redundante.
-	# Para acciones ("recoger", "atacar"), 2 o más ya es redundante.
-	if accion_actual == "avanzar":
-		if racha_actual >= 3:
-			_registrar_incidencia(DIF_REDUNDANCIA)
-	elif accion_actual in ["recogerMoneda", "recogerLlave", "atacar", "saltar", "abrirCofre", "activarPuente"]:
-		if racha_actual >= 2:
-			_registrar_incidencia(DIF_REDUNDANCIA)
 
 func _analizar_validacion_requerida(accion: String):
 	var sensor_requerido = ""

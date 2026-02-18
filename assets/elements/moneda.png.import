@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://d3y3ywj1ejr41"
-path="res://.godot/imported/llave.png-7a3d4a58d6a83314b2dc0a89b6ad7b33.ctex"
+uid="uid://kqgl8ybb5ff"
+path="res://.godot/imported/moneda.png-e347f15493880daa5abe6492816dcc4c.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/elements/llave.png"
-dest_files=["res://.godot/imported/llave.png-7a3d4a58d6a83314b2dc0a89b6ad7b33.ctex"]
+source_file="res://assets/elements/moneda.png"
+dest_files=["res://.godot/imported/moneda.png-e347f15493880daa5abe6492816dcc4c.ctex"]
 
 [params]
 

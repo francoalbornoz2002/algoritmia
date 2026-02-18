@@ -1,9 +1,8 @@
 [gd_scene format=3 uid="uid://cb12yldddqjge"]
 
 [ext_resource type="Script" uid="uid://dhdduwuuvdrir" path="res://scripts/elemento_tablero.gd" id="1_gd1fq"]
-[ext_resource type="Texture2D" uid="uid://ct5x1vx0ydmwg" path="res://assets/elements/monedas.png" id="2_psvof"]
-[ext_resource type="Texture2D" uid="uid://d3y3ywj1ejr41" path="res://assets/elements/llave.png" id="3_a1pjf"]
-[ext_resource type="Texture2D" uid="uid://0u07pos61gho" path="res://assets/elements/cofre.png" id="4_34ahv"]
+[ext_resource type="Texture2D" uid="uid://kqgl8ybb5ff" path="res://assets/elements/moneda.png" id="2_hxdfs"]
+[ext_resource type="Texture2D" uid="uid://d0dp6dclth40m" path="res://assets/elements/cofre.png" id="4_34ahv"]
 [ext_resource type="Texture2D" uid="uid://clrspowki56bl" path="res://assets/elements/enemigo.png" id="5_psvof"]
 [ext_resource type="Texture2D" uid="uid://c5ka5kiy3anjf" path="res://assets/elements/objetos_varios.png" id="6_u3npu"]
 [ext_resource type="Texture2D" uid="uid://dlmdnsobsb6r7" path="res://assets/elements/puente.png" id="7_u3npu"]
@@ -11,10 +10,7 @@
 [ext_resource type="Texture2D" uid="uid://d0dc3wiadnimi" path="res://assets/enemies/MANTIS/mantis_attack.png" id="9_wt122"]
 [ext_resource type="Texture2D" uid="uid://wqxsgiv8dhwu" path="res://assets/enemies/BEETLE/beetle_idle.png" id="10_55mfb"]
 [ext_resource type="Texture2D" uid="uid://1m88os2g0ixe" path="res://assets/enemies/BEETLE/beetle_attack.png" id="11_fklnj"]
-
-[sub_resource type="AtlasTexture" id="AtlasTexture_n4r8o"]
-atlas = ExtResource("2_psvof")
-region = Rect2(35, 34, 10, 12)
+[ext_resource type="Texture2D" uid="uid://cxjws8qisltyn" path="res://assets/elements/llave_gold.png" id="12_wt122"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_q6irt"]
 atlas = ExtResource("4_34ahv")
@@ -73,6 +69,178 @@ tracks/3/keys = {
 "transitions": PackedFloat32Array(1),
 "update": 1,
 "values": [4]
+}
+tracks/4/type = "value"
+tracks/4/imported = false
+tracks/4/enabled = true
+tracks/4/path = NodePath("Sprite2D:region_rect")
+tracks/4/interp = 1
+tracks/4/loop_wrap = true
+tracks/4/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Rect2(0, 0, 16, 16)]
+}
+
+[sub_resource type="Animation" id="Animation_55mfb"]
+resource_name = "cofre_abierto"
+length = 0.35
+step = 0.0
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Sprite2D:texture")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [ExtResource("4_34ahv")]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("Sprite2D:hframes")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [9]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("Sprite2D:vframes")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [4]
+}
+tracks/3/type = "value"
+tracks/3/imported = false
+tracks/3/enabled = true
+tracks/3/path = NodePath("Sprite2D:frame")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
+tracks/3/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [33]
+}
+
+[sub_resource type="Animation" id="Animation_fklnj"]
+resource_name = "cofre_abrir"
+length = 0.4
+step = 0.1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Sprite2D:texture")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [ExtResource("4_34ahv")]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("Sprite2D:hframes")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [9]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("Sprite2D:vframes")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [4]
+}
+tracks/3/type = "value"
+tracks/3/imported = false
+tracks/3/enabled = true
+tracks/3/path = NodePath("Sprite2D:frame")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
+tracks/3/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.2, 0.3),
+"transitions": PackedFloat32Array(1, 1, 1, 1),
+"update": 1,
+"values": [6, 15, 24, 33]
+}
+
+[sub_resource type="Animation" id="Animation_84qjt"]
+resource_name = "cofre_cerrado"
+length = 0.35
+loop_mode = 1
+step = 0.0
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Sprite2D:texture")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [ExtResource("4_34ahv")]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("Sprite2D:hframes")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [9]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("Sprite2D:vframes")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [4]
+}
+tracks/3/type = "value"
+tracks/3/imported = false
+tracks/3/enabled = true
+tracks/3/path = NodePath("Sprite2D:frame")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
+tracks/3/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [6]
 }
 
 [sub_resource type="Animation" id="Animation_rp81l"]
@@ -182,6 +350,59 @@ tracks/3/keys = {
 "values": [0, 1, 2, 3]
 }
 
+[sub_resource type="Animation" id="Animation_aici2"]
+resource_name = "enemigo_2_attack"
+length = 0.6
+step = 0.1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Sprite2D:texture")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [ExtResource("11_fklnj")]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("Sprite2D:hframes")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [6]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("Sprite2D:vframes")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [4]
+}
+tracks/3/type = "value"
+tracks/3/imported = false
+tracks/3/enabled = true
+tracks/3/path = NodePath("Sprite2D:frame")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
+tracks/3/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.2, 0.3, 0.4, 0.5),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1),
+"update": 1,
+"values": [0, 1, 2, 3, 4, 5]
+}
+
 [sub_resource type="Animation" id="Animation_tk8is"]
 resource_name = "enemigo_1_idle"
 length = 0.8
@@ -236,10 +457,10 @@ tracks/3/keys = {
 "values": [0, 1, 2, 3]
 }
 
-[sub_resource type="Animation" id="Animation_aici2"]
-resource_name = "enemigo_2_attack"
-length = 0.6
-step = 0.1
+[sub_resource type="Animation" id="Animation_qbcs3"]
+resource_name = "llave_idle"
+loop_mode = 1
+step = 0.0
 tracks/0/type = "value"
 tracks/0/imported = false
 tracks/0/enabled = true
@@ -250,7 +471,7 @@ tracks/0/keys = {
 "times": PackedFloat32Array(0),
 "transitions": PackedFloat32Array(1),
 "update": 1,
-"values": [ExtResource("11_fklnj")]
+"values": [ExtResource("12_wt122")]
 }
 tracks/1/type = "value"
 tracks/1/imported = false
@@ -262,7 +483,7 @@ tracks/1/keys = {
 "times": PackedFloat32Array(0),
 "transitions": PackedFloat32Array(1),
 "update": 1,
-"values": [6]
+"values": [25]
 }
 tracks/2/type = "value"
 tracks/2/imported = false
@@ -274,7 +495,7 @@ tracks/2/keys = {
 "times": PackedFloat32Array(0),
 "transitions": PackedFloat32Array(1),
 "update": 1,
-"values": [4]
+"values": [1]
 }
 tracks/3/type = "value"
 tracks/3/imported = false
@@ -283,26 +504,61 @@ tracks/3/path = NodePath("Sprite2D:frame")
 tracks/3/interp = 1
 tracks/3/loop_wrap = true
 tracks/3/keys = {
-"times": PackedFloat32Array(0, 0.1, 0.2, 0.3, 0.4, 0.5),
-"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1),
+"times": PackedFloat32Array(0, 1),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [0, 24]
+}
+
+[sub_resource type="Animation" id="Animation_ksxjr"]
+resource_name = "moneda_idle"
+length = 0.8
+loop_mode = 1
+step = 0.1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Sprite2D:texture")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
 "update": 1,
-"values": [0, 1, 2, 3, 4, 5]
+"values": [ExtResource("2_hxdfs")]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("Sprite2D:region_rect")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1, 1),
+"update": 1,
+"values": [Rect2(0, 0, 16, 16), Rect2(17, 0, 15, 16), Rect2(33, 0, 14, 16), Rect2(52, 0, 9, 16), Rect2(69, 0, 6, 16), Rect2(84, 0, 9, 16), Rect2(97, 0, 14, 16), Rect2(113, 0, 15, 16), Rect2(128, 0, 16, 16)]
 }
 
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_84qjt"]
 _data = {
 &"RESET": SubResource("Animation_3rnds"),
+&"cofre_abierto": SubResource("Animation_55mfb"),
+&"cofre_abrir": SubResource("Animation_fklnj"),
+&"cofre_cerrado": SubResource("Animation_84qjt"),
 &"enemigo_0_attack": SubResource("Animation_rp81l"),
 &"enemigo_0_idle": SubResource("Animation_wy8mo"),
+&"enemigo_1_attack": SubResource("Animation_aici2"),
 &"enemigo_1_idle": SubResource("Animation_tk8is"),
-&"enemigo_1_attack": SubResource("Animation_aici2")
+&"llave_idle": SubResource("Animation_qbcs3"),
+&"moneda_idle": SubResource("Animation_ksxjr")
 }
 
 [node name="ElementoTablero" type="Node2D" unique_id=1899330576 node_paths=PackedStringArray("sprite")]
 script = ExtResource("1_gd1fq")
 sprite = NodePath("Sprite2D")
-tex_moneda = SubResource("AtlasTexture_n4r8o")
-tex_llave = ExtResource("3_a1pjf")
+tex_moneda = ExtResource("2_hxdfs")
+tex_llave = ExtResource("12_wt122")
 tex_cofre = SubResource("AtlasTexture_q6irt")
 tex_enemigo = ExtResource("5_psvof")
 tex_obstaculo = SubResource("AtlasTexture_wt122")
@@ -313,6 +569,8 @@ tex_puente_activo = ExtResource("7_u3npu")
 texture = ExtResource("8_q6irt")
 hframes = 7
 vframes = 4
+region_enabled = true
+region_rect = Rect2(0, 0, 16, 16)
 
 [node name="AnimationPlayer" type="AnimationPlayer" parent="." unique_id=680154527]
 libraries/ = SubResource("AnimationLibrary_84qjt")

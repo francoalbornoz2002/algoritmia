@@ -92,6 +92,9 @@ func procesar_y_ejecutar(texto_codigo: String):
 	_params_es_proceso_actual.clear()
 	_var_usage_stats.clear()
 	
+	# --- NUEVO: FASE DE ANÁLISIS DE REDUNDANCIA (SL-01) ---
+	_analizar_redundancia_estatica(texto_codigo)
+	
 	# 1. Transpilación con Linter (Validación)
 	var resultado = _transpilar(texto_codigo)
 	
@@ -1111,3 +1114,49 @@ func _validar_identificadores(linea: String) -> String:
 			return "Identificador '" + palabra + "' no declarado (¿Variable mal escrita o inexistente?)."
 			
 	return ""
+
+func _analizar_redundancia_estatica(texto: String):
+	var lineas = texto.split("\n")
+	var ultima_accion = ""
+	var repeticiones = 0
+	
+	for linea in lineas:
+		# Limpiamos espacios y comentarios
+		var linea_limpia = linea.strip_edges().split("--")[0].strip_edges()
+		
+		if linea_limpia.is_empty():
+			continue
+			
+		# Verificamos si la línea es un comando atómico (avanzar, atacar, etc.)
+		var es_atomico = false
+		# Extraemos el primer token y limpiamos paréntesis para ser consistentes con el transpiler
+		var partes = linea_limpia.split(" ", false)
+		if partes.is_empty(): continue
+		
+		var token = partes[0].replace("(", "").replace(")", "")
+		
+		if COMANDOS_ATOMICOS.has(token):
+			es_atomico = true
+		
+		if es_atomico:
+			if token == ultima_accion:
+				repeticiones += 1
+			else:
+				# Cambio de acción, reseteamos
+				ultima_accion = token
+				repeticiones = 1
+		else:
+			# Si encontramos una estructura (Si, Mientras, Fin, var...), rompemos la racha
+			ultima_accion = ""
+			repeticiones = 0
+			
+		# --- EVALUACIÓN DE UMBRALES ---
+		if ultima_accion != "":
+			var umbral = 2 # Por defecto (acciones complejas como recoger, atacar)
+			if ultima_accion == "avanzar":
+				umbral = 3 # Somos más permisivos con avanzar
+			
+			if repeticiones >= umbral:
+				# Reportamos SL-01
+				_reportar_dificultad(AnalistaDificultad.DIF_REDUNDANCIA, false)
+				return # Con detectar una redundancia basta por este intento

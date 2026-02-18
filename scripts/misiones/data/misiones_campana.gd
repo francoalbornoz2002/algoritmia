@@ -5,7 +5,7 @@ static func crear_mision_01_bucle_basico() -> DefinicionMision:
 	var mision = DefinicionMision.new()
 	mision.id = "9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d"
 	mision.titulo = "Misión 1"
-	mision.descripcion = "Recorre el Sendero 3. Tu objetivo es recolecta todas las monedas, elimina a cualquier enemigo y elude obstáculos."
+	mision.descripcion = "Recorre el Sendero 3. Tu objetivo es recolectar todas las monedas, eliminar a cualquier enemigo y eludir cualquier obstáculo. Además, habrá puentes que deberás activar (debes tener monedas) y cofres por abrir (¡no olvides recolectar las llaves!)."
 	mision.tamano_mapa = Vector2i(25, 25)
 	mision.dificultad_mision = "Media"
 
@@ -25,17 +25,21 @@ static func crear_mision_01_bucle_basico() -> DefinicionMision:
 	caso1.agregar_condicion(CondicionMision.EliminarEnemigos.new())
 	mision.casos_de_prueba.append(caso1)
 
-	# CASO 2: Sin monedas, solo enemigos y obstáculos (espacio de 2)
+	# CASO 2: Escenario complejo con todos los elementos
 	var caso2 = CasoPruebaMision.new()
 	caso2.inicio_jugador = Vector2i(2, 0)
 
-	# Enemigos y Obstáculos con 2 espacios de separación (y=3, 6, 9, 12)
-	caso2.agregar_elemento(ElementoTablero.Tipo.ENEMIGO, Vector2i(2, 3))
-	caso2.agregar_elemento(ElementoTablero.Tipo.OBSTACULO, Vector2i(2, 6))
+	# Secuencia: Moneda -> Enemigo -> Puente -> Llave -> Obstáculo -> Cofre -> Enemigo
+	caso2.agregar_elemento(ElementoTablero.Tipo.MONEDA, Vector2i(2, 1))
+	caso2.agregar_elemento(ElementoTablero.Tipo.ENEMIGO, Vector2i(2, 2))
+	caso2.agregar_elemento(ElementoTablero.Tipo.PUENTE, Vector2i(2, 3))
+	caso2.agregar_elemento(ElementoTablero.Tipo.LLAVE, Vector2i(2, 4))
+	caso2.agregar_elemento(ElementoTablero.Tipo.OBSTACULO, Vector2i(2, 5))
+	caso2.agregar_elemento(ElementoTablero.Tipo.COFRE, Vector2i(2, 7)) # Salto cae en 6, avanza a 7
 	caso2.agregar_elemento(ElementoTablero.Tipo.ENEMIGO, Vector2i(2, 9))
-	caso2.agregar_elemento(ElementoTablero.Tipo.OBSTACULO, Vector2i(2, 12))
 
 	caso2.agregar_condicion(CondicionMision.EliminarEnemigos.new())
+	caso2.agregar_condicion(CondicionMision.Recolectar.new("monedas", 5)) # Cofre da 5, moneda inicial se gasta
 	mision.casos_de_prueba.append(caso2)
 	return mision
 
