@@ -22,6 +22,7 @@ var _lote_en_progreso: Array = []
 func _ready():
 	# 1. Creamos el nodo HTTPRequest
 	http_request = HTTPRequest.new()
+	http_request.timeout = 10.0 # Timeout de 10 segundos para fallar rápido si no hay red
 	add_child(http_request)
 	http_request.request_completed.connect(_on_http_request_completado)
 	
@@ -48,7 +49,7 @@ func sincronizar_pendientes():
 	# 1. Verificamos el estado (mutex)
 	# Si ya está ocupado enviando algo, no hacemos nada.
 	if esta_sincronizando:
-		print("Sincronizador: Ya estoy ocupado, reintentando más tarde.")
+		print("Sincronizador: Ocupado. Petición en cola o ignorada.")
 		return
 		
 	# 2. Obtenemos el ID del alumno (necesario para ambos lotes)
@@ -194,6 +195,9 @@ func _on_http_request_completado(result, response_code, headers, body):
 		# Si hubo éxito, seguimos inmediatamente para vaciar la cola rápido
 		sincronizar_pendientes()
 	else:
+		# IMPORTANTE: Avisamos a los escuchas (UI) que este intento falló
+		sincronizacion_finalizada.emit(false)
+		
 		# Si falló, esperamos 10 segundos antes de volver a intentar
 		print("Sincronizador: Reintentando envío en 10 segundos...")
 		await get_tree().create_timer(10.0).timeout

@@ -5,6 +5,7 @@
 [ext_resource type="Texture2D" uid="uid://bs6w6bpa5g3y6" path="res://assets/logo_juego.png" id="2_logo"]
 [ext_resource type="Texture2D" uid="uid://wx55eeehicy4" path="res://assets/ui/grilla_niveles.png" id="3_k8e8i"]
 [ext_resource type="Texture2D" uid="uid://cqi56hhs1vqf4" path="res://assets/ui/botones.png" id="4_57x4j"]
+[ext_resource type="Texture2D" uid="uid://ckoenfvcrafx1" path="res://assets/ui/iconos_varios.png" id="6_57x4j"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_panel"]
 atlas = ExtResource("3_k8e8i")
@@ -51,7 +52,11 @@ texture_margin_right = 3.0
 texture_margin_bottom = 4.0
 modulate_color = Color(0.5015567, 0.71323264, 1.3724523, 1)
 
-[node name="Menu" type="Control" unique_id=1728682789 node_paths=PackedStringArray("label_usuario")]
+[sub_resource type="AtlasTexture" id="AtlasTexture_spinner"]
+atlas = ExtResource("6_57x4j")
+region = Rect2(81, 49, 14, 14)
+
+[node name="Menu" type="Control" unique_id=1728682789 node_paths=PackedStringArray("label_usuario", "http_request_sync", "overlay_sincronizacion", "label_mensaje_sync", "label_error_sync", "spinner", "boton_aceptar_sync")]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -60,6 +65,12 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_8ncyy")
 label_usuario = NodePath("LabelUsuario")
+http_request_sync = NodePath("HTTPRequestSync")
+overlay_sincronizacion = NodePath("OverlaySincronizacion")
+label_mensaje_sync = NodePath("OverlaySincronizacion/VBoxContainer/LabelMensajeSync")
+label_error_sync = NodePath("OverlaySincronizacion/VBoxContainer/LabelErrorSync")
+spinner = NodePath("OverlaySincronizacion/VBoxContainer/Spinner")
+boton_aceptar_sync = NodePath("OverlaySincronizacion/VBoxContainer/BotonAceptarSync")
 
 [node name="Fondo" type="TextureRect" parent="." unique_id=11408225]
 layout_mode = 1
@@ -180,6 +191,60 @@ grow_horizontal = 2
 texture = ExtResource("2_logo")
 expand_mode = 1
 stretch_mode = 5
+
+[node name="HTTPRequestSync" type="HTTPRequest" parent="." unique_id=529401836]
+
+[node name="OverlaySincronizacion" type="ColorRect" parent="." unique_id=991234567]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 0.85)
+
+[node name="VBoxContainer" type="VBoxContainer" parent="OverlaySincronizacion" unique_id=509168448]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -20.0
+offset_top = -20.0
+offset_right = 20.0
+offset_bottom = 20.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 10
+alignment = 1
+
+[node name="Spinner" type="TextureRect" parent="OverlaySincronizacion/VBoxContainer" unique_id=991234570]
+custom_minimum_size = Vector2(64, 64)
+layout_mode = 2
+size_flags_horizontal = 4
+texture = SubResource("AtlasTexture_spinner")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="LabelMensajeSync" type="Label" parent="OverlaySincronizacion/VBoxContainer" unique_id=991234568]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "Sincronizando datos con la web..."
+horizontal_alignment = 1
+
+[node name="LabelErrorSync" type="Label" parent="OverlaySincronizacion/VBoxContainer" unique_id=991234569]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.2, 0.2, 1)
+horizontal_alignment = 1
+
+[node name="BotonAceptarSync" type="Button" parent="OverlaySincronizacion/VBoxContainer" unique_id=991234571]
+visible = false
+custom_minimum_size = Vector2(120, 40)
+layout_mode = 2
+size_flags_horizontal = 4
+text = "Aceptar"
 
 [connection signal="pressed" from="PanelContenedor/VBoxContainer2/Jugar" to="." method="_on_jugar_pressed"]
 [connection signal="pressed" from="PanelContenedor/VBoxContainer2/Sandbox" to="." method="_on_sandbox_pressed"]

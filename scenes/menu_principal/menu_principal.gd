@@ -1,11 +1,35 @@
 extends Control
 
 @export var label_usuario: Label
+@export var http_request_sync: HTTPRequest
+@export var overlay_sincronizacion: Control
+@export var label_mensaje_sync: Label
+@export var label_error_sync: Label
+@export var spinner: TextureRect
+@export var boton_aceptar_sync: Button
+
+# URL base del backend (ajustar si cambia el puerto/host)
+const API_BASE_URL = "http://localhost:3000/api"
+
+var _tiempo_inicio_sync: int = 0
+var _spinner_tween: Tween
 
 func _ready():
 	# Verificamos inactividad al iniciar el menú
-	_verificar_inactividad()
 	_mostrar_datos_alumno()
+	
+	if http_request_sync:
+		http_request_sync.request_completed.connect(_on_sync_completed)
+	
+	if boton_aceptar_sync:
+		boton_aceptar_sync.pressed.connect(_on_boton_aceptar_sync_pressed)
+	
+	# Iniciamos sincronización si hay alumno logueado
+	#if DatabaseManager.obtener_id_alumno_actual() != "":
+	#	_iniciar_sincronizacion_con_ui()
+	else:
+		# Si es invitado (no hay sync), verificamos inactividad directamente
+		_verificar_inactividad()
 
 func _mostrar_datos_alumno():
 	var alumno = DatabaseManager.obtener_alumno_actual()
@@ -14,6 +38,94 @@ func _mostrar_datos_alumno():
 		if label_usuario: label_usuario.text = texto
 	else:
 		if label_usuario: label_usuario.text = "Alumno: Invitado"
+
+func _iniciar_sincronizacion_con_ui():
+	print("MenuPrincipal: [SYNC] Iniciando proceso de sincronización con UI...")
+	if overlay_sincronizacion: overlay_sincronizacion.show()
+	if label_mensaje_sync: label_mensaje_sync.text = "Sincronizando datos con la web..."
+	if label_error_sync: label_error_sync.text = ""
+	if boton_aceptar_sync: boton_aceptar_sync.hide()
+	
+	# Iniciamos animación de spinner
+	if spinner:
+		if _spinner_tween: _spinner_tween.kill()
+		spinner.pivot_offset = Vector2(32, 32) # Mitad de 64x64
+		_spinner_tween = create_tween()
+		_spinner_tween.set_loops()
+		_spinner_tween.tween_property(spinner, "rotation_degrees", 360.0, 1.0).from(0.0)
+	
+	_tiempo_inicio_sync = Time.get_ticks_msec()
+	_sincronizar_dificultades_web()
+
+func _sincronizar_dificultades_web():
+	# 1. Obtenemos ID del alumno local
+	print("MenuPrincipal: [SYNC] Buscando ID de alumno local...")
+	var id_alumno = DatabaseManager.obtener_id_alumno_actual()
+	if id_alumno == "":
+		print("MenuPrincipal: [SYNC] No se encontró ID de alumno (Invitado o Error). Abortando sync.")
+		return # No hay sesión o es invitado
+	
+	print("MenuPrincipal: [SYNC] ID encontrado: ", id_alumno)
+	print("MenuPrincipal: [SYNC] Preparando petición HTTP...")
+	
+	# 2. Construimos URL: /alumnos/:id/sync-difficulties
+	var url = "%s/alumnos/%s/sync-difficulties" % [API_BASE_URL, id_alumno]
+	print("MenuPrincipal: [SYNC] URL destino: ", url)
+	
+	# 3. Hacemos la petición
+	if http_request_sync:
+		var error = http_request_sync.request(url)
+		if error != OK:
+			print("MenuPrincipal: [SYNC] ERROR al iniciar request HTTP. Código error Godot: ", error)
+			_mostrar_resultado_sync(false, "Error interno al iniciar petición.")
+	else:
+		print("MenuPrincipal: [SYNC] ERROR: Nodo HTTPRequest no asignado.")
+		if overlay_sincronizacion: overlay_sincronizacion.hide()
+		_verificar_inactividad()
+
+func _on_sync_completed(result, response_code, _headers, body):
+	print("MenuPrincipal: [SYNC] Respuesta recibida. Result: %d | HTTP Code: %d" % [result, response_code])
+	var exito = false
+	var mensaje_detalle = ""
+	
+	if result == HTTPRequest.RESULT_SUCCESS and response_code == 200:
+		print("MenuPrincipal: [SYNC] Conexión exitosa. Procesando JSON...")
+		var json = JSON.parse_string(body.get_string_from_utf8())
+		if json != null and json is Array:
+			print("MenuPrincipal: [SYNC] JSON válido (Array de %d elementos). Enviando a DBManager..." % json.size())
+			if DatabaseManager.actualizar_dificultades_desde_web(json):
+				exito = true
+				mensaje_detalle = "Se actualizaron %d dificultades." % json.size()
+			else:
+				mensaje_detalle = "Error al guardar en base de datos."
+		else:
+			print("MenuPrincipal: [SYNC] ERROR: El cuerpo de la respuesta no es un Array válido o es nulo.")
+			mensaje_detalle = "Datos recibidos inválidos."
+	else:
+		mensaje_detalle = "Error de conexión (%d)" % response_code
+		print("MenuPrincipal: [SYNC] FALLÓ la sincronización. Código HTTP: ", response_code)
+
+	_mostrar_resultado_sync(exito, mensaje_detalle)
+
+func _mostrar_resultado_sync(exito: bool, detalle: String):
+	if _spinner_tween: _spinner_tween.kill()
+	
+	if exito:
+		if label_mensaje_sync: label_mensaje_sync.text = "¡Sincronización Exitosa!"
+		if label_error_sync:
+			label_error_sync.add_theme_color_override("font_color", Color(0.2, 0.8, 0.2)) # Verde
+			label_error_sync.text = detalle
+	else:
+		if label_mensaje_sync: label_mensaje_sync.text = "Error en Sincronización"
+		if label_error_sync:
+			label_error_sync.add_theme_color_override("font_color", Color(1, 0.2, 0.2)) # Rojo
+			label_error_sync.text = detalle
+			
+	if boton_aceptar_sync: boton_aceptar_sync.show()
+
+func _on_boton_aceptar_sync_pressed():
+	if overlay_sincronizacion: overlay_sincronizacion.hide()
+	_verificar_inactividad()
 
 func _verificar_inactividad():
 	# HARDCODE: Forzamos la misión especial para pruebas
@@ -75,8 +187,8 @@ func _iniciar_mision_especial():
 	caso1.agregar_elemento(ElementoTablero.Tipo.ENEMIGO, Vector2i(2, 4))
 	caso1.agregar_elemento(ElementoTablero.Tipo.ENEMIGO, Vector2i(2, 10))
 	
-	caso1.agregar_condicion(CondicionMision.Recolectar.new("monedas", 5))
-	caso1.agregar_condicion(CondicionMision.EliminarEnemigos.new())
+	caso1.agregar_condicion(CondicionRecolectar.new("monedas", 5))
+	caso1.agregar_condicion(CondicionEliminarEnemigos.new())
 	mision.casos_de_prueba.append(caso1)
 
 	# CASO 2: Sin monedas, solo enemigos y obstáculos (espacio de 2)
@@ -89,7 +201,7 @@ func _iniciar_mision_especial():
 	caso2.agregar_elemento(ElementoTablero.Tipo.ENEMIGO, Vector2i(2, 9))
 	caso2.agregar_elemento(ElementoTablero.Tipo.OBSTACULO, Vector2i(2, 12))
 	
-	caso2.agregar_condicion(CondicionMision.EliminarEnemigos.new())
+	caso2.agregar_condicion(CondicionEliminarEnemigos.new())
 	mision.casos_de_prueba.append(caso2)
 
 	# Comentamos la generación original para las pruebas
@@ -126,7 +238,7 @@ func _on_cerrar_sesion_pressed() -> void:
 	confirm.title = "Cerrar Sesión"
 	
 	var mensaje = "¿Estás seguro de que deseas cerrar la sesión?\n"
-	mensaje += "Esto borrará todos los datos locales del alumno.\n"
+	mensaje += "Esto borrará todos tus datos locales de progreso y dificultades.\n"
 	
 	if total_pendientes > 0:
 		mensaje += "\n[ADVERTENCIA]: Tienes %d elementos sin sincronizar.\n" % total_pendientes

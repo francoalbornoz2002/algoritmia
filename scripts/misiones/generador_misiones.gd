@@ -100,21 +100,21 @@ static func generar_mision_compleja(nivel_dificultad: int = DIFICULTAD_MEDIA) ->
 		
 		# 1. Recolectar todo
 		if total_monedas > 0:
-			caso.agregar_condicion(CondicionMision.Recolectar.new("monedas", total_monedas))
+			caso.agregar_condicion(CondicionRecolectar.new("monedas", total_monedas))
 			
 		# 2. Eliminar amenazas
 		if total_enemigos > 0:
-			caso.agregar_condicion(CondicionMision.EliminarEnemigos.new())
+			caso.agregar_condicion(CondicionEliminarEnemigos.new())
 			
 		# 3. Uso de Variables (Si la misión lo pide)
 		if requiere_variable_contador:
 			# El generador decide que la variable se llame 'tesoro' o 'total'
 			var nombre_var = "total"
-			caso.agregar_condicion(CondicionMision.VariableTieneValor.new(nombre_var, total_monedas))
+			caso.agregar_condicion(CondicionVariableTieneValor.new(nombre_var, total_monedas))
 			
 		# 4. Uso de Procedimientos (Si es difícil)
 		if requiere_procedimiento:
-			caso.agregar_condicion(CondicionMision.ProcedimientoDefinido.new("recolectar"))
+			caso.agregar_condicion(CondicionProcedimientoDefinido.new("recolectar"))
 
 		mision.casos_de_prueba.append(caso)
 

@@ -32,14 +32,15 @@ func _cargar_misiones():
 		child.queue_free()
 	
 	# Obtener todas las misiones del catálogo
-	var misiones = CatalogoMisiones.obtener_todas()
+	var misiones_db = DatabaseManager.obtener_misiones()
 	
-	var indice = 1
-	for mision in misiones:
-		var mision_a_usar = mision
-		# HARDCODE: Forzamos que el Nivel 1 use la misión de prueba configurada
-		if indice == 1:
-			mision_a_usar = MisionesCampana.crear_mision_01_bucle_basico()
+	for datos_mision in misiones_db:
+		# Cargamos el recurso real usando el ID de la base de datos
+		var mision_recurso = GestorCatalogo.obtener_mision_por_id(datos_mision["id"])
+		
+		if not mision_recurso:
+			print("Selector: Advertencia, misión en BD no encontrada en recursos: ", datos_mision["id"])
+			continue
 
 		var btn = TextureButton.new()
 		btn.focus_mode = Control.FOCUS_NONE
@@ -59,7 +60,7 @@ func _cargar_misiones():
 		
 		# 2. Número de Nivel (Label)
 		var lbl_num = Label.new()
-		lbl_num.text = str(indice)
+		lbl_num.text = str(mision_recurso.numero)
 		lbl_num.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		lbl_num.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 		lbl_num.set_anchors_preset(Control.PRESET_FULL_RECT)
@@ -69,17 +70,11 @@ func _cargar_misiones():
 		lbl_num.add_theme_constant_override("outline_size", 8)
 		lbl_num.add_theme_color_override("font_outline_color", Color.BLACK)
 		btn.add_child(lbl_num)
-		
-		# HARDCODE: Solo habilitar la primera misión para pruebas
-		if indice > 1:
-			btn.disabled = true
-			btn.modulate = Color(0.5, 0.5, 0.5, 0.6) # Feedback visual de bloqueado
-		
+
 		# Conectar señal pasando la misión como argumento
-		btn.pressed.connect(_abrir_modal.bind(mision_a_usar))
+		btn.pressed.connect(_abrir_modal.bind(mision_recurso))
 		
 		grid_container.add_child(btn)
-		indice += 1
 
 func _abrir_modal(mision: DefinicionMision) -> void:
 	_mision_seleccionada_temp = mision

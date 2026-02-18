@@ -19,12 +19,29 @@ var analista_dificultad: AnalistaDificultad
 @export var ejecutor: Node
 @export var timer_reinicio: Timer
 
+# --- UI VICTORIA PERSONALIZADA ---
+@export_group("UI Victoria")
+@export var capa_victoria: CanvasLayer
+@export var panel_victoria_rect: TextureRect
+@export var label_titulo_victoria: Label
+@export var label_xp_victoria: Label
+@export var boton_continuar_victoria: Button
+@export var texturas_estrellas: Array[Texture2D] # Índice 0=1 estrella, 1=2 estrellas, 2=3 estrellas
+@export var dialogo_confirmar_salida: ConfirmationDialog
+@export var overlay_sync: Control
+@export var spinner_sync: TextureRect
+@export var label_detalle_sync: Label
+@export var boton_aceptar_sync: Button
+
 # Estado del juego
 var ejecutando_codigo: bool = false
 var sandbox: bool = false
 var juego_fallido: bool = false # Bandera para abortar secuencia si hay Game Over
 var intentos_totales: int = 0
 var semilla_mision: int = 0
+var mision_finalizada: bool = false
+var _saliendo_del_juego: bool = false
+var _spinner_tween: Tween
 
 @export_group("Configuración Visual del Mapa")
 @export var tiles_suelo_centro: Array[Vector2i] = [Vector2i(5, 3)]
@@ -41,12 +58,14 @@ var semilla_mision: int = 0
 var mision_actual_def: DefinicionMision = null
 var caso_actual_idx: int = 0
 var logs_consola: Array[String] = [] # Para verificar condiciones de Output
+var _victoria_tween: Tween
 
 # Precargamos la escena del elemento
 var elemento_escena = preload("res://scenes/elemento_tablero/elemento_tablero.tscn")
 
 func _ready():
 	randomize()
+	get_tree().set_auto_accept_quit(false) # Manejamos la salida manualmente
 	semilla_mision = randi()
 	GridManager.limpiar_datos()
 	
@@ -64,8 +83,11 @@ func _ready():
 	if not boton_ejecutar.pressed.is_connected(_on_ejecutar_pressed):
 		boton_ejecutar.pressed.connect(_on_ejecutar_pressed)
 	
-	if boton_volver and not boton_volver.pressed.is_connected(_volver_al_menu):
-		boton_volver.pressed.connect(_volver_al_menu)
+	if boton_volver and not boton_volver.pressed.is_connected(_on_boton_volver_pressed):
+		boton_volver.pressed.connect(_on_boton_volver_pressed)
+	
+	if boton_continuar_victoria and not boton_continuar_victoria.pressed.is_connected(_volver_al_menu):
+		boton_continuar_victoria.pressed.connect(_volver_al_menu)
 	
 	timer_reinicio.one_shot = true
 	if not timer_reinicio.timeout.is_connected(_on_reiniciar_mision):
@@ -76,6 +98,12 @@ func _ready():
 		
 	if not jugador.consola_mensaje_enviado.is_connected(agregar_mensaje_consola):
 		jugador.consola_mensaje_enviado.connect(agregar_mensaje_consola)
+		
+	if dialogo_confirmar_salida and not dialogo_confirmar_salida.confirmed.is_connected(_on_confirmar_salida_confirmed):
+		dialogo_confirmar_salida.confirmed.connect(_on_confirmar_salida_confirmed)
+	
+	if boton_aceptar_sync and not boton_aceptar_sync.pressed.is_connected(_on_boton_aceptar_sync_pressed):
+		boton_aceptar_sync.pressed.connect(_on_boton_aceptar_sync_pressed)
 	
 	if not sandbox:
 		analista_dificultad = AnalistaDificultad.new()
@@ -94,6 +122,124 @@ func _ready():
 	elif sandbox:
 		_generar_suelo(Vector2i(25, 25))
 		jugador.teletransportar_a(Vector2i(0, 0))
+
+func _notification(what):
+	if what == NOTIFICATION_WM_CLOSE_REQUEST:
+		_intentar_salir(true)
+
+func _on_boton_volver_pressed():
+	_intentar_salir(false)
+
+func _intentar_salir(es_quit: bool):
+	_saliendo_del_juego = es_quit
+	
+	# Condiciones para salir directo:
+	# 1. Modo Sandbox (no hay registro)
+	# 2. No se ha hecho ningún intento (nada que registrar)
+	# 3. La misión ya terminó (ya se registró)
+	if sandbox or intentos_totales == 0 or mision_finalizada:
+		_ejecutar_salida()
+		return
+
+	# Si hay intentos pendientes y no terminó, mostramos advertencia
+	if dialogo_confirmar_salida:
+		dialogo_confirmar_salida.popup_centered()
+	else:
+		# Fallback si no hay diálogo
+		_ejecutar_salida()
+
+func _on_confirmar_salida_confirmed():
+	# Registramos errores como abandono (Equivalente a 1 estrella: 100% errores)
+	if analista_dificultad:
+		print("MisionJuego: Abandonando misión. Registrando errores acumulados...")
+		# Usamos la lógica de 1 estrella para guardar todo lo acumulado
+		analista_dificultad.procesar_victoria_segun_estrellas(1)
+	
+	_ejecutar_salida()
+
+func _ejecutar_salida():
+	# Deshabilitamos botones para evitar múltiples clics
+	if boton_volver: boton_volver.disabled = true
+	if boton_continuar_victoria: boton_continuar_victoria.disabled = true
+	if boton_ejecutar: boton_ejecutar.disabled = true
+
+	# Verificamos si hay algo pendiente de sincronizar antes de irnos
+	var pendientes = 0
+	pendientes += DatabaseManager.obtener_misiones_pendientes().size()
+	pendientes += DatabaseManager.obtener_misiones_especiales_pendientes().size()
+	pendientes += DatabaseManager.obtener_dificultades_pendientes().size()
+	
+	if pendientes > 0:
+		_iniciar_espera_sincronizacion()
+	else:
+		_realizar_salida_definitiva()
+
+func _iniciar_espera_sincronizacion():
+	print("MisionJuego: Datos pendientes detectados. Iniciando sincronización bloqueante...")
+	
+	# Ocultamos la capa de victoria para que se vea el overlay de sincronización (que está en CapaUI)
+	if capa_victoria: capa_victoria.visible = false
+	if overlay_sync: overlay_sync.show()
+	
+	# Reset UI Sync
+	if boton_aceptar_sync: boton_aceptar_sync.hide()
+	if label_detalle_sync: label_detalle_sync.text = ""
+	if spinner_sync: spinner_sync.show()
+	
+	# Animación Spinner
+	if spinner_sync:
+		if _spinner_tween: _spinner_tween.kill()
+		spinner_sync.pivot_offset = Vector2(32, 32)
+		_spinner_tween = create_tween()
+		_spinner_tween.set_loops()
+		_spinner_tween.tween_property(spinner_sync, "rotation_degrees", 360.0, 1.0).from(0.0)
+	
+	# Conectamos señal del Gestor
+	if not GestorSincronizacion.sincronizacion_finalizada.is_connected(_on_sincronizacion_finalizada):
+		GestorSincronizacion.sincronizacion_finalizada.connect(_on_sincronizacion_finalizada)
+	
+	# Iniciamos la sincronización
+	GestorSincronizacion.sincronizar_pendientes()
+	
+	# Timeout de seguridad (15 segundos) por si la red se cuelga o tarda
+	await get_tree().create_timer(15.0).timeout
+	
+	# Si el botón de aceptar NO está visible, significa que aún estamos esperando (o se colgó)
+	if overlay_sync and overlay_sync.visible and boton_aceptar_sync and not boton_aceptar_sync.visible:
+		print("MisionJuego: Timeout de sincronización. Forzando salida.")
+		_on_sincronizacion_finalizada(false)
+
+func _on_sincronizacion_finalizada(_exito):
+	if GestorSincronizacion.sincronizacion_finalizada.is_connected(_on_sincronizacion_finalizada):
+		GestorSincronizacion.sincronizacion_finalizada.disconnect(_on_sincronizacion_finalizada)
+	
+	if _spinner_tween: _spinner_tween.kill()
+	if spinner_sync: spinner_sync.hide()
+	
+	# Feedback Visual
+	if _exito:
+		if label_detalle_sync:
+			label_detalle_sync.text = "¡Datos guardados en la nube!"
+			label_detalle_sync.add_theme_color_override("font_color", Color.GREEN)
+	else:
+		if label_detalle_sync:
+			label_detalle_sync.text = "Sin conexión. Se guardó localmente."
+			label_detalle_sync.add_theme_color_override("font_color", Color.ORANGE)
+			
+	# Mostramos el botón para que el usuario confirme y salga
+	if boton_aceptar_sync: boton_aceptar_sync.show()
+
+func _on_boton_aceptar_sync_pressed():
+	if overlay_sync: overlay_sync.hide()
+	_realizar_salida_definitiva()
+
+func _realizar_salida_definitiva():
+	if _saliendo_del_juego:
+		get_tree().quit()
+	else:
+		# _volver_al_menu() ahora es solo cambiar de escena
+		print("Regresando al selector de misiones...")
+		get_tree().change_scene_to_file("res://scenes/selector_misiones/selector_misiones.tscn")
 
 # --- CARGA DE MISIÓN ---
 
@@ -137,8 +283,8 @@ func _preparar_caso_prueba(indice: int):
 	# TODO: Soportar dirección inicial si se define en el caso
 	
 	# 3. Spawnear Elementos
-	for item_data in caso.elementos_mapa:
-		spawn_elemento(item_data["pos"], item_data["tipo"])
+	for elemento in caso.elementos_mapa:
+		spawn_elemento(elemento.pos, elemento.tipo)
 		
 	agregar_mensaje_consola("--- Cargando Caso de Prueba " + str(indice + 1) + " ---", "SISTEMA")
 
@@ -292,13 +438,12 @@ func _victoria_total():
 	agregar_mensaje_consola("¡MISIÓN COMPLETADA! ★★★", "SISTEMA")
 	ejecutando_codigo = false
 	boton_ejecutar.disabled = true
+	mision_finalizada = true
 	
 	# 1. Calcular Recompensas con la nueva lógica
 	var resultado = calcular_resultado_final()
 	var estrellas_finales = resultado["estrellas"]
 	var exp_final = resultado["exp"]
-	
-	print("Recompensas Base -> Estrellas: ", estrellas_finales, " | XP: ", exp_final)
 	
 	# 2. Guardado en BD y Lógica Diferenciada
 	if mision_actual_def:
@@ -328,12 +473,8 @@ func _victoria_total():
 		
 		# 3. Procesar Dificultades para ambos tipos de misión
 		if analista_dificultad:
-			analista_dificultad.procesar_resultados_finales()
-		
-		# 4. Intentamos hacer la sincronización Automática
-		GestorSincronizacion.sincronizar_pendientes()
-	
-	print("Resultado FINAL -> Estrellas: ", estrellas_finales, " | XP: ", exp_final)
+			# Delegamos al analista el procesamiento del TOTAL de la sesión según las estrellas
+			analista_dificultad.procesar_victoria_segun_estrellas(estrellas_finales)
 	
 	# 5. MOSTRAR POPUP DE VICTORIA
 	await get_tree().create_timer(1.0).timeout
@@ -444,94 +585,112 @@ func limpiar_consola_visual():
 
 # --- HELPERS DE RECOMPENSA ---
 
-func _obtener_xp_base(dificultad: String) -> int:
+func _obtener_multiplicador_dificultad(dificultad: String) -> int:
 	# Normalizamos el string por si acaso (ej: "Fácil" vs "Facil")
 	var dif = dificultad.to_lower()
 	
 	if "facil" in dif or "fácil" in dif:
-		return 250
+		return 1
 	elif "media" in dif or "medio" in dif:
-		return 500
+		return 2
 	elif "dificil" in dif or "difícil" in dif:
-		return 750
+		return 3
 	
 	# Valor por defecto si no coincide
-	return 250
+	return 1
 
 func calcular_resultado_final() -> Dictionary:
-	# 1. Configuración Base
-	var estrellas = 3
-	# Obtenemos la base según la dificultad definida en el recurso de la misión
-	var xp_base = _obtener_xp_base(mision_actual_def.dificultad_mision)
+	# --- NUEVO SISTEMA DE PUNTUACIÓN (0-100) ---
+	var puntuacion = 100
 	
-	# 2. Penalización por Intentos (NUEVA FÓRMULA)
-	# 1 a 3 intentos: -0
-	# 4 a 6 intentos: -1
-	# +7 intentos: -2
-	if intentos_totales <= 3:
-		pass # Perfecto (0 penalización)
-	elif intentos_totales <= 6:
-		estrellas -= 1
-		print("Evaluación: -1 Estrella por intentos (", intentos_totales, ")")
+	# 1. Penalización por Intentos (Más estricta y gradual)
+	if intentos_totales == 1:
+		puntuacion -= 0 # Sin penalización
+	elif intentos_totales <= 3:
+		puntuacion -= 15
+		print("Evaluación: -15 pts por intentos (%d)" % intentos_totales)
+	elif intentos_totales <= 5:
+		puntuacion -= 30
+		print("Evaluación: -30 pts por intentos (%d)" % intentos_totales)
 	else:
-		estrellas -= 2
-		print("Evaluación: -2 Estrellas por intentos (", intentos_totales, ")")
+		puntuacion -= 50
+		print("Evaluación: -50 pts por intentos (%d)" % intentos_totales)
 	
-	# 3. Penalización por "Buenas Prácticas" (Analista)
+	# 2. Penalización por Calidad de Código (Más granular)
 	if analista_dificultad:
 		var total_errores = analista_dificultad.obtener_total_errores()
 		var errores_graves = analista_dificultad.hay_errores_graves()
 		
-		# Si hay errores graves o más de 3 errores leves acumulados
-		if total_errores > 3 or errores_graves:
-			estrellas -= 1
-			print("Evaluación: -1 Estrella por calidad de código (Errores: ", total_errores, ")")
+		if errores_graves:
+			puntuacion -= 40
+			print("Evaluación: -40 pts por errores graves detectados.")
+		elif total_errores > 5:
+			puntuacion -= 25
+			print("Evaluación: -25 pts por alta cantidad de errores (%d)." % total_errores)
+		elif total_errores > 0:
+			puntuacion -= 10
+			print("Evaluación: -10 pts por errores menores (%d)." % total_errores)
 
-	# 4. Clamp (Mínimo 1, Máximo 3)
-	# Aunque penalicemos mucho, si completó la misión, merece 1 estrella.
-	if estrellas < 1: estrellas = 1
-	if estrellas > 3: estrellas = 3
+	# 3. Conversión de Puntuación a Estrellas
+	var estrellas = 1
+	if puntuacion >= 85: estrellas = 3
+	elif puntuacion >= 50: estrellas = 2
 	
-	# 5. Cálculo de XP (NUEVA FÓRMULA)
-	# Fórmula: XP Final = Base * (Estrellas / 2)
-	# Usamos float para que la división no trunque decimales (ej: 3/2 = 1.5)
-	var factor_estrellas = float(estrellas) / 2.0
-	var xp_final = int(xp_base * factor_estrellas)
+	# 4. Cálculo de XP (NUEVA FÓRMULA)
+	# Fórmula: XP = Puntos * 10 * Multiplicador Dificultad
+	var multiplicador = _obtener_multiplicador_dificultad(mision_actual_def.dificultad_mision)
+	var xp_final = puntuacion * 10 * multiplicador
 	
-	print("Cálculo XP: Base(", xp_base, ") * Factor(", factor_estrellas, ") = ", xp_final)
+	print("Cálculo XP: Puntos(", puntuacion, ") * 10 * Multiplicador(", multiplicador, ") = ", xp_final)
 		
 	return {"estrellas": estrellas, "exp": xp_final}
 
 # --- UI DE VICTORIA ---
 
 func mostrar_popup_victoria(estrellas: int, xp: int):
-	# 1. Creamos el diálogo al vuelo
-	var popup = AcceptDialog.new()
-	popup.title = "¡MISIÓN COMPLETADA!"
+	if not capa_victoria:
+		print("ERROR: No se ha asignado la CapaVictoria en el inspector.")
+		_volver_al_menu()
+		return
+
+	# Asegurarse de que el tween anterior esté detenido
+	if _victoria_tween and _victoria_tween.is_running():
+		_victoria_tween.kill()
+
+	# 1. Configurar Textura del Panel según estrellas
+	# El array texturas_estrellas debe tener: [0]=1 estrella, [1]=2 estrellas, [2]=3 estrellas
+	var idx_textura = clampi(estrellas - 1, 0, 2)
+	if texturas_estrellas.size() > idx_textura:
+		panel_victoria_rect.texture = texturas_estrellas[idx_textura]
 	
-	# 2. Construimos el mensaje
-	var mensaje = "¡Felicitaciones! Has completado la misión.\n\n"
-	mensaje += "Recompensas obtenidas:\n"
-	mensaje += "⭐ Estrellas: " + str(estrellas) + "\n"
-	mensaje += "✨ Experiencia: " + str(xp) + " XP"
+	# 2. Configurar Título
+	var titulo = ""
+	match estrellas:
+		3: titulo = "¡Algoritmo Perfecto!"
+		2: titulo = "¡Bien hecho!"
+		_: titulo = "¡Bien! pero... Puedes mejorar"
+	label_titulo_victoria.text = titulo
 	
-	# Mensaje especial si hubo bonus
+	# 3. Configurar XP y mensaje de bonus
+	var texto_xp = "EXP Obtenida: +%d" % xp
 	if mision_actual_def and mision_actual_def.es_mision_especial:
-		mensaje += "\n\n(¡Incluye Bonus x2 por Misión Especial!)"
+		texto_xp += "\n(¡Bonus x2 Aplicado!)"
+	label_xp_victoria.text = texto_xp
 	
-	popup.dialog_text = mensaje
-	popup.ok_button_text = "Continuar"
+	# 4. Preparar para la animación
+	panel_victoria_rect.scale = Vector2(0.7, 0.7) # Empieza más pequeño
+	panel_victoria_rect.modulate = Color(1, 1, 1, 0) # Empieza transparente
 	
-	# 3. Importante: Conectar la señal para irse al menú cuando cierre
-	# Usamos 'confirmed' (botón OK) y 'canceled' (botón X) por seguridad
-	popup.confirmed.connect(_volver_al_menu)
-	popup.canceled.connect(_volver_al_menu)
+	# 5. Mostrar la capa (el panel aún es invisible por modulate)
+	capa_victoria.visible = true
 	
-	# 4. Lo agregamos a la escena y lo mostramos
-	add_child(popup)
-	popup.popup_centered()
+	# 6. Iniciar la animación de "pop-in"
+	_victoria_tween = create_tween()
+	_victoria_tween.set_parallel(true) # Animamos escala y opacidad al mismo tiempo
+	_victoria_tween.tween_property(panel_victoria_rect, "scale", Vector2(1.0, 1.0), 0.5).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	_victoria_tween.tween_property(panel_victoria_rect, "modulate", Color(1, 1, 1, 1), 0.3).set_trans(Tween.TRANS_LINEAR)
+	_victoria_tween.play()
 
 func _volver_al_menu():
-	print("Regresando al selector de misiones...")
-	# Asegúrate de que esta ruta sea correcta en tu proyecto
-	get_tree().change_scene_to_file("res://scenes/selector_misiones/selector_misiones.tscn")
+	# Redirigimos al flujo de salida seguro
+	_intentar_salir(false)

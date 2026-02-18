@@ -2,7 +2,10 @@ class_name DefinicionMision extends Resource
 
 @export_group("Información General")
 # ID único (UUID) para sincronización con DB y Web
-@export var id: String = "" 
+@export var id: String = ""
+
+# Número de orden en la campaña (Ej: 1, 2, 3...)
+@export var numero: int = 1
 
 # Nombre visible en el menú
 @export var titulo: String = "Nueva Misión"
@@ -11,7 +14,7 @@ class_name DefinicionMision extends Resource
 @export_multiline var descripcion: String = "Escribe tu algoritmo..."
 
 # Dificultad (ej: "Fácil", "Medio", "Difícil" o numérico 1-3)
-@export var dificultad_mision: String = "Fácil" 
+@export var dificultad_mision: String = "Fácil"
 
 # Flag para saber si aplicamos recompensas dobles
 @export var es_mision_especial: bool = false

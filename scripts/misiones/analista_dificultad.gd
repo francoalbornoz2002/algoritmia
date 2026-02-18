@@ -171,35 +171,8 @@ func _registrar_incidencia(codigo: String):
 
 # --- PROCESAMIENTO FINAL (Al terminar misión o Game Over) ---
 
-func procesar_resultados_finales():
-	# 1. Consolidar el último intento
-	consolidar_intento_actual()
-	
-	# --- CÁLCULO DE DIFICULTAD COMPUESTA LP-03 ---
-	# Se basa en la suma de LP-01 y LP-02
-	var err_lp01 = contador_incidencias_acumuladas.get(DIF_OPERADORES_LOGICOS, 0)
-	var err_lp02 = contador_incidencias_acumuladas.get(DIF_RELACIONALES, 0)
-	var total_lp03 = err_lp01 + err_lp02
-	
-	if total_lp03 > 0:
-		contador_incidencias_acumuladas[DIF_PROPOSICIONES_COMPUESTAS] = total_lp03
-	
-	print("--- Analista: Resultados acumulados de la sesión ---")
-	print(contador_incidencias_acumuladas)
-	
-	# 2. Enviar conteos crudos a la BD
-	for codigo in contador_incidencias_acumuladas:
-		var cantidad_errores = contador_incidencias_acumuladas[codigo]
-		
-		if cantidad_errores > 0:
-			# Obtenemos el UUID real
-			var id_uuid = _obtener_uuid_por_codigo(codigo)
-			if id_uuid != "":
-				# DELEGAMOS el cálculo de grado al DatabaseManager
-				DatabaseManager.registrar_errores_dificultad(id_uuid, cantidad_errores)
-
-# Llamar a esto cada vez que termina un intento (Game Over o Victoria)
-# para "fijar" los errores detectados.
+## Mueve los errores del intento actual al acumulador de la sesión.
+## Se llama en Game Over o antes de procesar la victoria.
 func consolidar_intento_actual():
 	for codigo in errores_detectados_en_este_intento:
 		# PESO: Bucle Infinito vale x3
@@ -207,13 +180,55 @@ func consolidar_intento_actual():
 		if codigo == DIF_BUCLE_INFINITO:
 			peso = 3
 			print("!!! Analista: Penalización x3 por Bucle Infinito.")
-			
+		
 		if contador_incidencias_acumuladas.has(codigo):
 			contador_incidencias_acumuladas[codigo] += peso
 		else:
 			contador_incidencias_acumuladas[codigo] = peso
 	
 	errores_detectados_en_este_intento.clear()
+
+## Aplica la lógica de estrellas sobre el TOTAL de la sesión y guarda en BD.
+func procesar_victoria_segun_estrellas(estrellas: int):
+	# 1. Primero sumamos lo que pasó en el intento ganador a la bolsa total
+	consolidar_intento_actual()
+	
+	# 2. Calculamos Dificultad Compuesta LP-03 sobre el total
+	var err_lp01 = contador_incidencias_acumuladas.get(DIF_OPERADORES_LOGICOS, 0)
+	var err_lp02 = contador_incidencias_acumuladas.get(DIF_RELACIONALES, 0)
+	var total_lp03 = err_lp01 + err_lp02
+	if total_lp03 > 0:
+		contador_incidencias_acumuladas[DIF_PROPOSICIONES_COMPUESTAS] = total_lp03
+	
+	print("--- Analista: Errores TOTALES de la sesión (Antes de filtrar por estrellas) ---")
+	print(contador_incidencias_acumuladas)
+	
+	# 3. Aplicamos el filtro de estrellas sobre una COPIA de los datos
+	var errores_a_registrar = contador_incidencias_acumuladas.duplicate()
+	
+	if estrellas == 3:
+		print("Analista: 3 Estrellas -> Se descartan todos los errores de la sesión y se aplica Sanación.")
+		errores_a_registrar.clear()
+		DatabaseManager.reducir_dificultad_global(0.5)
+	elif estrellas == 2:
+		print("Analista: 2 Estrellas -> Se registra el 50% de los errores de la sesión.")
+		for codigo in errores_a_registrar.keys():
+			var total = errores_a_registrar[codigo]
+			# floor implícito al ser int
+			errores_a_registrar[codigo] = int(total / 2)
+	else:
+		print("Analista: 1 Estrella -> Se registran el 100% de los errores.")
+
+	# 4. Enviar a la BD los errores ya filtrados
+	for codigo in errores_a_registrar:
+		var cantidad_errores = errores_a_registrar[codigo]
+		
+		if cantidad_errores > 0:
+			# Obtenemos el UUID real
+			var id_uuid = _obtener_uuid_por_codigo(codigo)
+			if id_uuid != "":
+				# DELEGAMOS el cálculo de grado al DatabaseManager
+				DatabaseManager.registrar_errores_dificultad(id_uuid, cantidad_errores)
 
 # --- HELPERS PARA ESTADÍSTICAS ---
 func obtener_total_errores() -> int:

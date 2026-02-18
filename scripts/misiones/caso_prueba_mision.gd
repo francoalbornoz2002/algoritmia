@@ -5,9 +5,8 @@ class_name CasoPruebaMision extends Resource
 @export var inicio_jugador: Vector2i = Vector2i(0, 0)
 @export var direccion_inicial: Vector2i = Vector2i(0, 1) # (0,1) es abajo en Godot visual, pero Lógica depende de tu Grid
 
-# Lista de elementos a spawnear. Array de Diccionarios.
-# Formato: { "tipo": ElementoTablero.Tipo.MONEDA, "pos": Vector2i(2, 5) }
-@export var elementos_mapa: Array[Dictionary] = []
+# Lista de elementos a spawnear. Array de Recursos ElementoMision.
+@export var elementos_mapa: Array[ElementoMision] = []
 
 @export_group("Criterios de Éxito")
 # Todas estas condiciones deben retornar TRUE para aprobar este caso
@@ -15,10 +14,10 @@ class_name CasoPruebaMision extends Resource
 
 # Helper para el generador automático
 func agregar_elemento(tipo, pos: Vector2i):
-	elementos_mapa.append({
-		"tipo": tipo,
-		"pos": pos
-	})
+	var nuevo_elemento = ElementoMision.new()
+	nuevo_elemento.tipo = tipo
+	nuevo_elemento.pos = pos
+	elementos_mapa.append(nuevo_elemento)
 
 # Helper para el generador automático
 func agregar_condicion(cond: CondicionMision):

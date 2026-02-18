@@ -19,6 +19,7 @@ CREATE TABLE IF NOT EXISTS "alumno" (
 
 CREATE TABLE IF NOT EXISTS "misiones" (
 	"id" TEXT NOT NULL UNIQUE,
+	"numero" INTEGER NOT NULL UNIQUE,
 	"nombre" TEXT NOT NULL UNIQUE,
 	"descripcion" TEXT NOT NULL UNIQUE,
 	"dificultad_mision" TEXT NOT NULL,
@@ -97,6 +98,9 @@ func _ready():
 	
 	if success:
 		print("Tablas verificadas/creadas exitosamente.")
+		
+		# Cargamos/Actualizamos el catálogo de misiones desde los archivos .tres
+		GestorCatalogo.actualizar_catalogo_desde_recursos()
 	else:
 		# Si falla, el error también está en "error_message"
 		print("ERROR al crear tablas: ", db.error_message)
@@ -237,7 +241,7 @@ func limpiar_datos_sesion() -> bool:
 ## Devuelve un Array de Diccionarios con todas las misiones.
 func obtener_misiones() -> Array:
 	# Hacemos la consulta
-	var success = db.query("SELECT id, nombre FROM misiones;")
+	var success = db.query("SELECT * FROM misiones ORDER BY numero ASC;")
 	
 	if not success:
 		print("ERROR (DBManager): No se pudieron obtener las misiones. ", db.error_message)
@@ -287,8 +291,6 @@ func obtener_alumno_actual() -> Dictionary:
 ## Marca "sincronizado" como 'false' (0).
 ## También actualiza la 'ultima_actividad' del alumno.
 func registrar_mision_local(id_mision: String, estrellas: int, exp: int, intentos: int) -> bool:
-	print("DBManager: Registrando misión localmente...")
-	
 	# Obtenemos el diccionario de tiempo EN UTC
 	var dict_utc = Time.get_datetime_dict_from_system(true) # true = UTC
 
@@ -337,14 +339,11 @@ func registrar_mision_local(id_mision: String, estrellas: int, exp: int, intento
 		print("ERROR (DBManager): No se pudo hacer COMMIT. ", db.error_message)
 		return false
 		
-	print("DBManager: Misión local registrada y ultima_actividad actualizada.")
 	return true
 
 ## Registra una misión ESPECIAL completada (generada dinámicamente).
 ## Genera un UUID propio, guarda nombre/descripción y actualiza ultima_actividad.
 func registrar_mision_especial_local(nombre: String, descripcion: String, estrellas: int, exp: int, intentos: int) -> bool:
-	print("DBManager: Registrando misión ESPECIAL localmente...")
-	
 	# 1. Generar ID único (UUID)
 	var id_uuid = generar_uuid_v4()
 	
@@ -392,27 +391,27 @@ func registrar_mision_especial_local(nombre: String, descripcion: String, estrel
 		print("ERROR (DBManager): Falló COMMIT (Especial). ", db.error_message)
 		return false
 		
-	print("DBManager: Misión Especial registrada con ID: ", id_uuid)
 	return true
 
-# Función auxiliar para demos: Inserta una misión en el catálogo local
-func insertar_mision_demo_catalogo(mision: DefinicionMision):
+# Inserta o actualiza una misión en el catálogo local desde un Recurso
+func insertar_mision_catalogo(mision: DefinicionMision):
 	# Usamos INSERT OR REPLACE para no fallar si ya corrimos la demo antes
 	var sql = """
-		INSERT OR REPLACE INTO misiones (id, nombre, descripcion, dificultad_mision)
-		VALUES (?, ?, ?, ?);
+		INSERT OR REPLACE INTO misiones (id, numero, nombre, descripcion, dificultad_mision)
+		VALUES (?, ?, ?, ?, ?);
 	"""
 	var exito = db.query_with_bindings(sql, [
 		mision.id,
+		mision.numero,
 		mision.titulo,
 		mision.descripcion,
 		mision.dificultad_mision
 	])
 	
 	if exito:
-		print("DBManager: Misión Demo inyectada en catálogo local correctamente.")
+		print("DBManager: Misión '%s' actualizada en catálogo." % mision.titulo)
 	else:
-		print("DBManager ERROR: Falló inyección de misión demo.", db.error_message)
+		print("DBManager ERROR: Falló actualización de misión.", db.error_message)
 
 # --- GESTIÓN ACUMULATIVA DE DIFICULTADES ---
 
@@ -471,6 +470,113 @@ func registrar_errores_dificultad(id_dificultad: String, nuevos_errores: int) ->
 		print("ERROR DBManager: Falló actualización de dificultad.", db.error_message)
 		
 	return exito
+
+## Reduce la cantidad de errores de TODAS las dificultades activas en un porcentaje.
+## Se usa cuando el alumno obtiene 3 estrellas (Sanación).
+func reducir_dificultad_global(porcentaje_reduccion: float) -> bool:
+	print("DBManager: Aplicando reducción global de dificultad (Sanación) del %.2f%%..." % (porcentaje_reduccion * 100))
+	
+	# 1. Obtenemos dificultades que tengan errores (> 0)
+	if not db.query("SELECT id_dificultad, cant_errores FROM dificultad_alumno_local WHERE cant_errores > 0;"):
+		return false
+		
+	var dificultades = db.query_result
+	if dificultades.is_empty(): return true
+	
+	if not db.query("BEGIN TRANSACTION;"): return false
+	
+	var sql = "UPDATE dificultad_alumno_local SET cant_errores = ?, grado = ?, sincronizado = 0 WHERE id_dificultad = ?;"
+	
+	for dif in dificultades:
+		var id = dif["id_dificultad"]
+		var errores_actuales = dif["cant_errores"]
+		
+		# Aplicar reducción (floor implícito al castear a int)
+		var factor = 1.0 - porcentaje_reduccion
+		var nuevos_errores = int(errores_actuales * factor)
+		
+		# Recalcular grado (Lógica espejo de registrar_errores_dificultad)
+		var nuevo_grado = "Ninguno"
+		var umbral_bajo = 3
+		var umbral_medio = 5
+		var umbral_alto = 7
+		
+		# Excepción LP-03
+		if id == "b2002002-0000-0000-0000-000000000003":
+			umbral_bajo = 6
+			umbral_medio = 10
+			umbral_alto = 14
+			
+		if nuevos_errores >= umbral_alto: nuevo_grado = "Alto"
+		elif nuevos_errores >= umbral_medio: nuevo_grado = "Medio"
+		elif nuevos_errores >= umbral_bajo: nuevo_grado = "Bajo"
+		
+		if not db.query_with_bindings(sql, [nuevos_errores, nuevo_grado, id]):
+			db.query("ROLLBACK;")
+			return false
+			
+	db.query("COMMIT;")
+	print("DBManager: Reducción global aplicada exitosamente.")
+	return true
+
+## Actualiza las dificultades locales con datos traídos de la Web.
+## Convierte el Grado (Texto) a Cantidad de Errores (Int) para mantener consistencia.
+func actualizar_dificultades_desde_web(lista_dificultades: Array) -> bool:
+	print("DBManager: [SYNC] Iniciando actualización en BD local. Items a procesar: %d" % lista_dificultades.size())
+	
+	if lista_dificultades.is_empty():
+		print("DBManager: [SYNC] Lista vacía. Nada que actualizar.")
+		return true
+	
+	if not db.query("BEGIN TRANSACTION;"): # Iniciar transacción para asegurar atomicidad
+		print("DBManager: [SYNC] ERROR CRÍTICO: No se pudo iniciar transacción SQL.")
+		return false
+	
+	# Sincronizado = 1 (true) porque viene de la fuente de verdad
+	var sql = "INSERT OR REPLACE INTO dificultad_alumno_local (id_dificultad, grado, cant_errores, sincronizado) VALUES (?, ?, ?, 1);"
+	
+	for item in lista_dificultades:
+		var id_dif_web = item["id"] # ID de dificultad desde la web
+		var grado_web = item["grado"] # Grado de dificultad desde la web
+		var errores_umbral = 0
+		
+		# Mapeo de Grado a Umbral de Errores (coherente con AnalistaDificultad)
+		match grado_web:
+			"Bajo": errores_umbral = 3
+			"Medio": errores_umbral = 5
+			"Alto": errores_umbral = 7
+			_: errores_umbral = 0
+		
+		# 1. Obtener estado actual de la dificultad en la BD local
+		var current_local_dif = db.query_with_bindings("SELECT grado, cant_errores FROM dificultad_alumno_local WHERE id_dificultad = ?;", [id_dif_web])
+		
+		var cant_errores_final = errores_umbral # Por defecto, usamos el umbral
+		var grado_local_actual = ""
+		
+		if current_local_dif and not db.query_result.is_empty():
+			grado_local_actual = db.query_result[0]["grado"]
+			var cant_errores_local_actual = db.query_result[0]["cant_errores"]
+			
+			# 2. Lógica de Sincronización Refinada
+			if grado_web == grado_local_actual:
+				# Si el grado es el mismo, mantenemos la cantidad de errores local
+				cant_errores_final = cant_errores_local_actual
+				print("DBManager: [SYNC] Grado %s para %s coincide. Manteniendo errores locales: %d." % [grado_web, id_dif_web, cant_errores_final])
+			else:
+				# Si el grado cambió, usamos el umbral del nuevo grado
+				print("DBManager: [SYNC] Grado para %s cambió de %s a %s. Estableciendo errores a umbral: %d." % [id_dif_web, grado_local_actual, grado_web, errores_umbral])
+		else:
+			print("DBManager: [SYNC] Dificultad %s no encontrada localmente o nueva. Estableciendo errores a umbral: %d." % [id_dif_web, errores_umbral])
+		
+		# 3. Insertar o reemplazar con los valores determinados
+		if not db.query_with_bindings(sql, [id_dif_web, grado_web, cant_errores_final]):
+			print("DBManager: [SYNC] ERROR SQL al insertar/actualizar dificultad (ID: %s): %s" % [id_dif_web, db.error_message])
+			db.query("ROLLBACK;") # Revertir la transacción en caso de error
+			return false
+			
+	db.query("COMMIT;") # Confirmar la transacción
+	print("DBManager: [SYNC] Transacción completada. Dificultades actualizadas exitosamente.")
+	return true
 
 ## Marca una misión como sincronizada (sincronizado = true)
 func marcar_mision_sincronizada(id_mision: String) -> bool:
