@@ -5,6 +5,7 @@ enum Tipo {MONEDA, LLAVE, COFRE, ENEMIGO, OBSTACULO, PUENTE}
 
 @export var tipo: Tipo = Tipo.MONEDA
 @export var sprite: Sprite2D
+@export var anim_player: AnimationPlayer
 
 @export_group("Visuales")
 @export var tex_moneda: Texture2D
@@ -15,15 +16,21 @@ enum Tipo {MONEDA, LLAVE, COFRE, ENEMIGO, OBSTACULO, PUENTE}
 @export var tex_puente_inactivo: Texture2D
 @export var tex_puente_activo: Texture2D
 
+@export var cantidad_variantes_enemigos: int = 2
+
 var pos_grid: Vector2i
 var esta_activo: bool = false # Solo relevante para PUENTE
+var indice_variante_actual: int = 0
+var semilla_visual: int = 0
 
 func _ready():
+	if not anim_player: anim_player = get_node_or_null("AnimationPlayer")
 	_actualizar_visual()
 
-func configurar(nuevo_tipo: Tipo, nueva_pos_grid: Vector2i):
+func configurar(nuevo_tipo: Tipo, nueva_pos_grid: Vector2i, semilla: int = 0):
 	tipo = nuevo_tipo
 	pos_grid = nueva_pos_grid
+	semilla_visual = semilla
 	position = GridManager.grid_to_world(pos_grid)
 	
 	# Si es un puente, comienza INACTIVO (por defecto)
@@ -37,6 +44,11 @@ func _actualizar_visual():
 	
 	# Reset modulate para que la textura se vea con sus colores originales
 	sprite.modulate = Color.WHITE
+	sprite.hframes = 1
+	sprite.vframes = 1
+	sprite.frame = 0
+	
+	if anim_player and tipo != Tipo.ENEMIGO: anim_player.stop()
 	
 	match tipo:
 		Tipo.MONEDA:
@@ -49,7 +61,18 @@ func _actualizar_visual():
 			if tex_cofre: sprite.texture = tex_cofre
 			else: sprite.modulate = Color.BROWN
 		Tipo.ENEMIGO:
-			if tex_enemigo: sprite.texture = tex_enemigo
+			if anim_player:
+				# Elegir variante determinista basada en la posición (para que no cambie al reiniciar)
+				var rng = RandomNumberGenerator.new()
+				rng.seed = semilla_visual + (pos_grid.x * 100) + pos_grid.y
+				indice_variante_actual = rng.randi() % cantidad_variantes_enemigos
+				var nombre_anim = "enemigo_" + str(indice_variante_actual) + "_idle"
+				if anim_player.has_animation(nombre_anim):
+					anim_player.play(nombre_anim)
+				else:
+					if tex_enemigo: sprite.texture = tex_enemigo
+					else: sprite.modulate = Color.RED
+			elif tex_enemigo: sprite.texture = tex_enemigo
 			else: sprite.modulate = Color.RED
 		Tipo.OBSTACULO:
 			if tex_obstaculo: sprite.texture = tex_obstaculo
@@ -66,6 +89,12 @@ func activar():
 	if tipo == Tipo.PUENTE:
 		esta_activo = true
 		_actualizar_visual()
+
+func reproducir_ataque():
+	if tipo == Tipo.ENEMIGO and anim_player:
+		var nombre_anim = "enemigo_" + str(indice_variante_actual) + "_attack"
+		if anim_player.has_animation(nombre_anim):
+			anim_player.play(nombre_anim)
 
 # Función para "consumir" el objeto (ej: recoger moneda)
 func recoger():

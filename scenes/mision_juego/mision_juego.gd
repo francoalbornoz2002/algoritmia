@@ -24,6 +24,7 @@ var ejecutando_codigo: bool = false
 var sandbox: bool = false
 var juego_fallido: bool = false # Bandera para abortar secuencia si hay Game Over
 var intentos_totales: int = 0
+var semilla_mision: int = 0
 
 @export_group("Configuración Visual del Mapa")
 @export var tiles_suelo_centro: Array[Vector2i] = [Vector2i(5, 3)]
@@ -45,7 +46,15 @@ var logs_consola: Array[String] = [] # Para verificar condiciones de Output
 var elemento_escena = preload("res://scenes/elemento_tablero/elemento_tablero.tscn")
 
 func _ready():
+	randomize()
+	semilla_mision = randi()
 	GridManager.limpiar_datos()
+	
+	# Si hay misión seleccionada, desactivamos modo sandbox para activar el analista
+	if GameData.mision_seleccionada != null:
+		sandbox = false
+	else:
+		sandbox = true
 	
 	# 1. Configurar el Ejecutor
 	ejecutor.personaje = jugador
@@ -83,6 +92,7 @@ func _ready():
 		# Limpiamos la variable para no recargarla por error si volvemos al menú y entramos a otro lado
 		GameData.mision_seleccionada = null
 	elif sandbox:
+		_generar_suelo(Vector2i(25, 25))
 		jugador.teletransportar_a(Vector2i(0, 0))
 
 # --- CARGA DE MISIÓN ---
@@ -143,7 +153,7 @@ func spawn_elemento(pos: Vector2i, tipo):
 	entidades_container.add_child(nuevo_elemento)
 	
 	# Configuramos visual y lógicamente
-	nuevo_elemento.configurar(tipo, pos)
+	nuevo_elemento.configurar(tipo, pos, semilla_mision)
 	
 	# Registramos en la memoria del GridManager
 	GridManager.registrar_objeto(pos, nuevo_elemento)
@@ -374,11 +384,14 @@ func agregar_mensaje_consola(mensaje: String, tipo: String = "NORMAL"):
 		"ERROR":
 			color_hex = "#CC0000"
 			prefijo = "[ERROR] "
+		"ADVERTENCIA":
+			color_hex = "#D4A017" # Dorado oscuro (visible en beige)
+			prefijo = "[AVISO] "
 		"OUTPUT":
 			color_hex = "#0066CC"
 			prefijo = ""
 		"SISTEMA":
-			color_hex = "#AA6600"
+			color_hex = "#0044AA" # Azul oscuro
 			prefijo = "[SISTEMA] "
 			
 	var texto_final = "[color=" + color_hex + "]" + prefijo + mensaje + "[/color]"

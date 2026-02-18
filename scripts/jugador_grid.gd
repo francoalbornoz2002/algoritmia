@@ -1,16 +1,17 @@
 class_name JugadorGrid extends CharacterBody2D
 
 # Configuración
-const TIEMPO_MOVIMIENTO = 0.4 # Un poco más lento para apreciar el paso
+const TIEMPO_MOVIMIENTO = 0.8 # Sincronizado con la animación (8 frames * 0.1s)
 const TIEMPO_GIRO = 0.3
 const TIEMPO_PAUSA_INSTRUCCION = 0.1
-const TIEMPO_ACCION = 0.5 # Tiempo de espera para recolectar/atacar
+const TIEMPO_ACCION = 0.8 # Tiempo de espera para recolectar/atacar
 
 @export var camara: Camera2D
 @export var anim_player: AnimationPlayer
 @export var sprite_personaje: Sprite2D
 
 # Estado
+var escala_inicial: Vector2
 var esta_actuando: bool = false
 var posicion_actual: Vector2i = Vector2i.ZERO
 var direccion_actual: Vector2i = Vector2i(0, 1) # (0, 1) es ARRIBA lógico
@@ -24,9 +25,9 @@ signal consola_mensaje_enviado(texto, tipo)
 
 func _ready():
 	# 1. Configuración Inicial de Posición
+	escala_inicial = scale
 	posicion_actual = GridManager.world_to_grid(position)
 	teletransportar_a(posicion_actual)
-	_actualizar_idle()
 	
 	# 2. --- LÍMITES DE LA CÁMARA ---
 	if camara:
@@ -43,7 +44,7 @@ func avanzar():
 	if esta_actuando: return
 	esta_actuando = true
 	# 1. Lógica de peligro (Si hay Enemigo, Game Over)
-	if _verificar_peligro_inminente():
+	if await _verificar_peligro_inminente():
 		await _esperar_muerte()
 		return
 		
@@ -59,7 +60,7 @@ func girar_derecha():
 	esta_actuando = true
 	
 	# 1. CHEQUEO ANTES DE GIRAR
-	if _verificar_peligro_inminente():
+	if await _verificar_peligro_inminente():
 		return # Game Over si hay enemigo al frente
 	
 	# 2. Lógica Matemática del Giro (solo si es seguro)
@@ -108,14 +109,16 @@ func recoger_moneda():
 	
 	# 2. Validaciones (Game Over)
 	if objeto == null:
-		game_over("Intentaste recoger una moneda, pero aquí no hay nada.")
-		await _esperar_muerte()
+		consola_mensaje_enviado.emit("Intentaste recoger una moneda, pero aquí no hay nada.", "ADVERTENCIA")
+		await get_tree().create_timer(0.5).timeout
+		esta_actuando = false
 		return
 	
 	if objeto.tipo != ElementoTablero.Tipo.MONEDA:
 		var nombre_real = ElementoTablero.obtener_nombre_tipo(objeto.tipo)
-		game_over("Intentaste recoger una moneda, pero aquí hay un " + nombre_real + ".")
-		await _esperar_muerte()
+		consola_mensaje_enviado.emit("Intentaste recoger una moneda, pero aquí hay un " + nombre_real + ".", "ADVERTENCIA")
+		await get_tree().create_timer(0.5).timeout
+		esta_actuando = false
 		return
 	
 	# 3. Éxito: Recoger
@@ -134,21 +137,23 @@ func recoger_moneda():
 
 # --- PRIMITIVAS DEL PSEUDOCÓDIGO (Llave) ---
 func recoger_llave():
-	analista.registrar_accion("recogerLlave")
+	if analista: analista.registrar_accion("recogerLlave")
 	if esta_actuando: return
 	esta_actuando = true
 	
 	var objeto = GridManager.obtener_objeto_en_celda(posicion_actual)
 	
 	if objeto == null:
-		game_over("Intentaste recoger una llave, pero aquí no hay nada.")
-		await _esperar_muerte()
+		consola_mensaje_enviado.emit("Intentaste recoger una llave, pero aquí no hay nada.", "ADVERTENCIA")
+		await get_tree().create_timer(0.5).timeout
+		esta_actuando = false
 		return
 	
 	if objeto.tipo != ElementoTablero.Tipo.LLAVE:
 		var nombre_real = ElementoTablero.obtener_nombre_tipo(objeto.tipo)
-		game_over("Intentaste recoger una llave, pero aquí hay un " + nombre_real + ".")
-		await _esperar_muerte()
+		consola_mensaje_enviado.emit("Intentaste recoger una llave, pero aquí hay un " + nombre_real + ".", "ADVERTENCIA")
+		await get_tree().create_timer(0.5).timeout
+		esta_actuando = false
 		return
 	
 	print("¡Llave recogida! Llaves totales: ", inventario["llaves"] + 1)
@@ -171,14 +176,16 @@ func abrir_cofre():
 	if objeto == null or objeto.tipo != ElementoTablero.Tipo.COFRE:
 		var nombre_real = ""
 		if objeto: nombre_real = ElementoTablero.obtener_nombre_tipo(objeto.tipo)
-		game_over("Intentaste abrir un cofre, pero aquí hay un " + nombre_real + ".")
-		await _esperar_muerte()
+		consola_mensaje_enviado.emit("Intentaste abrir un cofre, pero aquí no hay cofre.", "ADVERTENCIA")
+		await get_tree().create_timer(0.5).timeout
+		esta_actuando = false
 		return
 	
 	# VALIDACIÓN 2: ¿Tienes Llave?
 	if inventario["llaves"] <= 0:
-		game_over("Intentaste abrir el cofre, ¡pero no tienes una llave!")
-		await _esperar_muerte()
+		consola_mensaje_enviado.emit("El cofre está cerrado y no tienes llave.", "ADVERTENCIA")
+		await get_tree().create_timer(0.5).timeout
+		esta_actuando = false
 		return
 		
 	# Éxito: Abrir
@@ -195,7 +202,6 @@ func abrir_cofre():
 # --- PRIMITIVAS DEL PSEUDOCÓDIGO (Atacar) ---
 func atacar():
 	if analista: analista.registrar_accion("atacar")
-	analista.registrar_accion("atacar")
 	if esta_actuando: return
 	esta_actuando = true
 	
@@ -205,8 +211,12 @@ func atacar():
 	
 	# 2. Validar
 	if objeto == null or objeto.tipo != ElementoTablero.Tipo.ENEMIGO:
-		game_over("Intentaste atacar, pero no hay enemigo en frente. Error de lógica SL-03.")
-		await _esperar_muerte()
+		consola_mensaje_enviado.emit("Atacaste al aire. No hay enemigos.", "ADVERTENCIA")
+		# Ejecutamos la animación igual para dar feedback visual
+		_reproducir_anim("atacar")
+		await get_tree().create_timer(TIEMPO_ACCION).timeout
+		_actualizar_idle()
+		esta_actuando = false
 		return
 	
 	# 3. Éxito: Eliminar Enemigo
@@ -230,10 +240,32 @@ func saltar():
 	var celda_obstaculo = posicion_actual + direccion_actual
 	var obstaculo = GridManager.obtener_objeto_en_celda(celda_obstaculo)
 	
+	# NUEVO: Si es enemigo, muere con animación
+	if obstaculo and obstaculo.tipo == ElementoTablero.Tipo.ENEMIGO:
+		if obstaculo.has_method("reproducir_ataque"):
+			obstaculo.reproducir_ataque()
+		
+		var tween = create_tween()
+		tween.tween_property(self , "scale", Vector2.ZERO, 0.5)
+		await get_tree().create_timer(0.5).timeout
+		
+		game_over("¡Intentaste saltar sobre un enemigo! Te ha atacado.")
+		await _esperar_muerte()
+		return
+
 	# 2. Validar
 	if obstaculo == null or obstaculo.tipo != ElementoTablero.Tipo.OBSTACULO:
-		game_over("Intentaste saltar, pero no hay un obstáculo en frente. Error de lógica SL-03.")
-		await _esperar_muerte()
+		consola_mensaje_enviado.emit("No hay obstáculo para saltar.", "ADVERTENCIA")
+		# Pequeño salto en el lugar (feedback visual)
+		_reproducir_anim("caminar")
+		if sprite_personaje:
+			var tween_arc = create_tween()
+			var altura_salto = 12
+			tween_arc.tween_property(sprite_personaje, "position:y", -altura_salto, TIEMPO_MOVIMIENTO / 2).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+			tween_arc.tween_property(sprite_personaje, "position:y", 0, TIEMPO_MOVIMIENTO / 2).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
+		await get_tree().create_timer(TIEMPO_MOVIMIENTO).timeout
+		_actualizar_idle()
+		esta_actuando = false
 		return
 		
 	# 3. Celda de aterrizaje (salta 2 casillas)
@@ -289,21 +321,23 @@ func activar_puente():
 	if objeto == null or objeto.tipo != ElementoTablero.Tipo.PUENTE:
 		var nombre_real = ""
 		if objeto: nombre_real = ElementoTablero.obtener_nombre_tipo(objeto.tipo)
-		game_over("Intentaste activar el puente, pero aquí no hay un puente o es un " + nombre_real + ".")
-		await _esperar_muerte()
+		consola_mensaje_enviado.emit("No hay puente aquí para activar.", "ADVERTENCIA")
+		await get_tree().create_timer(0.5).timeout
+		esta_actuando = false
 		return
 
 	# VALIDACIÓN 2: ¿Está ya activo? (No es Game Over, solo un aviso)
 	if objeto.esta_activo:
-		print("Puente ya activo, no es necesario gastar moneda.")
-		await get_tree().create_timer(TIEMPO_ACCION).timeout
+		consola_mensaje_enviado.emit("El puente ya está activo.", "ADVERTENCIA")
+		await get_tree().create_timer(0.5).timeout
 		esta_actuando = false
 		return
 		
 	# VALIDACIÓN 3: ¿Tienes Moneda? (Game Over si no hay)
 	if inventario["monedas"] <= 0:
-		game_over("¡No tienes monedas para activar el puente!")
-		await _esperar_muerte()
+		consola_mensaje_enviado.emit("Necesitas una moneda para activar el puente.", "ADVERTENCIA")
+		await get_tree().create_timer(0.5).timeout
+		esta_actuando = false
 		return
 		
 	# Éxito: Activar Puente
@@ -436,6 +470,7 @@ func teletransportar_a(celda_destino: Vector2i):
 	if _tween_movimiento and _tween_movimiento.is_valid():
 		_tween_movimiento.kill()
 		
+	scale = escala_inicial
 	posicion_actual = celda_destino
 	position = GridManager.grid_to_world(celda_destino)
 	esta_actuando = false
@@ -459,6 +494,13 @@ func _verificar_peligro_inminente() -> bool:
 		if objeto.tipo == ElementoTablero.Tipo.ENEMIGO:
 			# Si llegamos aquí, el jugador intentó avanzar, saltar, o girar (si lo permitiéramos)
 			# mientras tenía un enemigo en frente.
+			if objeto.has_method("reproducir_ataque"):
+				objeto.reproducir_ataque()
+			
+			var tween = create_tween()
+			tween.tween_property(self , "scale", Vector2.ZERO, 0.5)
+			await get_tree().create_timer(0.5).timeout
+			
 			game_over("¡El enemigo te ha detectado y atacado! Debes usar 'atacar'.")
 			return true
 			
