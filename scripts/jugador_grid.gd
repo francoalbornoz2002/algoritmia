@@ -2,7 +2,7 @@ class_name JugadorGrid extends CharacterBody2D
 
 # Configuración
 const TIEMPO_MOVIMIENTO = 0.8 # Sincronizado con la animación (8 frames * 0.1s)
-const TIEMPO_GIRO = 0.3
+const TIEMPO_GIRO = 0.5
 const TIEMPO_PAUSA_INSTRUCCION = 0.1
 const TIEMPO_ACCION = 0.8 # Tiempo de espera para recolectar/atacar
 
@@ -266,7 +266,7 @@ func saltar():
 		await get_tree().create_timer(TIEMPO_MOVIMIENTO).timeout
 		_actualizar_idle()
 		esta_actuando = false
-		return
+		return true
 		
 	# 3. Celda de aterrizaje (salta 2 casillas)
 	var celda_destino = posicion_actual + (direccion_actual * 2)

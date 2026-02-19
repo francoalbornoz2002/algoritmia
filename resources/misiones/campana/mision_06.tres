@@ -84,6 +84,7 @@ id = "f5eebc99-9c0b-4ef8-bb6d-6bb9bd380a16"
 numero = 6
 titulo = "Tutorial 6: Decisiones 3 (AND)"
 descripcion = "¡Decisiones compuestas! El Emblema del Juicio es bastante poderoso y te permite evaluar más de una condición con la palabra clave AND entre proposiciones. Avanza 3 casillas, si hay una moneda y un obstáculo en frente, recoge la moneda y salta el obstáculo. Si no se cumplen esas condiciones, gira hacia atrás y vuelve donde comenzaste."
+dificultad_mision = "Media"
 es_tutorial = true
 casos_de_prueba = Array[ExtResource("1_bs2i3")]([SubResource("Resource_ulhry"), SubResource("Resource_nju8b"), SubResource("Resource_hkdxe"), SubResource("Resource_dcf4r")])
 metadata/_custom_type_script = "uid://7dwqqmri6ibf"
