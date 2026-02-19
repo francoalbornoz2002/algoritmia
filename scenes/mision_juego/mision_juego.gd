@@ -70,8 +70,10 @@ func _ready():
 	GridManager.limpiar_datos()
 	
 	# Si hay misión seleccionada, desactivamos modo sandbox para activar el analista
+	var es_tutorial = false
 	if GameData.mision_seleccionada != null:
 		sandbox = false
+		es_tutorial = GameData.mision_seleccionada.es_tutorial
 	else:
 		sandbox = true
 	
@@ -105,14 +107,17 @@ func _ready():
 	if boton_aceptar_sync and not boton_aceptar_sync.pressed.is_connected(_on_boton_aceptar_sync_pressed):
 		boton_aceptar_sync.pressed.connect(_on_boton_aceptar_sync_pressed)
 	
-	if not sandbox:
+	if not sandbox and not es_tutorial:
 		analista_dificultad = AnalistaDificultad.new()
 		add_child(analista_dificultad)
 		
 		# Conectarlo con el jugador
 		jugador.analista = analista_dificultad
 	else:
-		print("--- Modo Sandbox: Analista de Dificultad DESACTIVADO ---")
+		if es_tutorial:
+			print("--- Modo Tutorial: Analista de Dificultad DESACTIVADO ---")
+		else:
+			print("--- Modo Sandbox: Analista de Dificultad DESACTIVADO ---")
 	
 	# Verificamos si hay una misión pendiente en el Singleton
 	if GameData.mision_seleccionada != null:

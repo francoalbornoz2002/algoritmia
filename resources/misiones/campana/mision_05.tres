@@ -1,0 +1,52 @@
+[gd_resource type="Resource" script_class="DefinicionMision" format=3 uid="uid://bulu6ci3b84q8"]
+
+[ext_resource type="Script" uid="uid://bwftnkpaxkcgc" path="res://scripts/misiones/caso_prueba_mision.gd" id="1_2lnmm"]
+[ext_resource type="Script" uid="uid://7dwqqmri6ibf" path="res://scripts/misiones/definicion_mision.gd" id="2_aini5"]
+[ext_resource type="Script" uid="uid://7rau7grlkedi" path="res://scripts/misiones/condicion_mision.gd" id="2_y0ghw"]
+[ext_resource type="Script" uid="uid://pv2d7rfe0lwx" path="res://scripts/misiones/condiciones/condicion_llegar_a.gd" id="3_bocwa"]
+[ext_resource type="Script" uid="uid://2g81v5mgvo8i" path="res://scripts/misiones/condiciones/condicion_recolectar.gd" id="4_6lc8i"]
+[ext_resource type="Script" uid="uid://cxktrvmf0g666" path="res://scripts/misiones/elemento_mision.gd" id="5_eritv"]
+
+[sub_resource type="Resource" id="Resource_iv7b4"]
+script = ExtResource("3_bocwa")
+objetivo = Vector2i(2, 3)
+descripcion = "Terminar en sendero 3, valle 4 (3, 4)"
+metadata/_custom_type_script = "uid://pv2d7rfe0lwx"
+
+[sub_resource type="Resource" id="Resource_4fmw3"]
+script = ExtResource("4_6lc8i")
+descripcion = "Recolectar 1 moneda"
+metadata/_custom_type_script = "uid://2g81v5mgvo8i"
+
+[sub_resource type="Resource" id="Resource_mvor0"]
+script = ExtResource("5_eritv")
+pos = Vector2i(0, 3)
+metadata/_custom_type_script = "uid://cxktrvmf0g666"
+
+[sub_resource type="Resource" id="Resource_3lf4w"]
+script = ExtResource("1_2lnmm")
+elementos_mapa = Array[ExtResource("5_eritv")]([SubResource("Resource_mvor0")])
+condiciones_victoria = Array[ExtResource("2_y0ghw")]([SubResource("Resource_iv7b4"), SubResource("Resource_4fmw3")])
+metadata/_custom_type_script = "uid://bwftnkpaxkcgc"
+
+[sub_resource type="Resource" id="Resource_kaoal"]
+script = ExtResource("3_bocwa")
+objetivo = Vector2i(0, 6)
+descripcion = "Terminar en sendero 1, valle 7 (1, 7)"
+metadata/_custom_type_script = "uid://pv2d7rfe0lwx"
+
+[sub_resource type="Resource" id="Resource_moub1"]
+script = ExtResource("1_2lnmm")
+condiciones_victoria = Array[ExtResource("2_y0ghw")]([SubResource("Resource_kaoal")])
+metadata/_custom_type_script = "uid://bwftnkpaxkcgc"
+
+[resource]
+script = ExtResource("2_aini5")
+id = "e4eebc99-9c0b-4ef8-bb6d-6bb9bd380a15"
+numero = 5
+titulo = "Tutorial 5: Decisiones 2"
+descripcion = "¡Más decisiones!. El emblema del juicio no solo sirve para hacer algo si y solo si se cumple algo, tambien puedes especificar si quieres hacer OTRA COSA si no se cumple dicha condición. Avanza 3 casillas, si hay una moneda recógela, gira a la dercha y avanza dos casillas más. Si no hay, avanza 3 casillas más."
+dificultad_mision = "Media"
+es_tutorial = true
+casos_de_prueba = Array[ExtResource("1_2lnmm")]([SubResource("Resource_3lf4w"), SubResource("Resource_moub1")])
+metadata/_custom_type_script = "uid://7dwqqmri6ibf"

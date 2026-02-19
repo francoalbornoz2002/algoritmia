@@ -1,0 +1,52 @@
+[gd_resource type="Resource" script_class="DefinicionMision" format=3 uid="uid://dcpw24tj6xh1i"]
+
+[ext_resource type="Script" uid="uid://bwftnkpaxkcgc" path="res://scripts/misiones/caso_prueba_mision.gd" id="1_etvjj"]
+[ext_resource type="Script" uid="uid://7rau7grlkedi" path="res://scripts/misiones/condicion_mision.gd" id="2_uj3a6"]
+[ext_resource type="Script" uid="uid://7dwqqmri6ibf" path="res://scripts/misiones/definicion_mision.gd" id="2_yif5w"]
+[ext_resource type="Script" uid="uid://pv2d7rfe0lwx" path="res://scripts/misiones/condiciones/condicion_llegar_a.gd" id="3_r03fe"]
+[ext_resource type="Script" uid="uid://2g81v5mgvo8i" path="res://scripts/misiones/condiciones/condicion_recolectar.gd" id="4_rhfh1"]
+[ext_resource type="Script" uid="uid://cxktrvmf0g666" path="res://scripts/misiones/elemento_mision.gd" id="5_c82tw"]
+
+[sub_resource type="Resource" id="Resource_chypr"]
+script = ExtResource("3_r03fe")
+objetivo = Vector2i(0, 8)
+descripcion = "Terminar en sendero 1, valle 9 (1, 9)"
+metadata/_custom_type_script = "uid://pv2d7rfe0lwx"
+
+[sub_resource type="Resource" id="Resource_p3su4"]
+script = ExtResource("4_rhfh1")
+descripcion = "Recolectar 1 moneda"
+metadata/_custom_type_script = "uid://2g81v5mgvo8i"
+
+[sub_resource type="Resource" id="Resource_7eq60"]
+script = ExtResource("5_c82tw")
+tipo = 4
+pos = Vector2i(0, 2)
+metadata/_custom_type_script = "uid://cxktrvmf0g666"
+
+[sub_resource type="Resource" id="Resource_mvrr2"]
+script = ExtResource("5_c82tw")
+tipo = 4
+pos = Vector2i(0, 5)
+metadata/_custom_type_script = "uid://cxktrvmf0g666"
+
+[sub_resource type="Resource" id="Resource_3ydvl"]
+script = ExtResource("5_c82tw")
+pos = Vector2i(0, 8)
+metadata/_custom_type_script = "uid://cxktrvmf0g666"
+
+[sub_resource type="Resource" id="Resource_82stt"]
+script = ExtResource("1_etvjj")
+elementos_mapa = Array[ExtResource("5_c82tw")]([SubResource("Resource_7eq60"), SubResource("Resource_mvrr2"), SubResource("Resource_3ydvl")])
+condiciones_victoria = Array[ExtResource("2_uj3a6")]([SubResource("Resource_chypr"), SubResource("Resource_p3su4")])
+metadata/_custom_type_script = "uid://bwftnkpaxkcgc"
+
+[resource]
+script = ExtResource("2_yif5w")
+id = "c2eebc99-9c0b-4ef8-bb6d-6bb9bd380a13"
+numero = 3
+titulo = "Tutorial 3: Salto y obstáculos"
+descripcion = "¡Cuidado! En tu viaje encontrarás obstáculos. Cuando estés frente a uno, usa la primitiva 'saltar' para evadirlo. Avanza y evade para recoger la moneda que se encuentra al final de los obstáculos."
+es_tutorial = true
+casos_de_prueba = Array[ExtResource("1_etvjj")]([SubResource("Resource_82stt")])
+metadata/_custom_type_script = "uid://7dwqqmri6ibf"

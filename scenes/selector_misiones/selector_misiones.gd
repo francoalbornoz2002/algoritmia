@@ -33,8 +33,11 @@ func _cargar_misiones():
 	
 	# Obtener todas las misiones del catálogo
 	var misiones_db = DatabaseManager.obtener_misiones()
+	# Obtener lista de IDs completados para verificar desbloqueos
+	var completadas = DatabaseManager.obtener_ids_misiones_completadas()
 	
-	for datos_mision in misiones_db:
+	for i in range(misiones_db.size()):
+		var datos_mision = misiones_db[i]
 		# Cargamos el recurso real usando el ID de la base de datos
 		var mision_recurso = GestorCatalogo.obtener_mision_por_id(datos_mision["id"])
 		
@@ -42,14 +45,26 @@ func _cargar_misiones():
 			print("Selector: Advertencia, misión en BD no encontrada en recursos: ", datos_mision["id"])
 			continue
 
+		# Lógica de Bloqueo Secuencial
+		var esta_bloqueada = false
+		if i > 0:
+			# Si no es la primera, verificamos si la ANTERIOR está completada
+			var id_anterior = misiones_db[i - 1]["id"]
+			if not id_anterior in completadas:
+				esta_bloqueada = true
+
 		var btn = TextureButton.new()
 		btn.focus_mode = Control.FOCUS_NONE
 		
 		# 1. Configurar Textura (Círculo)
 		if tex_nivel_icono:
-			btn.texture_normal = tex_nivel_icono
-			if tex_nivel_hover: btn.texture_hover = tex_nivel_hover
-			if tex_nivel_pressed: btn.texture_pressed = tex_nivel_pressed
+			if esta_bloqueada and tex_nivel_bloqueado:
+				btn.texture_normal = tex_nivel_bloqueado
+			else:
+				btn.texture_normal = tex_nivel_icono
+				if tex_nivel_hover: btn.texture_hover = tex_nivel_hover
+				if tex_nivel_pressed: btn.texture_pressed = tex_nivel_pressed
+			
 			# Ajustamos el tamaño mínimo para que no se aplaste
 			btn.ignore_texture_size = true
 			btn.stretch_mode = TextureButton.STRETCH_SCALE
@@ -71,8 +86,13 @@ func _cargar_misiones():
 		lbl_num.add_theme_color_override("font_outline_color", Color.BLACK)
 		btn.add_child(lbl_num)
 
-		# Conectar señal pasando la misión como argumento
-		btn.pressed.connect(_abrir_modal.bind(mision_recurso))
+		if esta_bloqueada:
+			btn.disabled = true
+			btn.modulate = Color(0.5, 0.5, 0.5, 0.7) # Efecto visual de "apagado"
+			# Opcional: Podrías ocultar el número lbl_num.hide() si prefieres
+		else:
+			# Conectar señal pasando la misión como argumento
+			btn.pressed.connect(_abrir_modal.bind(mision_recurso))
 		
 		grid_container.add_child(btn)
 

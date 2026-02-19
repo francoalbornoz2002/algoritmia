@@ -286,6 +286,18 @@ func obtener_alumno_actual() -> Dictionary:
 	return db.query_result[0]
 
 
+## Devuelve un Array de Strings con los IDs de las misiones completadas.
+func obtener_ids_misiones_completadas() -> Array:
+	var success = db.query("SELECT id_mision FROM misiones_completadas_local;")
+	
+	if not success:
+		return []
+	
+	var ids = []
+	for row in db.query_result:
+		ids.append(row["id_mision"])
+	return ids
+
 ## Escribe una misión completada en la BD local.
 ## Usa "INSERT OR REPLACE" para sobrescribir si ya existía (ej: la jugó offline 2 veces).
 ## Marca "sincronizado" como 'false' (0).

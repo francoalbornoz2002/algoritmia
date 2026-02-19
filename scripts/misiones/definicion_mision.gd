@@ -16,6 +16,9 @@ class_name DefinicionMision extends Resource
 # Dificultad (ej: "Fácil", "Medio", "Difícil" o numérico 1-3)
 @export var dificultad_mision: String = "Fácil"
 
+# Flag para saber si es un tutorial (desactiva analista)
+@export var es_tutorial: bool = false
+
 # Flag para saber si aplicamos recompensas dobles
 @export var es_mision_especial: bool = false
 

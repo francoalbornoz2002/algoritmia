@@ -1,0 +1,51 @@
+[gd_resource type="Resource" script_class="DefinicionMision" format=3 uid="uid://5pxj2m5crg77"]
+
+[ext_resource type="Script" uid="uid://bwftnkpaxkcgc" path="res://scripts/misiones/caso_prueba_mision.gd" id="1_qx26k"]
+[ext_resource type="Script" uid="uid://7dwqqmri6ibf" path="res://scripts/misiones/definicion_mision.gd" id="2_0cb31"]
+[ext_resource type="Script" uid="uid://7rau7grlkedi" path="res://scripts/misiones/condicion_mision.gd" id="2_qkjw7"]
+[ext_resource type="Script" uid="uid://2g81v5mgvo8i" path="res://scripts/misiones/condiciones/condicion_recolectar.gd" id="3_cds33"]
+[ext_resource type="Script" uid="uid://pv2d7rfe0lwx" path="res://scripts/misiones/condiciones/condicion_llegar_a.gd" id="4_723mp"]
+[ext_resource type="Script" uid="uid://cxktrvmf0g666" path="res://scripts/misiones/elemento_mision.gd" id="5_u04nd"]
+
+[sub_resource type="Resource" id="Resource_hx1xy"]
+script = ExtResource("3_cds33")
+cantidad = 3
+descripcion = "Recolectar 3 monedas"
+metadata/_custom_type_script = "uid://2g81v5mgvo8i"
+
+[sub_resource type="Resource" id="Resource_nkg3f"]
+script = ExtResource("4_723mp")
+objetivo = Vector2i(0, 3)
+descripcion = "Terminar en sendero 1, valle 4 (1, 4)"
+metadata/_custom_type_script = "uid://pv2d7rfe0lwx"
+
+[sub_resource type="Resource" id="Resource_5dtj0"]
+script = ExtResource("5_u04nd")
+pos = Vector2i(0, 1)
+metadata/_custom_type_script = "uid://cxktrvmf0g666"
+
+[sub_resource type="Resource" id="Resource_qy3jq"]
+script = ExtResource("5_u04nd")
+pos = Vector2i(0, 2)
+metadata/_custom_type_script = "uid://cxktrvmf0g666"
+
+[sub_resource type="Resource" id="Resource_qes57"]
+script = ExtResource("5_u04nd")
+pos = Vector2i(0, 3)
+metadata/_custom_type_script = "uid://cxktrvmf0g666"
+
+[sub_resource type="Resource" id="Resource_raiht"]
+script = ExtResource("1_qx26k")
+elementos_mapa = Array[ExtResource("5_u04nd")]([SubResource("Resource_5dtj0"), SubResource("Resource_qy3jq"), SubResource("Resource_qes57")])
+condiciones_victoria = Array[ExtResource("2_qkjw7")]([SubResource("Resource_hx1xy"), SubResource("Resource_nkg3f")])
+metadata/_custom_type_script = "uid://bwftnkpaxkcgc"
+
+[resource]
+script = ExtResource("2_0cb31")
+id = "b1eebc99-9c0b-4ef8-bb6d-6bb9bd380a12"
+numero = 2
+titulo = "Tutorial 2: Recolección"
+descripcion = "¡Monedas! Avanza 3 casillas hacia adelante y utiliza la primitiva 'recogerMoneda' para recolectar las monedas en el mapa."
+es_tutorial = true
+casos_de_prueba = Array[ExtResource("1_qx26k")]([SubResource("Resource_raiht")])
+metadata/_custom_type_script = "uid://7dwqqmri6ibf"

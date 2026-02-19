@@ -44,7 +44,7 @@ func avanzar():
 	if esta_actuando: return
 	esta_actuando = true
 	# 1. Lógica de peligro (Si hay Enemigo, Game Over)
-	if await _verificar_peligro_inminente():
+	if await _verificar_peligro_inminente(true):
 		await _esperar_muerte()
 		return
 		
@@ -60,7 +60,7 @@ func girar_derecha():
 	esta_actuando = true
 	
 	# 1. CHEQUEO ANTES DE GIRAR
-	if await _verificar_peligro_inminente():
+	if await _verificar_peligro_inminente(false):
 		return # Game Over si hay enemigo al frente
 	
 	# 2. Lógica Matemática del Giro (solo si es seguro)
@@ -479,7 +479,7 @@ func teletransportar_a(celda_destino: Vector2i):
 	_actualizar_idle()
 
 # --- NUEVA FUNCIÓN DE VERIFICACIÓN (Peligro Enemigo/Obstáculo) ---
-func _verificar_peligro_inminente() -> bool:
+func _verificar_peligro_inminente(es_avance: bool = false) -> bool:
 	# 1. Celda en frente
 	var celda_en_frente = posicion_actual + direccion_actual
 	
@@ -506,13 +506,13 @@ func _verificar_peligro_inminente() -> bool:
 			
 		# --- Peligro 2: Obstáculo al frente (Choque) ---
 		elif objeto.tipo == ElementoTablero.Tipo.OBSTACULO:
-			# Si llegamos aquí, intentó avanzar, lo cual está prohibido
-			game_over("¡Choque con Obstáculo! Debes usar la instrucción 'saltar'.")
-			return true
+			if es_avance:
+				game_over("¡Choque con Obstáculo! Debes usar la instrucción 'saltar'.")
+				return true
 			
 		# --- Peligro 3: Puente Inactivo al frente ---
 		elif objeto.tipo == ElementoTablero.Tipo.PUENTE:
-			if not objeto.esta_activo:
+			if not objeto.esta_activo and es_avance:
 				game_over("¡Puente inactivo! Debes activarlo con la instrucción 'activarPuente'.")
 				return true
 
