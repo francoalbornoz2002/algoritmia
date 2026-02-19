@@ -1,0 +1,73 @@
+[gd_resource type="Resource" script_class="DefinicionMision" format=3 uid="uid://dqpvsraqjbx20"]
+
+[ext_resource type="Script" uid="uid://bwftnkpaxkcgc" path="res://scripts/misiones/caso_prueba_mision.gd" id="1_f2gp5"]
+[ext_resource type="Script" uid="uid://7dwqqmri6ibf" path="res://scripts/misiones/definicion_mision.gd" id="2_f4xsc"]
+[ext_resource type="Script" uid="uid://7rau7grlkedi" path="res://scripts/misiones/condicion_mision.gd" id="2_j5tu1"]
+[ext_resource type="Script" uid="uid://pv2d7rfe0lwx" path="res://scripts/misiones/condiciones/condicion_llegar_a.gd" id="4_lth4j"]
+[ext_resource type="Script" uid="uid://cxktrvmf0g666" path="res://scripts/misiones/elemento_mision.gd" id="5_uh8e1"]
+
+[sub_resource type="Resource" id="Resource_8pi51"]
+script = ExtResource("4_lth4j")
+objetivo = Vector2i(0, 6)
+descripcion = "Terminar en sendero 1, valle 7 (1, 7)"
+metadata/_custom_type_script = "uid://pv2d7rfe0lwx"
+
+[sub_resource type="Resource" id="Resource_blorn"]
+script = ExtResource("5_uh8e1")
+pos = Vector2i(0, 3)
+metadata/_custom_type_script = "uid://cxktrvmf0g666"
+
+[sub_resource type="Resource" id="Resource_krdae"]
+script = ExtResource("5_uh8e1")
+tipo = 5
+pos = Vector2i(0, 4)
+metadata/_custom_type_script = "uid://cxktrvmf0g666"
+
+[sub_resource type="Resource" id="Resource_cd2af"]
+script = ExtResource("1_f2gp5")
+elementos_mapa = Array[ExtResource("5_uh8e1")]([SubResource("Resource_blorn"), SubResource("Resource_krdae")])
+condiciones_victoria = Array[ExtResource("2_j5tu1")]([SubResource("Resource_8pi51")])
+metadata/_custom_type_script = "uid://bwftnkpaxkcgc"
+
+[sub_resource type="Resource" id="Resource_nxebn"]
+script = ExtResource("4_lth4j")
+descripcion = "Terminar en sendero 1, valle 1 (1, 1)"
+metadata/_custom_type_script = "uid://pv2d7rfe0lwx"
+
+[sub_resource type="Resource" id="Resource_bi3x2"]
+script = ExtResource("5_uh8e1")
+tipo = 5
+pos = Vector2i(0, 4)
+metadata/_custom_type_script = "uid://cxktrvmf0g666"
+
+[sub_resource type="Resource" id="Resource_xfx52"]
+script = ExtResource("1_f2gp5")
+elementos_mapa = Array[ExtResource("5_uh8e1")]([SubResource("Resource_bi3x2")])
+condiciones_victoria = Array[ExtResource("2_j5tu1")]([SubResource("Resource_nxebn")])
+metadata/_custom_type_script = "uid://bwftnkpaxkcgc"
+
+[sub_resource type="Resource" id="Resource_ot0ks"]
+script = ExtResource("4_lth4j")
+descripcion = "Terminar en sendero 1, valle 1 (1, 1)"
+metadata/_custom_type_script = "uid://pv2d7rfe0lwx"
+
+[sub_resource type="Resource" id="Resource_s1xun"]
+script = ExtResource("5_uh8e1")
+pos = Vector2i(0, 3)
+metadata/_custom_type_script = "uid://cxktrvmf0g666"
+
+[sub_resource type="Resource" id="Resource_nfrr7"]
+script = ExtResource("1_f2gp5")
+elementos_mapa = Array[ExtResource("5_uh8e1")]([SubResource("Resource_s1xun")])
+condiciones_victoria = Array[ExtResource("2_j5tu1")]([SubResource("Resource_ot0ks")])
+metadata/_custom_type_script = "uid://bwftnkpaxkcgc"
+
+[resource]
+script = ExtResource("2_f4xsc")
+id = "d9eebc99-9c0b-4ef8-bb6d-6bb9bd380a20"
+numero = 10
+titulo = "Tutorial 10: Puentes"
+descripcion = "El terreno, a veces, tiene fosas de agua y solo se pueden atravesar mediante un puente, pero debes pagar peaje. Necesitas una moneda para poder activar el puente. Avanza 3 casillas y si encuentras una moneda, recógela. Luego, utiliza el sensor hayPuente para ver si hay uno. ¡Recuerda verificar si tienes una moneda para pagar! activa el puente y avanza 3 casillas más. Si no hay puente o no puedes activarlo, da media vuelta y vuelve al inicio."
+es_tutorial = true
+casos_de_prueba = Array[ExtResource("1_f2gp5")]([SubResource("Resource_cd2af"), SubResource("Resource_xfx52"), SubResource("Resource_nfrr7")])
+metadata/_custom_type_script = "uid://7dwqqmri6ibf"

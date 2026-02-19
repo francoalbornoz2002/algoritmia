@@ -136,9 +136,10 @@ region = Rect2(199, 48, 34, 37)
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_b7bg2"]
 texture = SubResource("AtlasTexture_ktdj7")
 texture_margin_left = 5.0
-texture_margin_top = 16.0
+texture_margin_top = 25.0
 texture_margin_right = 5.0
 texture_margin_bottom = 5.0
+region_rect = Rect2(0, 0, 34, 37)
 
 [sub_resource type="Animation" id="Animation_drcm8"]
 length = 0.001
@@ -859,10 +860,11 @@ region = Rect2(203, 155, 26, 26)
 atlas = ExtResource("17_sync")
 region = Rect2(81, 49, 14, 14)
 
-[node name="MisionJuego" type="Node2D" unique_id=1305528108 node_paths=PackedStringArray("tablero", "mapa_visual", "jugador", "entidades_container", "label_mision", "label_dificultad", "label_descripcion", "code_edit", "boton_ejecutar", "boton_volver", "consola_visual", "ejecutor", "timer_reinicio", "capa_victoria", "panel_victoria_rect", "label_titulo_victoria", "label_xp_victoria", "boton_continuar_victoria", "dialogo_confirmar_salida", "overlay_sync", "spinner_sync", "label_detalle_sync", "boton_aceptar_sync")]
+[node name="MisionJuego" type="Node2D" unique_id=1305528108 node_paths=PackedStringArray("tablero", "mapa_visual", "mapa_agua", "jugador", "entidades_container", "label_mision", "label_dificultad", "label_descripcion", "code_edit", "boton_ejecutar", "boton_volver", "consola_visual", "ejecutor", "timer_reinicio", "capa_victoria", "panel_victoria_rect", "label_titulo_victoria", "label_xp_victoria", "boton_continuar_victoria", "dialogo_confirmar_salida", "overlay_sync", "spinner_sync", "label_detalle_sync", "boton_aceptar_sync")]
 script = ExtResource("1_kmg2i")
 tablero = NodePath("CapaUI/ContenedorJuego/SubViewport/Tablero")
 mapa_visual = NodePath("CapaUI/ContenedorJuego/SubViewport/Tablero/MapaMision")
+mapa_agua = NodePath("CapaUI/ContenedorJuego/SubViewport/Tablero/MapaAgua")
 jugador = NodePath("CapaUI/ContenedorJuego/SubViewport/Tablero/Entidades/Jugador")
 entidades_container = NodePath("CapaUI/ContenedorJuego/SubViewport/Tablero/Entidades")
 label_mision = NodePath("CapaUI/Panel/VBoxContainer/HBoxContainer/LabelMision")
@@ -1055,6 +1057,16 @@ scroll_following = true
 selection_enabled = true
 drag_and_drop_selection_enabled = false
 
+[node name="Label" type="Label" parent="CapaUI/SalidaConsola" unique_id=1514575560]
+layout_mode = 0
+offset_left = 5.1999817
+offset_top = -1.4000244
+offset_right = 45.19998
+offset_bottom = 14.599976
+theme_override_font_sizes/font_size = 10
+text = "Salida"
+vertical_alignment = 1
+
 [node name="ContenedorJuego" type="SubViewportContainer" parent="CapaUI" unique_id=1107520454]
 anchors_preset = -1
 anchor_left = 0.4
@@ -1078,6 +1090,10 @@ render_target_update_mode = 4
 script = ExtResource("2_nlnw5")
 
 [node name="MapaMision" type="TileMapLayer" parent="CapaUI/ContenedorJuego/SubViewport/Tablero" unique_id=555796652]
+tile_set = ExtResource("5_pg1fb")
+
+[node name="MapaAgua" type="TileMapLayer" parent="CapaUI/ContenedorJuego/SubViewport/Tablero" unique_id=555796653]
+modulate = Color(0.2, 0.8, 5, 1)
 tile_set = ExtResource("5_pg1fb")
 
 [node name="Entidades" type="Node2D" parent="CapaUI/ContenedorJuego/SubViewport/Tablero" unique_id=902574647]

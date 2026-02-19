@@ -1,97 +1,90 @@
-[gd_resource type="Resource" script_class="DefinicionMision" format=3 uid="uid://1c3i73swgbjg"]
+[gd_resource type="Resource" script_class="DefinicionMision" format=3 uid="uid://6abcua823cph"]
 
-[ext_resource type="Script" uid="uid://bwftnkpaxkcgc" path="res://scripts/misiones/caso_prueba_mision.gd" id="1_3rwd4"]
-[ext_resource type="Script" uid="uid://7rau7grlkedi" path="res://scripts/misiones/condicion_mision.gd" id="2_56nrd"]
-[ext_resource type="Script" uid="uid://7dwqqmri6ibf" path="res://scripts/misiones/definicion_mision.gd" id="2_i2syi"]
-[ext_resource type="Script" uid="uid://pv2d7rfe0lwx" path="res://scripts/misiones/condiciones/condicion_llegar_a.gd" id="3_jmb0u"]
-[ext_resource type="Script" uid="uid://2g81v5mgvo8i" path="res://scripts/misiones/condiciones/condicion_recolectar.gd" id="4_17old"]
-[ext_resource type="Script" uid="uid://cxktrvmf0g666" path="res://scripts/misiones/elemento_mision.gd" id="5_gmf78"]
+[ext_resource type="Script" uid="uid://bwftnkpaxkcgc" path="res://scripts/misiones/caso_prueba_mision.gd" id="1_bs2i3"]
+[ext_resource type="Script" uid="uid://7rau7grlkedi" path="res://scripts/misiones/condicion_mision.gd" id="2_0nm5m"]
+[ext_resource type="Script" uid="uid://7dwqqmri6ibf" path="res://scripts/misiones/definicion_mision.gd" id="2_sjr2b"]
+[ext_resource type="Script" uid="uid://2g81v5mgvo8i" path="res://scripts/misiones/condiciones/condicion_recolectar.gd" id="3_fmgrq"]
+[ext_resource type="Script" uid="uid://pv2d7rfe0lwx" path="res://scripts/misiones/condiciones/condicion_llegar_a.gd" id="4_0jcqp"]
+[ext_resource type="Script" uid="uid://cxktrvmf0g666" path="res://scripts/misiones/elemento_mision.gd" id="5_nju8b"]
 
-[sub_resource type="Resource" id="Resource_1gmki"]
-script = ExtResource("3_jmb0u")
-objetivo = Vector2i(0, 5)
-descripcion = "Terminar en sendero 1, valle 6 (1, 6)"
-metadata/_custom_type_script = "uid://pv2d7rfe0lwx"
-
-[sub_resource type="Resource" id="Resource_premf"]
-script = ExtResource("4_17old")
+[sub_resource type="Resource" id="Resource_grosc"]
+script = ExtResource("3_fmgrq")
 descripcion = "Recolectar 1 moneda"
 metadata/_custom_type_script = "uid://2g81v5mgvo8i"
 
-[sub_resource type="Resource" id="Resource_c6oqd"]
-script = ExtResource("5_gmf78")
+[sub_resource type="Resource" id="Resource_tnyx0"]
+script = ExtResource("4_0jcqp")
+objetivo = Vector2i(0, 5)
+descripcion = "Terminar en sendero 1, valle 5 (1, 5)"
+metadata/_custom_type_script = "uid://pv2d7rfe0lwx"
+
+[sub_resource type="Resource" id="Resource_kew3p"]
+script = ExtResource("5_nju8b")
 pos = Vector2i(0, 3)
 metadata/_custom_type_script = "uid://cxktrvmf0g666"
 
-[sub_resource type="Resource" id="Resource_eu72v"]
-script = ExtResource("5_gmf78")
+[sub_resource type="Resource" id="Resource_cpirr"]
+script = ExtResource("5_nju8b")
 tipo = 4
 pos = Vector2i(0, 4)
 metadata/_custom_type_script = "uid://cxktrvmf0g666"
 
-[sub_resource type="Resource" id="Resource_qtudl"]
-script = ExtResource("1_3rwd4")
-elementos_mapa = Array[ExtResource("5_gmf78")]([SubResource("Resource_c6oqd"), SubResource("Resource_eu72v")])
-condiciones_victoria = Array[ExtResource("2_56nrd")]([SubResource("Resource_1gmki"), SubResource("Resource_premf")])
+[sub_resource type="Resource" id="Resource_ulhry"]
+script = ExtResource("1_bs2i3")
+elementos_mapa = Array[ExtResource("5_nju8b")]([SubResource("Resource_kew3p"), SubResource("Resource_cpirr")])
+condiciones_victoria = Array[ExtResource("2_0nm5m")]([SubResource("Resource_grosc"), SubResource("Resource_tnyx0")])
 metadata/_custom_type_script = "uid://bwftnkpaxkcgc"
 
-[sub_resource type="Resource" id="Resource_etu62"]
-script = ExtResource("3_jmb0u")
-objetivo = Vector2i(0, 3)
-descripcion = "Terminar en sendero 1, valle 4 (1, 4)"
+[sub_resource type="Resource" id="Resource_fmgrq"]
+script = ExtResource("4_0jcqp")
+descripcion = "Terminar en sendero 1, valle 1 (1, 1)"
 metadata/_custom_type_script = "uid://pv2d7rfe0lwx"
 
-[sub_resource type="Resource" id="Resource_ejkxi"]
-script = ExtResource("4_17old")
-descripcion = "Recolectar 1 moneda"
-metadata/_custom_type_script = "uid://2g81v5mgvo8i"
-
-[sub_resource type="Resource" id="Resource_yydxk"]
-script = ExtResource("5_gmf78")
+[sub_resource type="Resource" id="Resource_0jcqp"]
+script = ExtResource("5_nju8b")
 pos = Vector2i(0, 3)
 metadata/_custom_type_script = "uid://cxktrvmf0g666"
 
-[sub_resource type="Resource" id="Resource_sh4h4"]
-script = ExtResource("1_3rwd4")
-elementos_mapa = Array[ExtResource("5_gmf78")]([SubResource("Resource_yydxk")])
-condiciones_victoria = Array[ExtResource("2_56nrd")]([SubResource("Resource_etu62"), SubResource("Resource_ejkxi")])
+[sub_resource type="Resource" id="Resource_nju8b"]
+script = ExtResource("1_bs2i3")
+elementos_mapa = Array[ExtResource("5_nju8b")]([SubResource("Resource_0jcqp")])
+condiciones_victoria = Array[ExtResource("2_0nm5m")]([SubResource("Resource_fmgrq")])
 metadata/_custom_type_script = "uid://bwftnkpaxkcgc"
 
-[sub_resource type="Resource" id="Resource_js2qo"]
-script = ExtResource("3_jmb0u")
-objetivo = Vector2i(0, 5)
-descripcion = "Terminar en sendero 1, valle 6 (1, 6)"
+[sub_resource type="Resource" id="Resource_2q0ae"]
+script = ExtResource("4_0jcqp")
+descripcion = "Terminar en sendero 1, valle 1 (1, 1)"
 metadata/_custom_type_script = "uid://pv2d7rfe0lwx"
 
-[sub_resource type="Resource" id="Resource_epu5s"]
-script = ExtResource("5_gmf78")
+[sub_resource type="Resource" id="Resource_qko7d"]
+script = ExtResource("5_nju8b")
 tipo = 4
 pos = Vector2i(0, 4)
 metadata/_custom_type_script = "uid://cxktrvmf0g666"
 
-[sub_resource type="Resource" id="Resource_rdqk0"]
-script = ExtResource("1_3rwd4")
-elementos_mapa = Array[ExtResource("5_gmf78")]([SubResource("Resource_epu5s")])
-condiciones_victoria = Array[ExtResource("2_56nrd")]([SubResource("Resource_js2qo")])
+[sub_resource type="Resource" id="Resource_hkdxe"]
+script = ExtResource("1_bs2i3")
+elementos_mapa = Array[ExtResource("5_nju8b")]([SubResource("Resource_qko7d")])
+condiciones_victoria = Array[ExtResource("2_0nm5m")]([SubResource("Resource_2q0ae")])
 metadata/_custom_type_script = "uid://bwftnkpaxkcgc"
 
-[sub_resource type="Resource" id="Resource_hm8ml"]
-script = ExtResource("3_jmb0u")
-objetivo = Vector2i(3, 3)
-descripcion = "Terminar en sendero 3, valle 3 (3, 3)"
+[sub_resource type="Resource" id="Resource_0nm5m"]
+script = ExtResource("4_0jcqp")
+descripcion = "Terminar en senderio 1, valle 1 (1, 1)"
 metadata/_custom_type_script = "uid://pv2d7rfe0lwx"
 
-[sub_resource type="Resource" id="Resource_jacan"]
-script = ExtResource("1_3rwd4")
-condiciones_victoria = Array[ExtResource("2_56nrd")]([SubResource("Resource_hm8ml")])
+[sub_resource type="Resource" id="Resource_dcf4r"]
+script = ExtResource("1_bs2i3")
+condiciones_victoria = Array[ExtResource("2_0nm5m")]([SubResource("Resource_0nm5m")])
 metadata/_custom_type_script = "uid://bwftnkpaxkcgc"
 
 [resource]
-script = ExtResource("2_i2syi")
+script = ExtResource("2_sjr2b")
 id = "a6eebc99-9c0b-4ef8-bb6d-6bb9bd380a17"
 numero = 7
-titulo = "Tutorial 7: Decisiones 4 (OR)"
-descripcion = "Más decisiones... Así como el Emblema del Jucio te permite evaluar si se cumplen si o si dos condiciones, tambien te permite evaluar si se cumple al menos una de ellas con la palabra clave OR entre proposiciones. Avanza 3 casillas, si hay una moneda o hay un obstaculo, haz un giro de 360 grados, recoge la moneda y salta el obstáculo. Sino, gira a la derecha y avanza 3 casillas más."
+titulo = "Tutorial 7: Decisiones 3 (AND)"
+descripcion = "¡Decisiones compuestas! El Emblema del Juicio es bastante poderoso y te permite evaluar más de una condición con la palabra clave AND entre proposiciones. Avanza 3 casillas, si hay una moneda y un obstáculo en frente, recoge la moneda y salta el obstáculo. Si no se cumplen esas condiciones, gira hacia atrás y vuelve donde comenzaste."
 dificultad_mision = "Media"
-casos_de_prueba = Array[ExtResource("1_3rwd4")]([SubResource("Resource_qtudl"), SubResource("Resource_sh4h4"), SubResource("Resource_rdqk0"), SubResource("Resource_jacan")])
+es_tutorial = true
+casos_de_prueba = Array[ExtResource("1_bs2i3")]([SubResource("Resource_ulhry"), SubResource("Resource_nju8b"), SubResource("Resource_hkdxe"), SubResource("Resource_dcf4r")])
 metadata/_custom_type_script = "uid://7dwqqmri6ibf"

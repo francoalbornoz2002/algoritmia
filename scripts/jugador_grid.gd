@@ -15,7 +15,7 @@ var escala_inicial: Vector2
 var esta_actuando: bool = false
 var posicion_actual: Vector2i = Vector2i.ZERO
 var direccion_actual: Vector2i = Vector2i(0, 1) # (0, 1) es ARRIBA lógico
-var inventario = {"monedas": 0, "llaves": 0}
+var inventario = {"monedas": 0, "llaves": 0, "cofres": 0}
 var analista: AnalistaDificultad = null
 var _tween_movimiento: Tween = null
 
@@ -192,6 +192,7 @@ func abrir_cofre():
 	print("¡Cofre abierto!")
 	inventario["llaves"] -= 1
 	inventario["monedas"] += 5 # SUMA +5 MONEDAS (GDD)
+	inventario["cofres"] += 1
 	
 	GridManager.quitar_objeto(posicion_actual)
 	objeto.abrir_cofre() # Usa la función del ElementoTablero

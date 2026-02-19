@@ -61,11 +61,13 @@ func _actualizar_visual():
 			elif tex_moneda: sprite.texture = tex_moneda
 			else: sprite.modulate = Color.YELLOW
 		Tipo.LLAVE:
+			sprite.scale = Vector2(0.7, 0.7)
 			if anim_player and anim_player.has_animation("llave_idle"):
 				anim_player.play("llave_idle")
 			elif tex_llave: sprite.texture = tex_llave
 			else: sprite.modulate = Color.ORANGE
 		Tipo.COFRE:
+			sprite.scale = Vector2(1.2, 1.2)
 			if anim_player and anim_player.has_animation("cofre_cerrado"):
 				anim_player.play("cofre_cerrado")
 			elif tex_cofre: sprite.texture = tex_cofre

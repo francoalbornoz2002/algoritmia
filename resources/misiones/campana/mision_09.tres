@@ -1,0 +1,52 @@
+[gd_resource type="Resource" script_class="DefinicionMision" format=3 uid="uid://wecm1pmys41u"]
+
+[ext_resource type="Script" uid="uid://bwftnkpaxkcgc" path="res://scripts/misiones/caso_prueba_mision.gd" id="1_sb1oj"]
+[ext_resource type="Script" uid="uid://7rau7grlkedi" path="res://scripts/misiones/condicion_mision.gd" id="2_8pbpg"]
+[ext_resource type="Script" uid="uid://7dwqqmri6ibf" path="res://scripts/misiones/definicion_mision.gd" id="2_fvaa8"]
+[ext_resource type="Script" uid="uid://pv2d7rfe0lwx" path="res://scripts/misiones/condiciones/condicion_llegar_a.gd" id="3_sremf"]
+[ext_resource type="Script" uid="uid://cxktrvmf0g666" path="res://scripts/misiones/elemento_mision.gd" id="4_i2wsa"]
+[ext_resource type="Script" uid="uid://cquibwshmqt00" path="res://scripts/misiones/condiciones/condicion_eliminar_enemigos.gd" id="5_83o85"]
+
+[sub_resource type="Resource" id="Resource_yycur"]
+script = ExtResource("3_sremf")
+objetivo = Vector2i(0, 6)
+descripcion = "Terminar en sendero 1, valle 7 (1, 7)"
+metadata/_custom_type_script = "uid://pv2d7rfe0lwx"
+
+[sub_resource type="Resource" id="Resource_48rpp"]
+script = ExtResource("1_sb1oj")
+condiciones_victoria = Array[ExtResource("2_8pbpg")]([SubResource("Resource_yycur")])
+metadata/_custom_type_script = "uid://bwftnkpaxkcgc"
+
+[sub_resource type="Resource" id="Resource_vwf4o"]
+script = ExtResource("5_83o85")
+descripcion = "Eliminar a todos los enemigos"
+metadata/_custom_type_script = "uid://cquibwshmqt00"
+
+[sub_resource type="Resource" id="Resource_n636y"]
+script = ExtResource("3_sremf")
+descripcion = "Terminar en sendero 1, valle 1 (1, 1)"
+metadata/_custom_type_script = "uid://pv2d7rfe0lwx"
+
+[sub_resource type="Resource" id="Resource_88dsy"]
+script = ExtResource("4_i2wsa")
+tipo = 3
+pos = Vector2i(0, 4)
+metadata/_custom_type_script = "uid://cxktrvmf0g666"
+
+[sub_resource type="Resource" id="Resource_4xl67"]
+script = ExtResource("1_sb1oj")
+elementos_mapa = Array[ExtResource("4_i2wsa")]([SubResource("Resource_88dsy")])
+condiciones_victoria = Array[ExtResource("2_8pbpg")]([SubResource("Resource_vwf4o"), SubResource("Resource_n636y")])
+metadata/_custom_type_script = "uid://bwftnkpaxkcgc"
+
+[resource]
+script = ExtResource("2_fvaa8")
+id = "c8eebc99-9c0b-4ef8-bb6d-6bb9bd380a19"
+numero = 9
+titulo = "Tutorial 9: Decisiones 5 (NOT)"
+descripcion = "¡Negador! Cuánto poder del Emblema del Juicio, hasta te permite negar cualquier proposición. Avanza 3 casillas, si no hay enemigo al asecho, avanza 3 casillas más. Sino, atácalo, da media vuelta y vuelve al inicio."
+dificultad_mision = "Media"
+es_tutorial = true
+casos_de_prueba = Array[ExtResource("1_sb1oj")]([SubResource("Resource_48rpp"), SubResource("Resource_4xl67")])
+metadata/_custom_type_script = "uid://7dwqqmri6ibf"

@@ -1,88 +1,58 @@
-[gd_resource type="Resource" script_class="DefinicionMision" format=3 uid="uid://b2hpacj0pdwhh"]
+[gd_resource type="Resource" script_class="DefinicionMision" format=3 uid="uid://cv5psr8dxsneu"]
 
 [ext_resource type="Script" uid="uid://bwftnkpaxkcgc" path="res://scripts/misiones/caso_prueba_mision.gd" id="1_tbgnh"]
 [ext_resource type="Script" uid="uid://7dwqqmri6ibf" path="res://scripts/misiones/definicion_mision.gd" id="2_m5vvf"]
-[ext_resource type="Script" uid="uid://7rau7grlkedi" path="res://scripts/misiones/condicion_mision.gd" id="2_y7rok"]
-[ext_resource type="Script" uid="uid://pv2d7rfe0lwx" path="res://scripts/misiones/condiciones/condicion_llegar_a.gd" id="3_73rau"]
-[ext_resource type="Script" uid="uid://cxktrvmf0g666" path="res://scripts/misiones/elemento_mision.gd" id="3_vy8gk"]
-[ext_resource type="Script" uid="uid://2g81v5mgvo8i" path="res://scripts/misiones/condiciones/condicion_recolectar.gd" id="5_vwodm"]
-
-[sub_resource type="Resource" id="Resource_nby01"]
-script = ExtResource("3_73rau")
-objetivo = Vector2i(0, 5)
-descripcion = "Terminar en el sendero 1, valle 6 (1, 6)s"
-metadata/_custom_type_script = "uid://pv2d7rfe0lwx"
-
-[sub_resource type="Resource" id="Resource_p7xwg"]
-script = ExtResource("3_vy8gk")
-tipo = 4
-pos = Vector2i(0, 4)
-metadata/_custom_type_script = "uid://cxktrvmf0g666"
-
-[sub_resource type="Resource" id="Resource_73rau"]
-script = ExtResource("1_tbgnh")
-elementos_mapa = Array[ExtResource("3_vy8gk")]([SubResource("Resource_p7xwg")])
-condiciones_victoria = Array[ExtResource("2_y7rok")]([SubResource("Resource_nby01")])
-metadata/_custom_type_script = "uid://bwftnkpaxkcgc"
-
-[sub_resource type="Resource" id="Resource_perj4"]
-script = ExtResource("5_vwodm")
-descripcion = "Recolectar 1 moneda"
-metadata/_custom_type_script = "uid://2g81v5mgvo8i"
-
-[sub_resource type="Resource" id="Resource_5bkrn"]
-script = ExtResource("3_73rau")
-objetivo = Vector2i(0, 3)
-descripcion = "Terminar en sendero 1, valle 4 (1, 4)"
-metadata/_custom_type_script = "uid://pv2d7rfe0lwx"
+[ext_resource type="Script" uid="uid://7rau7grlkedi" path="res://scripts/misiones/condicion_mision.gd" id="2_vwodm"]
+[ext_resource type="Script" uid="uid://cquibwshmqt00" path="res://scripts/misiones/condiciones/condicion_eliminar_enemigos.gd" id="3_nby01"]
+[ext_resource type="Script" uid="uid://pv2d7rfe0lwx" path="res://scripts/misiones/condiciones/condicion_llegar_a.gd" id="4_p7xwg"]
+[ext_resource type="Script" uid="uid://2g81v5mgvo8i" path="res://scripts/misiones/condiciones/condicion_recolectar.gd" id="5_perj4"]
+[ext_resource type="Script" uid="uid://cxktrvmf0g666" path="res://scripts/misiones/elemento_mision.gd" id="6_5bkrn"]
 
 [sub_resource type="Resource" id="Resource_371n3"]
-script = ExtResource("3_vy8gk")
-pos = Vector2i(0, 3)
-metadata/_custom_type_script = "uid://cxktrvmf0g666"
+script = ExtResource("3_nby01")
+descripcion = "Elimina a todos los enemigos"
+metadata/_custom_type_script = "uid://cquibwshmqt00"
 
 [sub_resource type="Resource" id="Resource_5l1jo"]
-script = ExtResource("1_tbgnh")
-elementos_mapa = Array[ExtResource("3_vy8gk")]([SubResource("Resource_371n3")])
-condiciones_victoria = Array[ExtResource("2_y7rok")]([SubResource("Resource_perj4"), SubResource("Resource_5bkrn")])
-metadata/_custom_type_script = "uid://bwftnkpaxkcgc"
+script = ExtResource("4_p7xwg")
+objetivo = Vector2i(0, 5)
+descripcion = "Terminar en sendero 1, valle 5 (1, 5)"
+metadata/_custom_type_script = "uid://pv2d7rfe0lwx"
 
 [sub_resource type="Resource" id="Resource_8220e"]
-script = ExtResource("5_vwodm")
+script = ExtResource("5_perj4")
 descripcion = "Recolectar 1 moneda"
 metadata/_custom_type_script = "uid://2g81v5mgvo8i"
 
 [sub_resource type="Resource" id="Resource_hgyu7"]
-script = ExtResource("3_73rau")
-objetivo = Vector2i(5, 5)
-descripcion = "Terminar en sendero 6, valle 6 (6, 6)"
-metadata/_custom_type_script = "uid://pv2d7rfe0lwx"
+script = ExtResource("6_5bkrn")
+tipo = 3
+pos = Vector2i(0, 2)
+metadata/_custom_type_script = "uid://cxktrvmf0g666"
 
 [sub_resource type="Resource" id="Resource_mhuv8"]
-script = ExtResource("3_vy8gk")
-pos = Vector2i(5, 3)
+script = ExtResource("6_5bkrn")
+tipo = 3
+pos = Vector2i(0, 4)
 metadata/_custom_type_script = "uid://cxktrvmf0g666"
 
 [sub_resource type="Resource" id="Resource_ncjxf"]
-script = ExtResource("3_vy8gk")
-tipo = 4
-pos = Vector2i(5, 4)
+script = ExtResource("6_5bkrn")
+pos = Vector2i(0, 5)
 metadata/_custom_type_script = "uid://cxktrvmf0g666"
 
 [sub_resource type="Resource" id="Resource_qi610"]
 script = ExtResource("1_tbgnh")
-inicio_jugador = Vector2i(5, 0)
-elementos_mapa = Array[ExtResource("3_vy8gk")]([SubResource("Resource_mhuv8"), SubResource("Resource_ncjxf")])
-condiciones_victoria = Array[ExtResource("2_y7rok")]([SubResource("Resource_8220e"), SubResource("Resource_hgyu7")])
+elementos_mapa = Array[ExtResource("6_5bkrn")]([SubResource("Resource_hgyu7"), SubResource("Resource_mhuv8"), SubResource("Resource_ncjxf")])
+condiciones_victoria = Array[ExtResource("2_vwodm")]([SubResource("Resource_371n3"), SubResource("Resource_5l1jo"), SubResource("Resource_8220e")])
 metadata/_custom_type_script = "uid://bwftnkpaxkcgc"
 
 [resource]
 script = ExtResource("2_m5vvf")
 id = "d3eebc99-9c0b-4ef8-bb6d-6bb9bd380a14"
 numero = 4
-titulo = "Tutorial 4: Decisiones 1"
-descripcion = "Todos los días tomamos decisiones, donde sea y en cualquier lugar, y aqui no es la excepción. Avanza 3 casillas y utiliza el 'Emblema del Juicio' con los sensores 'hayObstaculo' y 'hayMoneda' para decidir si ejecutar o no 'recogerMoneda' o 'saltar'. ¡Prepara bien tu algoritmo! el mapa cambiará su composición de manera inesperada..."
-dificultad_mision = "Media"
+titulo = "Tutorial 4: Enemigos"
+descripcion = "¡Cuidado! Hay muchos monstruos asechando. Cada 2 casillas encontrarás un enemigo, avanza una vez y utiliza la primitiva 'atacar' para derrotar a los enemigos y recolectar la moneda al final."
 es_tutorial = true
-casos_de_prueba = Array[ExtResource("1_tbgnh")]([SubResource("Resource_73rau"), SubResource("Resource_5l1jo"), SubResource("Resource_qi610")])
+casos_de_prueba = Array[ExtResource("1_tbgnh")]([SubResource("Resource_qi610")])
 metadata/_custom_type_script = "uid://7dwqqmri6ibf"

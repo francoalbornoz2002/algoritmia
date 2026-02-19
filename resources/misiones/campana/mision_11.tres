@@ -1,0 +1,98 @@
+[gd_resource type="Resource" script_class="DefinicionMision" format=3 uid="uid://bffd552pr4tif"]
+
+[ext_resource type="Script" uid="uid://bwftnkpaxkcgc" path="res://scripts/misiones/caso_prueba_mision.gd" id="1_hmuxj"]
+[ext_resource type="Script" uid="uid://7dwqqmri6ibf" path="res://scripts/misiones/definicion_mision.gd" id="2_b7dlw"]
+[ext_resource type="Script" uid="uid://7rau7grlkedi" path="res://scripts/misiones/condicion_mision.gd" id="2_xfcov"]
+[ext_resource type="Script" uid="uid://2g81v5mgvo8i" path="res://scripts/misiones/condiciones/condicion_recolectar.gd" id="3_u4rrk"]
+[ext_resource type="Script" uid="uid://pv2d7rfe0lwx" path="res://scripts/misiones/condiciones/condicion_llegar_a.gd" id="4_m6we7"]
+[ext_resource type="Script" uid="uid://cxktrvmf0g666" path="res://scripts/misiones/elemento_mision.gd" id="5_2cil2"]
+
+[sub_resource type="Resource" id="Resource_5dyko"]
+script = ExtResource("3_u4rrk")
+tipo = "cofres"
+descripcion = "Abrir 1 cofre"
+metadata/_custom_type_script = "uid://2g81v5mgvo8i"
+
+[sub_resource type="Resource" id="Resource_po4no"]
+script = ExtResource("4_m6we7")
+objetivo = Vector2i(0, 2)
+descripcion = "Terminar en sendero 1, valle 3 (1, 3)"
+metadata/_custom_type_script = "uid://pv2d7rfe0lwx"
+
+[sub_resource type="Resource" id="Resource_a2iqe"]
+script = ExtResource("5_2cil2")
+tipo = 1
+pos = Vector2i(0, 1)
+metadata/_custom_type_script = "uid://cxktrvmf0g666"
+
+[sub_resource type="Resource" id="Resource_u3aie"]
+script = ExtResource("5_2cil2")
+tipo = 2
+pos = Vector2i(0, 2)
+metadata/_custom_type_script = "uid://cxktrvmf0g666"
+
+[sub_resource type="Resource" id="Resource_enj7v"]
+script = ExtResource("1_hmuxj")
+elementos_mapa = Array[ExtResource("5_2cil2")]([SubResource("Resource_a2iqe"), SubResource("Resource_u3aie")])
+condiciones_victoria = Array[ExtResource("2_xfcov")]([SubResource("Resource_5dyko"), SubResource("Resource_po4no")])
+metadata/_custom_type_script = "uid://bwftnkpaxkcgc"
+
+[sub_resource type="Resource" id="Resource_xfcov"]
+script = ExtResource("3_u4rrk")
+tipo = "cofres"
+cantidad = 0
+descripcion = "Abrir 0 cofres"
+metadata/_custom_type_script = "uid://2g81v5mgvo8i"
+
+[sub_resource type="Resource" id="Resource_u4rrk"]
+script = ExtResource("4_m6we7")
+objetivo = Vector2i(0, 2)
+descripcion = "Terminar en sendero 1, valle 3 (1, 3)"
+metadata/_custom_type_script = "uid://pv2d7rfe0lwx"
+
+[sub_resource type="Resource" id="Resource_m6we7"]
+script = ExtResource("5_2cil2")
+tipo = 2
+pos = Vector2i(0, 2)
+metadata/_custom_type_script = "uid://cxktrvmf0g666"
+
+[sub_resource type="Resource" id="Resource_2cil2"]
+script = ExtResource("1_hmuxj")
+elementos_mapa = Array[ExtResource("5_2cil2")]([SubResource("Resource_m6we7")])
+condiciones_victoria = Array[ExtResource("2_xfcov")]([SubResource("Resource_xfcov"), SubResource("Resource_u4rrk")])
+metadata/_custom_type_script = "uid://bwftnkpaxkcgc"
+
+[sub_resource type="Resource" id="Resource_e341u"]
+script = ExtResource("3_u4rrk")
+tipo = "llaves"
+descripcion = "Tener 1 llave"
+metadata/_custom_type_script = "uid://2g81v5mgvo8i"
+
+[sub_resource type="Resource" id="Resource_xs8h7"]
+script = ExtResource("4_m6we7")
+objetivo = Vector2i(0, 2)
+descripcion = "Terminar en sendero 1, valle 3 (1, 3)"
+metadata/_custom_type_script = "uid://pv2d7rfe0lwx"
+
+[sub_resource type="Resource" id="Resource_hmf61"]
+script = ExtResource("5_2cil2")
+tipo = 1
+pos = Vector2i(0, 1)
+metadata/_custom_type_script = "uid://cxktrvmf0g666"
+
+[sub_resource type="Resource" id="Resource_bg05f"]
+script = ExtResource("1_hmuxj")
+elementos_mapa = Array[ExtResource("5_2cil2")]([SubResource("Resource_hmf61")])
+condiciones_victoria = Array[ExtResource("2_xfcov")]([SubResource("Resource_e341u"), SubResource("Resource_xs8h7")])
+metadata/_custom_type_script = "uid://bwftnkpaxkcgc"
+
+[resource]
+script = ExtResource("2_b7dlw")
+id = "e0eebc99-9c0b-4ef8-bb6d-6bb9bd380a21"
+numero = 11
+titulo = "Tutorial 11: Llaves y Cofres"
+descripcion = "¡Tesoros! Por el camino puedes encontrar cofres que te otorgarán 5 monedas al abrirlos, pero necesitas una llave para ello. Utiliza los sensores hayLlave, hayCofre y tengoLlave para evaluar, y la primitiva abrirCofre si tienes llave y existe dicho cofre. Avanza una casilla y busca una llave, luego avanza una casilla más y abre un cofre si existe."
+dificultad_mision = "Media"
+es_tutorial = true
+casos_de_prueba = Array[ExtResource("1_hmuxj")]([SubResource("Resource_enj7v"), SubResource("Resource_2cil2"), SubResource("Resource_bg05f")])
+metadata/_custom_type_script = "uid://7dwqqmri6ibf"

@@ -1,0 +1,97 @@
+[gd_resource type="Resource" script_class="DefinicionMision" format=3 uid="uid://1c3i73swgbjg"]
+
+[ext_resource type="Script" uid="uid://bwftnkpaxkcgc" path="res://scripts/misiones/caso_prueba_mision.gd" id="1_3rwd4"]
+[ext_resource type="Script" uid="uid://7rau7grlkedi" path="res://scripts/misiones/condicion_mision.gd" id="2_56nrd"]
+[ext_resource type="Script" uid="uid://7dwqqmri6ibf" path="res://scripts/misiones/definicion_mision.gd" id="2_i2syi"]
+[ext_resource type="Script" uid="uid://pv2d7rfe0lwx" path="res://scripts/misiones/condiciones/condicion_llegar_a.gd" id="3_jmb0u"]
+[ext_resource type="Script" uid="uid://2g81v5mgvo8i" path="res://scripts/misiones/condiciones/condicion_recolectar.gd" id="4_17old"]
+[ext_resource type="Script" uid="uid://cxktrvmf0g666" path="res://scripts/misiones/elemento_mision.gd" id="5_gmf78"]
+
+[sub_resource type="Resource" id="Resource_1gmki"]
+script = ExtResource("3_jmb0u")
+objetivo = Vector2i(0, 5)
+descripcion = "Terminar en sendero 1, valle 6 (1, 6)"
+metadata/_custom_type_script = "uid://pv2d7rfe0lwx"
+
+[sub_resource type="Resource" id="Resource_premf"]
+script = ExtResource("4_17old")
+descripcion = "Recolectar 1 moneda"
+metadata/_custom_type_script = "uid://2g81v5mgvo8i"
+
+[sub_resource type="Resource" id="Resource_c6oqd"]
+script = ExtResource("5_gmf78")
+pos = Vector2i(0, 3)
+metadata/_custom_type_script = "uid://cxktrvmf0g666"
+
+[sub_resource type="Resource" id="Resource_eu72v"]
+script = ExtResource("5_gmf78")
+tipo = 4
+pos = Vector2i(0, 4)
+metadata/_custom_type_script = "uid://cxktrvmf0g666"
+
+[sub_resource type="Resource" id="Resource_qtudl"]
+script = ExtResource("1_3rwd4")
+elementos_mapa = Array[ExtResource("5_gmf78")]([SubResource("Resource_c6oqd"), SubResource("Resource_eu72v")])
+condiciones_victoria = Array[ExtResource("2_56nrd")]([SubResource("Resource_1gmki"), SubResource("Resource_premf")])
+metadata/_custom_type_script = "uid://bwftnkpaxkcgc"
+
+[sub_resource type="Resource" id="Resource_etu62"]
+script = ExtResource("3_jmb0u")
+objetivo = Vector2i(0, 3)
+descripcion = "Terminar en sendero 1, valle 4 (1, 4)"
+metadata/_custom_type_script = "uid://pv2d7rfe0lwx"
+
+[sub_resource type="Resource" id="Resource_ejkxi"]
+script = ExtResource("4_17old")
+descripcion = "Recolectar 1 moneda"
+metadata/_custom_type_script = "uid://2g81v5mgvo8i"
+
+[sub_resource type="Resource" id="Resource_yydxk"]
+script = ExtResource("5_gmf78")
+pos = Vector2i(0, 3)
+metadata/_custom_type_script = "uid://cxktrvmf0g666"
+
+[sub_resource type="Resource" id="Resource_sh4h4"]
+script = ExtResource("1_3rwd4")
+elementos_mapa = Array[ExtResource("5_gmf78")]([SubResource("Resource_yydxk")])
+condiciones_victoria = Array[ExtResource("2_56nrd")]([SubResource("Resource_etu62"), SubResource("Resource_ejkxi")])
+metadata/_custom_type_script = "uid://bwftnkpaxkcgc"
+
+[sub_resource type="Resource" id="Resource_js2qo"]
+script = ExtResource("3_jmb0u")
+objetivo = Vector2i(0, 5)
+descripcion = "Terminar en sendero 1, valle 6 (1, 6)"
+metadata/_custom_type_script = "uid://pv2d7rfe0lwx"
+
+[sub_resource type="Resource" id="Resource_epu5s"]
+script = ExtResource("5_gmf78")
+tipo = 4
+pos = Vector2i(0, 4)
+metadata/_custom_type_script = "uid://cxktrvmf0g666"
+
+[sub_resource type="Resource" id="Resource_rdqk0"]
+script = ExtResource("1_3rwd4")
+elementos_mapa = Array[ExtResource("5_gmf78")]([SubResource("Resource_epu5s")])
+condiciones_victoria = Array[ExtResource("2_56nrd")]([SubResource("Resource_js2qo")])
+metadata/_custom_type_script = "uid://bwftnkpaxkcgc"
+
+[sub_resource type="Resource" id="Resource_hm8ml"]
+script = ExtResource("3_jmb0u")
+objetivo = Vector2i(3, 3)
+descripcion = "Terminar en sendero 3, valle 3 (3, 3)"
+metadata/_custom_type_script = "uid://pv2d7rfe0lwx"
+
+[sub_resource type="Resource" id="Resource_jacan"]
+script = ExtResource("1_3rwd4")
+condiciones_victoria = Array[ExtResource("2_56nrd")]([SubResource("Resource_hm8ml")])
+metadata/_custom_type_script = "uid://bwftnkpaxkcgc"
+
+[resource]
+script = ExtResource("2_i2syi")
+id = "b7eebc99-9c0b-4ef8-bb6d-6bb9bd380a18"
+numero = 8
+titulo = "Tutorial 8: Decisiones 4 (OR)"
+descripcion = "Más decisiones... Así como el Emblema del Jucio te permite evaluar si se cumplen si o si dos condiciones, tambien te permite evaluar si se cumple al menos una de ellas con la palabra clave OR entre proposiciones. Avanza 3 casillas, si hay una moneda o hay un obstaculo, haz un giro de 360 grados, recoge la moneda y salta el obstáculo. Sino, gira a la derecha y avanza 3 casillas más."
+dificultad_mision = "Media"
+casos_de_prueba = Array[ExtResource("1_3rwd4")]([SubResource("Resource_qtudl"), SubResource("Resource_sh4h4"), SubResource("Resource_rdqk0"), SubResource("Resource_jacan")])
+metadata/_custom_type_script = "uid://7dwqqmri6ibf"

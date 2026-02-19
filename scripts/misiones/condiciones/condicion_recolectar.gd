@@ -6,7 +6,10 @@ class_name CondicionRecolectar extends CondicionMision
 func _init(t: String = "monedas", cant: int = 1):
 	tipo = t
 	cantidad = cant
-	descripcion = "Tener " + str(cant) + " " + tipo
+	if tipo == "cofres":
+		descripcion = "Abrir " + str(cant) + " cofre(s)"
+	else:
+		descripcion = "Tener " + str(cant) + " " + tipo
 
 func verificar(j, _g, _e, _l) -> bool:
 	return j.inventario.get(tipo, 0) >= cantidad

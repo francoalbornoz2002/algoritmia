@@ -3,6 +3,7 @@ extends Node2D
 # --- REFERENCIAS ---
 @export var tablero: Node2D
 @export var mapa_visual: TileMapLayer
+@export var mapa_agua: TileMapLayer
 @export var jugador: CharacterBody2D
 @export var entidades_container: Node2D
 var analista_dificultad: AnalistaDificultad
@@ -279,6 +280,7 @@ func _preparar_caso_prueba(indice: int):
 	# 1. Limpiar escenario anterior
 	_limpiar_entidades()
 	GridManager.limpiar_datos()
+	if mapa_agua: mapa_agua.clear()
 	logs_consola.clear()
 	
 	# 2. Reiniciar Jugador
@@ -306,6 +308,14 @@ func spawn_elemento(pos: Vector2i, tipo):
 	# Configuramos visual y lógicamente
 	nuevo_elemento.configurar(tipo, pos, semilla_mision)
 	
+	# --- Lógica de Agua bajo el Puente ---
+	if tipo == ElementoTablero.Tipo.PUENTE and mapa_agua:
+		var fila_visual = (GridManager.FILAS_MAX - 1) - pos.y
+		var pos_mapa = Vector2i(pos.x, fila_visual)
+		# Usamos específicamente el tile (1, 3) para el agua para evitar piedras randomizadas
+		var coords_tile = Vector2i(1, 3)
+		mapa_agua.set_cell(pos_mapa, 0, coords_tile)
+
 	# Registramos en la memoria del GridManager
 	GridManager.registrar_objeto(pos, nuevo_elemento)
 
@@ -384,6 +394,9 @@ func _ejecutar_caso_actual():
 	
 	# Pequeña pausa para que se asienten los nodos
 	await get_tree().process_frame
+	
+	# Pausa para que la cámara se acomode y el jugador vea el inicio del caso
+	await get_tree().create_timer(1).timeout
 	
 	# 2. Inyectar código al ejecutor
 	var codigo_fuente = code_edit.text
