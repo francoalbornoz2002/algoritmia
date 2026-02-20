@@ -284,10 +284,10 @@ func saltar():
 	if obstaculo == null:
 		consola_mensaje_enviado.emit("No hay obstáculo para saltar.", "ADVERTENCIA")
 		# Pequeño salto en el lugar (feedback visual)
-		_reproducir_anim("caminar")
+		_reproducir_anim("saltar")
 		if sprite_personaje:
 			var tween_arc = create_tween()
-			var altura_salto = 12
+			var altura_salto = 24
 			tween_arc.tween_property(sprite_personaje, "position:y", -altura_salto, TIEMPO_MOVIMIENTO / 2).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
 			tween_arc.tween_property(sprite_personaje, "position:y", 0, TIEMPO_MOVIMIENTO / 2).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
 		await get_tree().create_timer(TIEMPO_MOVIMIENTO).timeout
@@ -307,8 +307,7 @@ func saltar():
 
 	# 4. Éxito: Movimiento de Salto (Tween complejo que simule salto)
 	print("¡Saltando!")
-	# Como no hay animación de salto, usamos caminar
-	_reproducir_anim("caminar")
+	_reproducir_anim("saltar")
 	
 	# Animación de salto simple (Mover Y arriba y luego abajo, mientras avanza X/Y)
 	var destino_pixel = GridManager.grid_to_world(celda_destino)
@@ -323,7 +322,7 @@ func saltar():
 	# Simulación de arco de salto (Moviendo el sprite localmente hacia arriba y abajo)
 	if sprite_personaje:
 		var tween_arc = create_tween()
-		var altura_salto = 24 # Pixeles hacia arriba
+		var altura_salto = 56 # Pixeles hacia arriba
 		tween_arc.tween_property(sprite_personaje, "position:y", -altura_salto, TIEMPO_MOVIMIENTO / 2).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
 		tween_arc.tween_property(sprite_personaje, "position:y", 0, TIEMPO_MOVIMIENTO / 2).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
 	
