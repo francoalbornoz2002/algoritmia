@@ -291,8 +291,6 @@ func _preparar_caso_prueba(indice: int):
 	# 3. Spawnear Elementos
 	for elemento in caso.elementos_mapa:
 		spawn_elemento(elemento.pos, elemento.tipo)
-		
-	agregar_mensaje_consola("--- Cargando Caso de Prueba " + str(indice + 1) + " ---", "SISTEMA")
 
 func _limpiar_entidades():
 	for child in entidades_container.get_children():
@@ -375,6 +373,7 @@ func _on_ejecutar_pressed():
 	
 	limpiar_errores_editor()
 	limpiar_consola_visual()
+	agregar_mensaje_consola("--- Iniciando ejecución ---", "SISTEMA")
 	
 	# Avisar al analista que empieza un nuevo intento
 	if analista_dificultad:
@@ -399,6 +398,8 @@ func _ejecutar_caso_actual():
 	
 	# 1. Resetear el tablero para el caso actual
 	_preparar_caso_prueba(caso_actual_idx)
+	agregar_mensaje_consola("--- Ejecutando Caso de Prueba " + str(caso_actual_idx + 1) + " ---", "SISTEMA")
+
 	
 	# Pequeña pausa para que se asienten los nodos
 	await get_tree().process_frame
