@@ -8,6 +8,11 @@ extends Control
 @export var spinner: TextureRect
 @export var boton_aceptar_sync: Button
 
+@export_group("Modal Misión Especial")
+@export var capa_modal_especial: CanvasLayer
+@export var btn_aceptar_especial: Button
+@export var btn_cancelar_especial: Button
+
 # URL base del backend (ajustar si cambia el puerto/host)
 const API_BASE_URL = "http://localhost:3000/api"
 
@@ -24,9 +29,18 @@ func _ready():
 	if boton_aceptar_sync:
 		boton_aceptar_sync.pressed.connect(_on_boton_aceptar_sync_pressed)
 	
+	if capa_modal_especial:
+		capa_modal_especial.visible = false
+		
+	if btn_aceptar_especial:
+		btn_aceptar_especial.pressed.connect(_iniciar_mision_especial)
+		
+	if btn_cancelar_especial:
+		btn_cancelar_especial.pressed.connect(_cerrar_modal_especial)
+	
 	# Iniciamos sincronización si hay alumno logueado
-	#if DatabaseManager.obtener_id_alumno_actual() != "":
-	#	_iniciar_sincronizacion_con_ui()
+	if DatabaseManager.obtener_id_alumno_actual() != "":
+		_iniciar_sincronizacion_con_ui()
 	else:
 		# Si es invitado (no hay sync), verificamos inactividad directamente
 		_verificar_inactividad()
@@ -151,29 +165,28 @@ func _verificar_inactividad():
 func _ofrecer_mision_especial():
 	print("--- Detectada inactividad > 48hs. Ofreciendo misión especial ---")
 	
-	# Creamos un diálogo de confirmación en tiempo de ejecución
-	var confirm = ConfirmationDialog.new()
-	confirm.title = "¡Bienvenido de vuelta!"
-	confirm.dialog_text = "¡Han pasado más de 48hs desde tu última misión!\n\nEl sistema te ofrece una Misión Especial de Retorno.\nSi la aceptas, ganarás DOBLE EXP y ESTRELLAS.\n\n¿Aceptas el desafío?"
-	confirm.get_ok_button().text = "¡Sí, aceptar!"
-	confirm.get_cancel_button().text = "No, gracias"
-	confirm.initial_position = Window.WINDOW_INITIAL_POSITION_CENTER_PRIMARY_SCREEN
-	
-	# Conectamos la señal de "Aceptar"
-	confirm.confirmed.connect(_iniciar_mision_especial)
-	
-	add_child(confirm)
-	confirm.popup()
+	if capa_modal_especial:
+		capa_modal_especial.show()
+		# Animación simple de entrada
+		var panel = capa_modal_especial.get_node_or_null("ControlModal/PanelFondo")
+		if panel:
+			panel.scale = Vector2(0.8, 0.8)
+			var tween = create_tween()
+			tween.tween_property(panel, "scale", Vector2.ONE, 0.3).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+
+func _cerrar_modal_especial():
+	if capa_modal_especial:
+		capa_modal_especial.hide()
 
 func _iniciar_mision_especial():
 	# --- HARDCODE: Misión Especial de Prueba ---
 	var mision = DefinicionMision.new()
 	mision.id = DatabaseManager.generar_uuid_v4()
 	mision.titulo = "Misión de Retorno al Juego"
-	mision.descripcion = "¡Has vuelto! Completa este desafío para obtener DOBLE experiencia y estrellas. Recorre el Sendero 3. Tu objetivo es recolecta todas las monedas, elimina a cualquier enemigo y elude obstáculos."
+	mision.descripcion = "¡Has vuelto! Completa este desafío para obtener DOBLE experiencia y estrellas. Recorre el Sendero 3. Tu objetivo es recolectar todas las monedas, eliminar a cualquier enemigo y eludir los obstáculos."
 	mision.es_mision_especial = true
 	mision.tamano_mapa = Vector2i(25, 25)
-	mision.dificultad_mision = "Media"
+	mision.dificultad_mision = "Medio"
 
 	# CASO 1: 5 monedas y 2 enemigos en Sendero 3 (x=2)
 	var caso1 = CasoPruebaMision.new()

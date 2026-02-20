@@ -468,7 +468,8 @@ func _victoria_total():
 	
 	# 1. Calcular Recompensas con la nueva lógica
 	var resultado = calcular_resultado_final()
-	var estrellas_finales = resultado["estrellas"]
+	var estrellas_base = resultado["estrellas"] # 1, 2 o 3 (Rendimiento real)
+	var estrellas_db = estrellas_base # Lo que guardaremos (puede tener bonus)
 	var exp_final = resultado["exp"]
 	
 	# 2. Guardado en BD y Lógica Diferenciada
@@ -478,13 +479,13 @@ func _victoria_total():
 			agregar_mensaje_consola("¡BONUS MISIÓN ESPECIAL! (x2 Recompensas)", "SISTEMA")
 			
 			# Multiplicar recompensas
-			estrellas_finales *= 2
+			estrellas_db *= 2
 			exp_final *= 2
 			
 			DatabaseManager.registrar_mision_especial_local(
 				mision_actual_def.titulo,
 				mision_actual_def.descripcion,
-				estrellas_finales,
+				estrellas_db,
 				exp_final,
 				intentos_totales
 			)
@@ -492,19 +493,20 @@ func _victoria_total():
 		else:
 			DatabaseManager.registrar_mision_local(
 				mision_actual_def.id,
-				estrellas_finales,
+				estrellas_db,
 				exp_final,
 				intentos_totales
 			)
 		
 		# 3. Procesar Dificultades para ambos tipos de misión
 		if analista_dificultad:
-			# Delegamos al analista el procesamiento del TOTAL de la sesión según las estrellas
-			analista_dificultad.procesar_victoria_segun_estrellas(estrellas_finales)
+			# IMPORTANTE: Al analista le pasamos el rendimiento REAL (base), no el duplicado.
+			analista_dificultad.procesar_victoria_segun_estrellas(estrellas_base)
 	
 	# 5. MOSTRAR POPUP DE VICTORIA
 	await get_tree().create_timer(1.0).timeout
-	mostrar_popup_victoria(estrellas_finales, exp_final)
+	# A la UI le pasamos las estrellas base para que muestre la textura correcta (1, 2 o 3)
+	mostrar_popup_victoria(estrellas_base, exp_final)
 
 func _manejar_fallo(mensaje: String):
 	juego_fallido = true
@@ -633,14 +635,14 @@ func calcular_resultado_final() -> Dictionary:
 	if intentos_totales == 1:
 		puntuacion -= 0 # Sin penalización
 	elif intentos_totales <= 3:
-		puntuacion -= 15
-		print("Evaluación: -15 pts por intentos (%d)" % intentos_totales)
+		puntuacion -= 10
+		print("Evaluación: -10 pts por intentos (%d)" % intentos_totales)
 	elif intentos_totales <= 5:
-		puntuacion -= 30
-		print("Evaluación: -30 pts por intentos (%d)" % intentos_totales)
+		puntuacion -= 20
+		print("Evaluación: -20 pts por intentos (%d)" % intentos_totales)
 	else:
-		puntuacion -= 50
-		print("Evaluación: -50 pts por intentos (%d)" % intentos_totales)
+		puntuacion -= 35
+		print("Evaluación: -35 pts por intentos (%d)" % intentos_totales)
 	
 	# 2. Penalización por Calidad de Código (Más granular)
 	if analista_dificultad:
@@ -659,7 +661,7 @@ func calcular_resultado_final() -> Dictionary:
 
 	# 3. Conversión de Puntuación a Estrellas
 	var estrellas = 1
-	if puntuacion >= 85: estrellas = 3
+	if puntuacion >= 80: estrellas = 3
 	elif puntuacion >= 50: estrellas = 2
 	
 	# 4. Cálculo de XP (NUEVA FÓRMULA)

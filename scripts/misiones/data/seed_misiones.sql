@@ -9,184 +9,122 @@ INSERT INTO
         descripcion,
         dificultad_mision
     )
-VALUES
-    -- TEMA 1: SECUENCIA
-    (
-        'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
+VALUES (
+        '9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d',
         1,
-        'Secuencia 1: El Primer Paso',
-        'Todo viaje comienza con un paso. Tu objetivo es simple: avanza 3 casillas hacia el norte para adentrarte en el Santuario.',
+        'Tutorial 1: Movimiento Básico',
+        '¡Comienza el viaje! Comencemos por lo básico. Utiliza las primitivas "avanzar" y "derecha" para recorrer las celdas indicadas en el mapa para terminar donde empezaste.',
         'Facil'
     ),
     (
         'b1eebc99-9c0b-4ef8-bb6d-6bb9bd380a12',
         2,
-        'Secuencia 2: El Giro Táctico',
-        'El camino no siempre es recto. Avanza 2 pasos, gira a la derecha y avanza 2 pasos más para rodear la estructura antigua.',
+        'Tutorial 2: Recolección',
+        '¡Monedas! Avanza 3 casillas hacia adelante y utiliza la primitiva ''recogerMoneda'' para recolectar las monedas en el mapa.',
         'Facil'
     ),
     (
         'c2eebc99-9c0b-4ef8-bb6d-6bb9bd380a13',
         3,
-        'Secuencia 3: Salto de Fe',
-        'Una Raíz Enredante bloquea tu camino. No puedes atravesarla, debes saltarla. Avanza, salta el obstáculo y posiciónate en la meta.',
+        'Tutorial 3: Salto y obstáculos',
+        '¡Atención! En tu viaje encontrarás obstáculos. Cuando estés frente a uno, usa la primitiva ''saltar'' para evadirlo. Avanza y evade para recoger la moneda que se encuentra al final de los obstáculos.',
         'Facil'
     ),
     (
         'd3eebc99-9c0b-4ef8-bb6d-6bb9bd380a14',
         4,
-        'Secuencia 4: Limpieza de Bugs',
-        'Un Bug bloquea el pasillo. Los Bugs no se pueden saltar. Debes avanzar, atacar para eliminarlo y luego ocupar su lugar.',
+        'Tutorial 4: Enemigos',
+        '¡Cuidado! Hay muchos monstruos asechando. Cada 2 casillas encontrarás un enemigo, avanza una vez y utiliza la primitiva ''atacar'' para derrotar a los enemigos y recolectar la moneda al final.',
         'Facil'
     ),
     (
         'e4eebc99-9c0b-4ef8-bb6d-6bb9bd380a15',
         5,
-        'Secuencia 5: Recolección',
-        'Los recursos son vitales. Avanza por el sendero, recoge la moneda y luego la llave que se encuentra más adelante.',
+        'Tutorial 5: Decisiones 1',
+        'Todos los días tomamos decisiones, donde sea y en cualquier lugar, y aqui no es la excepción. Avanza 3 casillas y utiliza el ''Emblema del Juicio'' con los sensores ''hayObstaculo'' y ''hayMoneda'' para decidir si ejecutar o no ''recogerMoneda'' o ''saltar''. ¡Prepara bien tu algoritmo! el mapa cambiará su composición de manera inesperada...',
         'Facil'
     ),
-    -- TEMA 2: BUCLES
     (
         'f5eebc99-9c0b-4ef8-bb6d-6bb9bd380a16',
         6,
-        'Bucles 1: El Sendero Largo',
-        'El pasillo es largo y tedioso. Usa el ''Ritual de la Perseverancia'' (Repetir) para avanzar 8 pasos sin escribir la instrucción 8 veces.',
-        'Medio'
+        'Tutorial 6: Decisiones 2',
+        '¡Más decisiones!. El emblema del juicio no solo sirve para hacer algo si y solo si se cumple algo, tambien puedes especificar si quieres hacer OTRA COSA si no se cumple dicha condición. Avanza 3 casillas y utiliza el sensor ''hayEnemigo'' para verificar si hay un enemigo. Si hay, atácalo, gira a la dercha y avanza dos casillas más. Sino, sigue tu camino y avanza 3 casillas más.',
+        'Facil'
     ),
     (
         'a6eebc99-9c0b-4ef8-bb6d-6bb9bd380a17',
         7,
-        'Bucles 2: Caminata Cauta',
-        'Debes llegar hasta el final del valle (casilla 14), pero no sabes exactamente cuántos pasos son. Usa ''Mientras posValle < 14'' para avanzar seguro.',
+        'Tutorial 7: Decisiones 3 (AND)',
+        '¡Decisiones compuestas! El Emblema del Juicio es bastante poderoso y te permite evaluar más de una condición con la palabra clave AND entre proposiciones. Avanza 3 casillas, si hay una moneda y un obstáculo en frente, recoge la moneda y salta el obstáculo. Si no se cumplen esas condiciones, gira hacia atrás y vuelve donde comenzaste.',
         'Medio'
     ),
     (
         'b7eebc99-9c0b-4ef8-bb6d-6bb9bd380a18',
         8,
-        'Bucles 3: Barrido de Monedas',
-        'Hay una fila de 5 monedas frente a ti. Crea un bucle que repita la acción de ''recogerMoneda'' y ''avanzar'' para obtenerlas todas.',
+        'Tutorial 8: Decisiones 4 (OR)',
+        'Más decisiones... Así como el Emblema del Jucio te permite evaluar si se cumplen si o si dos condiciones, tambien te permite evaluar si se cumple al menos una de ellas con la palabra clave OR entre proposiciones. Avanza 3 casillas, si hay una moneda o hay un obstaculo, haz un giro de 360 grados, recoge la moneda y salta el obstáculo. Sino, gira a la derecha y avanza 3 casillas más.',
         'Medio'
     ),
     (
         'c8eebc99-9c0b-4ef8-bb6d-6bb9bd380a19',
         9,
-        'Bucles 4: Patrulla Cuadrada',
-        'Realiza una patrulla en forma de cuadrado de 3x3 pasos. Usa un bucle que se repita 4 veces: avanzar 3 pasos y girar a la derecha.',
+        'Tutorial 9: Decisiones 5 (NOT)',
+        '¡Negador! Cuánto poder del Emblema del Juicio, hasta te permite negar cualquier proposición. Avanza 3 casillas, si no hay enemigo al asecho, avanza 3 casillas más. Sino, atácalo, da media vuelta y vuelve al inicio.',
         'Medio'
     ),
     (
         'd9eebc99-9c0b-4ef8-bb6d-6bb9bd380a20',
         10,
-        'Bucles 5: El Valle de las Sombras',
-        'El camino está infestado de enemigos invisibles. Avanza hasta el final del sendero (casilla 8), pero ATACA antes de cada paso por seguridad.',
-        'Dificil'
+        'Tutorial 10: Puentes',
+        'El terreno, a veces, tiene fosas de agua y solo se pueden atravesar mediante un puente, pero debes pagar peaje. Necesitas una moneda para poder activar el puente. Avanza 3 casillas y si encuentras una moneda, recógela. Luego, utiliza el sensor hayPuente para ver si hay uno. ¡Recuerda verificar si tienes una moneda para pagar! activa el puente y avanza 3 casillas más. Si no hay puente o no puedes activarlo, da media vuelta y vuelve al inicio.',
+        'Facil'
     ),
-    -- TEMA 3: CONDICIONALES
     (
         'e0eebc99-9c0b-4ef8-bb6d-6bb9bd380a21',
         11,
-        'Condicionales 1: Ojos Abiertos',
-        'Avanza 5 pasos. En cada paso, verifica ''Si hayMoneda'' entonces recógela. No siempre habrá monedas.',
+        'Tutorial 11: Llaves y Cofres',
+        '¡Tesoros! Por el camino puedes encontrar cofres que te otorgarán 5 monedas al abrirlos, pero necesitas una llave para ello. Utiliza los sensores hayLlave, hayCofre y tengoLlave para evaluar, y la primitiva abrirCofre si tienes llave y existe dicho cofre. Avanza una casilla y busca una llave, luego avanza una casilla más y abre un cofre si existe.',
         'Medio'
     ),
     (
         'f1eebc99-9c0b-4ef8-bb6d-6bb9bd380a22',
         12,
-        'Condicionales 2: Defensa Reactiva',
-        'Avanza por el pasillo. Si encuentras un enemigo, atácalo. Si no hay enemigo, simplemente avanza.',
-        'Medio'
+        'Tutorial 12: Repetir',
+        '¡Repito! Puedes usar el Ritual de la Perseverancia para repetir una serie de acciones un numero conocido y finito de veces. ¡Pruébalo! Avanza 10 lugares recolectando las monedas que haya por el camino.',
+        'Facil'
     ),
     (
         'a2eebc99-9c0b-4ef8-bb6d-6bb9bd380a23',
         13,
-        'Condicionales 3: Decisiones del Camino',
-        'El camino puede tener raíces. Usa ''Si hayObstaculo'' para saltar, ''Sino'' avanza normalmente. Repite esto 5 veces.',
+        'Tutorial 13: Bucles 1',
+        '¡Repito! Mejorado. Usando el Orbe del Ciclo Infinito puedes repetir acciones mientras se esté cumpliendo una condición, pero ten cuidado, es un arma de doble filo, si no se utiliza bien ¡Puedes caer en un bucle infinito!. Recorre todo el sendero 1 hasta el final, luego, gira a la derecha y recorre todo el valle 25. ¡Asegurate de no chocar con los límites del mapa! Utiliza los sensores ''posSendero'' y ''posValle'' para evaluar tu posicion actual. En todo tu recorrido tienes que ir recolectando las monedas que encuentres.',
         'Medio'
     ),
     (
         'b3eebc99-9c0b-4ef8-bb6d-6bb9bd380a24',
         14,
-        'Condicionales 4: Lógica Compuesta',
-        'Busca una moneda protegida. Solo si ''hayMoneda AND hayEnemigo'' debes atacar y luego recoger. Si solo hay moneda, recógela sin atacar.',
-        'Dificil'
+        'Tutorial 14: Bucles 2 (AND)',
+        'Al igual que el Emblema del Juicio, El Orbe del Ciclo Infinito también te permite realizar acciones mientras se cumplan dos o más condiciones usando el conectivo AND. Recorre todo el sendero 1 hasta encontrar una moneda. Si la encuentras, recógela, gira a la derecha y recorre el valle hasta el final. Si no encuentra la moneda, da media vuelta y vuelve al inicio.',
+        'Medio'
     ),
     (
         'c4eebc99-9c0b-4ef8-bb6d-6bb9bd380a25',
         15,
-        'Condicionales 5: El Guardián del Cofre',
-        'Avanza hasta el cofre. Verifica ''Si tengoLlave'' para abrirlo. (Nota: Debes haber recogido la llave antes).',
-        'Dificil'
+        'Tutorial 15: Bucles 3 (OR)',
+        'O esto o lo otro... una de dos. Tambien puedes usar el conectivo OR en el Orbe del Ciclo Infinito para evaluar si al menos una de las proposiciones se cumple para continuar. Recorre todo el sendero 1 hasta encontrar una moneda y una llave en la misma casilla, es algo raro de ver asi que habrán enemigos al asecho. Cuando las encuentres, recógelas, gira a la derecha y recorre el valle hasta el final. Si no las encuentras hasta el final del sendero, da media vuelta y vuelve al inicio.',
+        'Medio'
     ),
-    -- TEMA 4: VARIABLES
     (
         'd5eebc99-9c0b-4ef8-bb6d-6bb9bd380a26',
         16,
-        'Variables 1: La Cuenta',
-        'Declara una variable ''pasos'' de tipo entero, asígnale el valor 5 y úsala en un bucle ''Repetir pasos'' para avanzar.',
+        'Tutorial 16: Bucles 4 (NOT)',
+        '¡Negador! Tambien puedes usar el NOT para negar las proposiciones usando el Orbe del Ciclo Infinito. Recorre todo el sendero 1 mientras no encuentres una moneda. Si la encuentras, gira a la derecha y recorre todo el valle en el que te encuentres. Si no la encuentras, da media vuelta y vuelve al inicio.',
         'Medio'
     ),
     (
         'e6eebc99-9c0b-4ef8-bb6d-6bb9bd380a27',
         17,
-        'Variables 2: El Acumulador',
-        'Recorre el camino. Crea una variable ''total'' que inicie en 0. Cada vez que recojas una moneda, aumenta ''total'' en 1.',
-        'Medio'
-    ),
-    (
-        'f7eebc99-9c0b-4ef8-bb6d-6bb9bd380a28',
-        18,
-        'Variables 3: Matemáticas de Combate',
-        'Declara ''fuerza'' = 2 y ''enemigos'' = 2. Calcula ''ataques_necesarios'' multiplicando ambas variables y avanza esa cantidad de pasos.',
-        'Dificil'
-    ),
-    (
-        'a8eebc99-9c0b-4ef8-bb6d-6bb9bd380a29',
-        19,
-        'Variables 4: Límite Variable',
-        'Usa la variable del sistema ''posValle''. Crea un bucle ''Mientras posValle < 6'' para avanzar hasta la casilla 6.',
-        'Medio'
-    ),
-    (
-        'b9eebc99-9c0b-4ef8-bb6d-6bb9bd380a30',
-        20,
-        'Variables 5: Intercambio',
-        'Declara ''A'' = 5 y ''B'' = 2. Intercambia sus valores usando una variable auxiliar ''C'', luego avanza ''A'' pasos (que ahora debe valer 2).',
-        'Dificil'
-    ),
-    -- TEMA 5: PROCEDIMIENTOS
-    (
-        'c0eebc99-9c0b-4ef8-bb6d-6bb9bd380a31',
-        21,
-        'Procedimientos 1: Técnica Básica',
-        'Define un proceso llamado ''avanzar_tres'' que contenga 3 instrucciones ''avanzar''. Llámalo desde el Inicio.',
-        'Medio'
-    ),
-    (
-        'd1eebc99-9c0b-4ef8-bb6d-6bb9bd380a32',
-        22,
-        'Procedimientos 2: Recolección Organizada',
-        'Define ''verificar_casilla'' que recoja moneda si la hay. Úsalo dentro de un bucle mientras avanzas 5 pasos.',
-        'Medio'
-    ),
-    (
-        'e2eebc99-9c0b-4ef8-bb6d-6bb9bd380a33',
-        23,
-        'Procedimientos 3: Parámetros de Entrada',
-        'Define ''mover(E pasos: entero)'' que use un bucle para avanzar la cantidad de pasos recibida. Llámalo con el valor 4.',
-        'Dificil'
-    ),
-    (
-        'f3eebc99-9c0b-4ef8-bb6d-6bb9bd380a34',
-        24,
-        'Procedimientos 4: Parámetros E/S',
-        'Define ''incrementar(ES valor: entero)'' que sume 1 a la variable recibida. Úsalo para contar 3 monedas encontradas.',
-        'Dificil'
-    ),
-    (
-        'a4eebc99-9c0b-4ef8-bb6d-6bb9bd380a35',
-        25,
-        'Procedimientos 5: El Algoritmo Maestro',
-        'Combina todo. Define ''resolver_obstaculo'' (saltar/atacar) y úsalo para superar un camino mixto de enemigos y raíces.',
+        'Mision Prueba',
+        'Recorre todo el sendero 1, recolectando monedas, llaves, abriendo cofres, activando puentes (o rodearlos si no puedes), derrotando enemigos y evadiendo obstáculos.',
         'Dificil'
     );

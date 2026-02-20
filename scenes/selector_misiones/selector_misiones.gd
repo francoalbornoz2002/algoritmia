@@ -47,11 +47,11 @@ func _cargar_misiones():
 
 		# Lógica de Bloqueo Secuencial
 		var esta_bloqueada = false
-		#if i > 0:
-			## Si no es la primera, verificamos si la ANTERIOR está completada
-			#var id_anterior = misiones_db[i - 1]["id"]
-			#if not id_anterior in completadas:
-				#esta_bloqueada = true
+		if i > 0:
+			# Si no es la primera, verificamos si la ANTERIOR está completada
+			var id_anterior = misiones_db[i - 1]["id"]
+			if not id_anterior in completadas:
+				esta_bloqueada = true
 
 		var btn = TextureButton.new()
 		btn.focus_mode = Control.FOCUS_NONE
@@ -86,13 +86,13 @@ func _cargar_misiones():
 		lbl_num.add_theme_color_override("font_outline_color", Color.BLACK)
 		btn.add_child(lbl_num)
 
-		#if esta_bloqueada:
-			#btn.disabled = true
-			#btn.modulate = Color(0.5, 0.5, 0.5, 0.7) # Efecto visual de "apagado"
-			## Opcional: Podrías ocultar el número lbl_num.hide() si prefieres
-		#else:
-		# Conectar señal pasando la misión como argumento
-		btn.pressed.connect(_abrir_modal.bind(mision_recurso))
+		if esta_bloqueada:
+			btn.disabled = true
+			btn.modulate = Color(0.5, 0.5, 0.5, 0.7) # Efecto visual de "apagado"
+			#lbl_num.hide() # Ocultamos el número para que se vea bloqueado
+		else:
+			# Conectar señal pasando la misión como argumento solo si está desbloqueada
+			btn.pressed.connect(_abrir_modal.bind(mision_recurso))
 		
 		grid_container.add_child(btn)
 

@@ -1191,7 +1191,8 @@ text = "Dificultad"
 [node name="LabelDescripción" type="Label" parent="CapaUI/Panel/VBoxContainer" unique_id=428221496]
 layout_mode = 2
 size_flags_vertical = 3
-theme_override_colors/font_color = Color(0.235294, 0.145098, 0.0980392, 1)
+theme_override_colors/font_color = Color(0.11372549, 0.14901961, 0.15686275, 1)
+theme_override_colors/font_shadow_color = Color(0.47843137, 0.47843137, 0.47843137, 1)
 theme_override_constants/outline_size = 0
 theme_override_font_sizes/font_size = 12
 text = "Descripción de la misión"
@@ -1227,14 +1228,17 @@ script = ExtResource("2_u8nxi")
 
 [node name="HBoxContainer" type="HBoxContainer" parent="CapaUI/ZonaCodigo/CodeEdit" unique_id=1233336461]
 layout_mode = 1
-anchors_preset = 1
+anchors_preset = 3
 anchor_left = 1.0
+anchor_top = 1.0
 anchor_right = 1.0
-offset_left = -456.0
-offset_top = 8.0
+anchor_bottom = 1.0
+offset_left = -92.0
+offset_top = -40.0
 offset_right = -8.0
-offset_bottom = 40.0
+offset_bottom = -8.0
 grow_horizontal = 0
+grow_vertical = 0
 theme_override_constants/separation = 12
 alignment = 2
 

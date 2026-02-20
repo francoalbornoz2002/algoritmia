@@ -206,7 +206,7 @@ func procesar_victoria_segun_estrellas(estrellas: int):
 	# 3. Aplicamos el filtro de estrellas sobre una COPIA de los datos
 	var errores_a_registrar = contador_incidencias_acumuladas.duplicate()
 	
-	if estrellas == 3:
+	if estrellas >= 3:
 		print("Analista: 3 Estrellas -> Se descartan todos los errores de la sesión y se aplica Sanación.")
 		errores_a_registrar.clear()
 		DatabaseManager.reducir_dificultad_global(0.5)

@@ -6,6 +6,7 @@
 [ext_resource type="Texture2D" uid="uid://wx55eeehicy4" path="res://assets/ui/grilla_niveles.png" id="3_k8e8i"]
 [ext_resource type="Texture2D" uid="uid://cqi56hhs1vqf4" path="res://assets/ui/botones.png" id="4_57x4j"]
 [ext_resource type="Texture2D" uid="uid://ckoenfvcrafx1" path="res://assets/ui/iconos_varios.png" id="6_57x4j"]
+[ext_resource type="Texture2D" uid="uid://bo8u6t8y4wkqr" path="res://assets/ui/varios.png" id="7_varios"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_panel"]
 atlas = ExtResource("3_k8e8i")
@@ -56,7 +57,7 @@ modulate_color = Color(0.5015567, 0.71323264, 1.3724523, 1)
 atlas = ExtResource("6_57x4j")
 region = Rect2(81, 49, 14, 14)
 
-[node name="Menu" type="Control" unique_id=1728682789 node_paths=PackedStringArray("label_usuario", "http_request_sync", "overlay_sincronizacion", "label_mensaje_sync", "label_error_sync", "spinner", "boton_aceptar_sync")]
+[node name="Menu" type="Control" unique_id=1728682789 node_paths=PackedStringArray("label_usuario", "http_request_sync", "overlay_sincronizacion", "label_mensaje_sync", "label_error_sync", "spinner", "boton_aceptar_sync", "capa_modal_especial", "btn_aceptar_especial", "btn_cancelar_especial")]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -71,6 +72,9 @@ label_mensaje_sync = NodePath("OverlaySincronizacion/VBoxContainer/LabelMensajeS
 label_error_sync = NodePath("OverlaySincronizacion/VBoxContainer/LabelErrorSync")
 spinner = NodePath("OverlaySincronizacion/VBoxContainer/Spinner")
 boton_aceptar_sync = NodePath("OverlaySincronizacion/VBoxContainer/BotonAceptarSync")
+capa_modal_especial = NodePath("CapaModalEspecial")
+btn_aceptar_especial = NodePath("CapaModalEspecial/ControlModal/PanelFondo/VBoxContainer/HBoxContainer/BotonAceptar")
+btn_cancelar_especial = NodePath("CapaModalEspecial/ControlModal/PanelFondo/VBoxContainer/HBoxContainer/BotonCancelar")
 
 [node name="Fondo" type="TextureRect" parent="." unique_id=11408225]
 layout_mode = 1
@@ -245,6 +249,107 @@ custom_minimum_size = Vector2(120, 40)
 layout_mode = 2
 size_flags_horizontal = 4
 text = "Aceptar"
+
+[node name="CapaModalEspecial" type="CanvasLayer" parent="." unique_id=987654321]
+layer = 10
+visible = false
+
+[node name="ControlModal" type="Control" parent="CapaModalEspecial" unique_id=987654322]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="FondoOscuro" type="ColorRect" parent="CapaModalEspecial/ControlModal" unique_id=987654323]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 0.6)
+
+[node name="PanelFondo" type="NinePatchRect" parent="CapaModalEspecial/ControlModal" unique_id=987654324]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -220.0
+offset_top = -160.0
+offset_right = 220.0
+offset_bottom = 160.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("7_varios")
+region_rect = Rect2(5, 96, 38, 37)
+patch_margin_left = 7
+patch_margin_top = 16
+patch_margin_right = 7
+patch_margin_bottom = 5
+
+[node name="VBoxContainer" type="VBoxContainer" parent="CapaModalEspecial/ControlModal/PanelFondo" unique_id=987654325]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -176.0
+offset_top = -173.5
+offset_right = 176.0
+offset_bottom = 183.5
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 18
+alignment = 1
+
+[node name="Titulo" type="Label" parent="CapaModalEspecial/ControlModal/PanelFondo/VBoxContainer" unique_id=987654326]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.05490196, 0.4627451, 0.3882353, 1)
+theme_override_constants/outline_size = 1
+theme_override_font_sizes/font_size = 24
+text = "¡Bienvenido de vuelta!"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Descripcion" type="Label" parent="CapaModalEspecial/ControlModal/PanelFondo/VBoxContainer" unique_id=987654327]
+layout_mode = 2
+size_flags_vertical = 1
+theme_override_colors/font_color = Color(0.11372549, 0.14901961, 0.15686275, 1)
+theme_override_colors/font_shadow_color = Color(0.47843137, 0.47843137, 0.47843137, 1)
+theme_override_font_sizes/font_size = 16
+text = "¡Han pasado más de 48hs desde tu última misión!
+
+El sistema te ofrece una Misión Especial de Retorno.
+Si la aceptas, ganarás DOBLE EXP y ESTRELLAS.
+
+¿Aceptas el desafío?"
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 3
+
+[node name="HBoxContainer" type="HBoxContainer" parent="CapaModalEspecial/ControlModal/PanelFondo/VBoxContainer" unique_id=987654328]
+layout_mode = 2
+theme_override_constants/separation = 20
+alignment = 1
+
+[node name="BotonCancelar" type="Button" parent="CapaModalEspecial/ControlModal/PanelFondo/VBoxContainer/HBoxContainer" unique_id=987654329]
+custom_minimum_size = Vector2(150, 45)
+layout_mode = 2
+focus_mode = 0
+theme_override_font_sizes/font_size = 16
+text = "No, gracias"
+
+[node name="BotonAceptar" type="Button" parent="CapaModalEspecial/ControlModal/PanelFondo/VBoxContainer/HBoxContainer" unique_id=987654330]
+custom_minimum_size = Vector2(150, 45)
+layout_mode = 2
+focus_mode = 0
+theme_override_font_sizes/font_size = 16
+text = "¡Sí, aceptar!"
 
 [connection signal="pressed" from="PanelContenedor/VBoxContainer2/Jugar" to="." method="_on_jugar_pressed"]
 [connection signal="pressed" from="PanelContenedor/VBoxContainer2/Sandbox" to="." method="_on_sandbox_pressed"]
