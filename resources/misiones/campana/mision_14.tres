@@ -1,0 +1,56 @@
+[gd_resource type="Resource" script_class="DefinicionMision" format=3 uid="uid://d20vo0disgfdh"]
+
+[ext_resource type="Script" uid="uid://bwftnkpaxkcgc" path="res://scripts/misiones/caso_prueba_mision.gd" id="1_f2bst"]
+[ext_resource type="Script" uid="uid://7dwqqmri6ibf" path="res://scripts/misiones/definicion_mision.gd" id="2_nlwwl"]
+[ext_resource type="Script" uid="uid://7rau7grlkedi" path="res://scripts/misiones/condicion_mision.gd" id="2_vki40"]
+[ext_resource type="Script" uid="uid://2g81v5mgvo8i" path="res://scripts/misiones/condiciones/condicion_recolectar.gd" id="3_sdcf8"]
+[ext_resource type="Script" uid="uid://pv2d7rfe0lwx" path="res://scripts/misiones/condiciones/condicion_llegar_a.gd" id="4_fi4il"]
+[ext_resource type="Script" uid="uid://cxktrvmf0g666" path="res://scripts/misiones/elemento_mision.gd" id="5_dpqk7"]
+
+[sub_resource type="Resource" id="Resource_xjhhd"]
+script = ExtResource("3_sdcf8")
+descripcion = "Recolectar 1 moneda"
+metadata/_custom_type_script = "uid://2g81v5mgvo8i"
+
+[sub_resource type="Resource" id="Resource_i28j0"]
+script = ExtResource("4_fi4il")
+objetivo = Vector2i(24, 15)
+descripcion = "Terminar en sendero 25, valle 16 (25, 16)"
+metadata/_custom_type_script = "uid://pv2d7rfe0lwx"
+
+[sub_resource type="Resource" id="Resource_r054o"]
+script = ExtResource("5_dpqk7")
+pos = Vector2i(0, 15)
+metadata/_custom_type_script = "uid://cxktrvmf0g666"
+
+[sub_resource type="Resource" id="Resource_12qcl"]
+script = ExtResource("5_dpqk7")
+pos = Vector2i(0, 18)
+metadata/_custom_type_script = "uid://cxktrvmf0g666"
+
+[sub_resource type="Resource" id="Resource_0hia0"]
+script = ExtResource("1_f2bst")
+elementos_mapa = Array[ExtResource("5_dpqk7")]([SubResource("Resource_r054o"), SubResource("Resource_12qcl")])
+condiciones_victoria = Array[ExtResource("2_vki40")]([SubResource("Resource_xjhhd"), SubResource("Resource_i28j0")])
+metadata/_custom_type_script = "uid://bwftnkpaxkcgc"
+
+[sub_resource type="Resource" id="Resource_mouej"]
+script = ExtResource("4_fi4il")
+descripcion = "Terminar en sendero 1, valle 1 (1, 1)"
+metadata/_custom_type_script = "uid://pv2d7rfe0lwx"
+
+[sub_resource type="Resource" id="Resource_fb6i0"]
+script = ExtResource("1_f2bst")
+condiciones_victoria = Array[ExtResource("2_vki40")]([SubResource("Resource_mouej")])
+metadata/_custom_type_script = "uid://bwftnkpaxkcgc"
+
+[resource]
+script = ExtResource("2_nlwwl")
+id = "b3eebc99-9c0b-4ef8-bb6d-6bb9bd380a24"
+numero = 14
+titulo = "Tutorial 14: Bucles 2"
+descripcion = "Al igual que el Emblema del Juicio, El Orbe del Ciclo Infinito también te permite realizar acciones mientras se cumplan dos o más condiciones usando el conectivo AND. Recorre todo el sendero 1 hasta encontrar una moneda. Si la encuentras, recógela, gira a la derecha y recorre el valle hasta el final. Si no encuentras la moneda, da media vuelta y vuelve al inicio."
+dificultad_mision = "Medio"
+es_tutorial = true
+casos_de_prueba = Array[ExtResource("1_f2bst")]([SubResource("Resource_0hia0"), SubResource("Resource_fb6i0")])
+metadata/_custom_type_script = "uid://7dwqqmri6ibf"

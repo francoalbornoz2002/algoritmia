@@ -1,0 +1,57 @@
+[gd_resource type="Resource" script_class="DefinicionMision" format=3 uid="uid://bsehh0ruodfid"]
+
+[ext_resource type="Script" uid="uid://bwftnkpaxkcgc" path="res://scripts/misiones/caso_prueba_mision.gd" id="1_agj7n"]
+[ext_resource type="Script" uid="uid://7dwqqmri6ibf" path="res://scripts/misiones/definicion_mision.gd" id="2_b6e65"]
+[ext_resource type="Script" uid="uid://7rau7grlkedi" path="res://scripts/misiones/condicion_mision.gd" id="2_nbdyg"]
+[ext_resource type="Script" uid="uid://pv2d7rfe0lwx" path="res://scripts/misiones/condiciones/condicion_llegar_a.gd" id="3_dknoa"]
+[ext_resource type="Script" uid="uid://2g81v5mgvo8i" path="res://scripts/misiones/condiciones/condicion_recolectar.gd" id="4_4rjq2"]
+[ext_resource type="Script" uid="uid://cxktrvmf0g666" path="res://scripts/misiones/elemento_mision.gd" id="5_fon7p"]
+
+[sub_resource type="Resource" id="Resource_b4gxd"]
+script = ExtResource("3_dknoa")
+objetivo = Vector2i(24, 14)
+descripcion = "Terminar en sendero 25, valle 15 (25, 15)"
+metadata/_custom_type_script = "uid://pv2d7rfe0lwx"
+
+[sub_resource type="Resource" id="Resource_s5lbd"]
+script = ExtResource("4_4rjq2")
+cantidad = 0
+descripcion = "Tener 0 monedas"
+metadata/_custom_type_script = "uid://2g81v5mgvo8i"
+
+[sub_resource type="Resource" id="Resource_74axw"]
+script = ExtResource("5_fon7p")
+pos = Vector2i(0, 14)
+metadata/_custom_type_script = "uid://cxktrvmf0g666"
+
+[sub_resource type="Resource" id="Resource_vlm3x"]
+script = ExtResource("5_fon7p")
+pos = Vector2i(0, 16)
+metadata/_custom_type_script = "uid://cxktrvmf0g666"
+
+[sub_resource type="Resource" id="Resource_k6vwv"]
+script = ExtResource("1_agj7n")
+elementos_mapa = Array[ExtResource("5_fon7p")]([SubResource("Resource_74axw"), SubResource("Resource_vlm3x")])
+condiciones_victoria = Array[ExtResource("2_nbdyg")]([SubResource("Resource_b4gxd"), SubResource("Resource_s5lbd")])
+metadata/_custom_type_script = "uid://bwftnkpaxkcgc"
+
+[sub_resource type="Resource" id="Resource_cxwkt"]
+script = ExtResource("3_dknoa")
+descripcion = "Terminar en sendero 1, valle 1 (1, 1)"
+metadata/_custom_type_script = "uid://pv2d7rfe0lwx"
+
+[sub_resource type="Resource" id="Resource_yea1h"]
+script = ExtResource("1_agj7n")
+condiciones_victoria = Array[ExtResource("2_nbdyg")]([SubResource("Resource_cxwkt")])
+metadata/_custom_type_script = "uid://bwftnkpaxkcgc"
+
+[resource]
+script = ExtResource("2_b6e65")
+id = "d5eebc99-9c0b-4ef8-bb6d-6bb9bd380a26"
+numero = 16
+titulo = "Tutorial 16: Bucles 4"
+descripcion = "¡Negador! Tambien puedes usar el NOT para negar las proposiciones usando el Orbe del Ciclo Infinito. Recorre todo el sendero 1 mientras no encuentres una moneda. Si la encuentras, gira a la derecha y recorre todo el valle en el que te encuentres. Si no la encuentras, da media vuelta y vuelve al inicio."
+dificultad_mision = "Media"
+es_tutorial = true
+casos_de_prueba = Array[ExtResource("1_agj7n")]([SubResource("Resource_k6vwv"), SubResource("Resource_yea1h")])
+metadata/_custom_type_script = "uid://7dwqqmri6ibf"

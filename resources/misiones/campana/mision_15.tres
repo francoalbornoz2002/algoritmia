@@ -1,0 +1,133 @@
+[gd_resource type="Resource" script_class="DefinicionMision" format=3 uid="uid://was3w611l6v5"]
+
+[ext_resource type="Script" uid="uid://bwftnkpaxkcgc" path="res://scripts/misiones/caso_prueba_mision.gd" id="1_s08u3"]
+[ext_resource type="Script" uid="uid://7dwqqmri6ibf" path="res://scripts/misiones/definicion_mision.gd" id="2_53u5s"]
+[ext_resource type="Script" uid="uid://7rau7grlkedi" path="res://scripts/misiones/condicion_mision.gd" id="2_af3af"]
+[ext_resource type="Script" uid="uid://cquibwshmqt00" path="res://scripts/misiones/condiciones/condicion_eliminar_enemigos.gd" id="3_cbcp7"]
+[ext_resource type="Script" uid="uid://2g81v5mgvo8i" path="res://scripts/misiones/condiciones/condicion_recolectar.gd" id="4_a30oo"]
+[ext_resource type="Script" uid="uid://pv2d7rfe0lwx" path="res://scripts/misiones/condiciones/condicion_llegar_a.gd" id="5_er8af"]
+[ext_resource type="Script" uid="uid://cxktrvmf0g666" path="res://scripts/misiones/elemento_mision.gd" id="6_qnv1a"]
+
+[sub_resource type="Resource" id="Resource_fb0y7"]
+script = ExtResource("3_cbcp7")
+metadata/_custom_type_script = "uid://cquibwshmqt00"
+
+[sub_resource type="Resource" id="Resource_bdf6l"]
+script = ExtResource("4_a30oo")
+descripcion = "Recolectar 1 moneda"
+metadata/_custom_type_script = "uid://2g81v5mgvo8i"
+
+[sub_resource type="Resource" id="Resource_yt3uh"]
+script = ExtResource("4_a30oo")
+tipo = "llaves"
+descripcion = "Recolectar 1 llave"
+metadata/_custom_type_script = "uid://2g81v5mgvo8i"
+
+[sub_resource type="Resource" id="Resource_vxfva"]
+script = ExtResource("5_er8af")
+objetivo = Vector2i(24, 14)
+descripcion = "Terminar en sendero 25, valle 15 (25, 15)"
+metadata/_custom_type_script = "uid://pv2d7rfe0lwx"
+
+[sub_resource type="Resource" id="Resource_1t543"]
+script = ExtResource("6_qnv1a")
+pos = Vector2i(0, 14)
+metadata/_custom_type_script = "uid://cxktrvmf0g666"
+
+[sub_resource type="Resource" id="Resource_7j4r4"]
+script = ExtResource("6_qnv1a")
+tipo = 1
+pos = Vector2i(0, 14)
+metadata/_custom_type_script = "uid://cxktrvmf0g666"
+
+[sub_resource type="Resource" id="Resource_2xtxw"]
+script = ExtResource("6_qnv1a")
+tipo = 3
+pos = Vector2i(0, 3)
+metadata/_custom_type_script = "uid://cxktrvmf0g666"
+
+[sub_resource type="Resource" id="Resource_1ut8j"]
+script = ExtResource("6_qnv1a")
+tipo = 3
+pos = Vector2i(0, 5)
+metadata/_custom_type_script = "uid://cxktrvmf0g666"
+
+[sub_resource type="Resource" id="Resource_k6hrc"]
+script = ExtResource("6_qnv1a")
+tipo = 3
+pos = Vector2i(0, 7)
+metadata/_custom_type_script = "uid://cxktrvmf0g666"
+
+[sub_resource type="Resource" id="Resource_v6r1p"]
+script = ExtResource("6_qnv1a")
+tipo = 3
+pos = Vector2i(0, 10)
+metadata/_custom_type_script = "uid://cxktrvmf0g666"
+
+[sub_resource type="Resource" id="Resource_11no7"]
+script = ExtResource("6_qnv1a")
+tipo = 3
+pos = Vector2i(0, 13)
+metadata/_custom_type_script = "uid://cxktrvmf0g666"
+
+[sub_resource type="Resource" id="Resource_d2hhj"]
+script = ExtResource("1_s08u3")
+elementos_mapa = Array[ExtResource("6_qnv1a")]([SubResource("Resource_1t543"), SubResource("Resource_7j4r4"), SubResource("Resource_2xtxw"), SubResource("Resource_1ut8j"), SubResource("Resource_k6hrc"), SubResource("Resource_v6r1p"), SubResource("Resource_11no7")])
+condiciones_victoria = Array[ExtResource("2_af3af")]([SubResource("Resource_fb0y7"), SubResource("Resource_bdf6l"), SubResource("Resource_yt3uh"), SubResource("Resource_vxfva")])
+metadata/_custom_type_script = "uid://bwftnkpaxkcgc"
+
+[sub_resource type="Resource" id="Resource_dsj73"]
+script = ExtResource("3_cbcp7")
+metadata/_custom_type_script = "uid://cquibwshmqt00"
+
+[sub_resource type="Resource" id="Resource_shahy"]
+script = ExtResource("5_er8af")
+descripcion = "Terminar en sendero 1, valle 1 (1, 1)"
+metadata/_custom_type_script = "uid://pv2d7rfe0lwx"
+
+[sub_resource type="Resource" id="Resource_lq20q"]
+script = ExtResource("6_qnv1a")
+tipo = 3
+pos = Vector2i(0, 3)
+metadata/_custom_type_script = "uid://cxktrvmf0g666"
+
+[sub_resource type="Resource" id="Resource_lxtqu"]
+script = ExtResource("6_qnv1a")
+tipo = 3
+pos = Vector2i(0, 5)
+metadata/_custom_type_script = "uid://cxktrvmf0g666"
+
+[sub_resource type="Resource" id="Resource_3e1q7"]
+script = ExtResource("6_qnv1a")
+tipo = 3
+pos = Vector2i(0, 7)
+metadata/_custom_type_script = "uid://cxktrvmf0g666"
+
+[sub_resource type="Resource" id="Resource_gscg5"]
+script = ExtResource("6_qnv1a")
+tipo = 3
+pos = Vector2i(0, 10)
+metadata/_custom_type_script = "uid://cxktrvmf0g666"
+
+[sub_resource type="Resource" id="Resource_lyyww"]
+script = ExtResource("6_qnv1a")
+tipo = 3
+pos = Vector2i(0, 13)
+metadata/_custom_type_script = "uid://cxktrvmf0g666"
+
+[sub_resource type="Resource" id="Resource_jh264"]
+script = ExtResource("1_s08u3")
+elementos_mapa = Array[ExtResource("6_qnv1a")]([SubResource("Resource_lq20q"), SubResource("Resource_lxtqu"), SubResource("Resource_3e1q7"), SubResource("Resource_gscg5"), SubResource("Resource_lyyww")])
+condiciones_victoria = Array[ExtResource("2_af3af")]([SubResource("Resource_dsj73"), SubResource("Resource_shahy")])
+metadata/_custom_type_script = "uid://bwftnkpaxkcgc"
+
+[resource]
+script = ExtResource("2_53u5s")
+id = "c4eebc99-9c0b-4ef8-bb6d-6bb9bd380a25"
+numero = 15
+titulo = "Tutorial 15: Bucles 3"
+descripcion = "O esto o lo otro... una de dos. Tambien puedes usar el conectivo OR en el Orbe del Ciclo Infinito para evaluar si al menos una de las proposiciones se cumple para continuar. Recorre todo el sendero 1 hasta encontrar una moneda y una llave en la misma casilla, es algo raro de ver asi que habrán enemigos al asecho. Cuando las encuentres, recógelas, gira a la derecha y recorre el valle hasta el final. Si no las encuentras hasta el final del sendero, da media vuelta  y vuelve al inicio."
+dificultad_mision = "Media"
+es_tutorial = true
+casos_de_prueba = Array[ExtResource("1_s08u3")]([SubResource("Resource_d2hhj"), SubResource("Resource_jh264")])
+metadata/_custom_type_script = "uid://7dwqqmri6ibf"

@@ -1,0 +1,96 @@
+[gd_resource type="Resource" script_class="DefinicionMision" format=3 uid="uid://boklyog1uw0ha"]
+
+[ext_resource type="Script" uid="uid://bwftnkpaxkcgc" path="res://scripts/misiones/caso_prueba_mision.gd" id="1_i8n3u"]
+[ext_resource type="Script" uid="uid://7rau7grlkedi" path="res://scripts/misiones/condicion_mision.gd" id="2_1tpfy"]
+[ext_resource type="Script" uid="uid://7dwqqmri6ibf" path="res://scripts/misiones/definicion_mision.gd" id="2_c280p"]
+[ext_resource type="Script" uid="uid://pv2d7rfe0lwx" path="res://scripts/misiones/condiciones/condicion_llegar_a.gd" id="3_xmyjb"]
+[ext_resource type="Script" uid="uid://2g81v5mgvo8i" path="res://scripts/misiones/condiciones/condicion_recolectar.gd" id="4_qvr2x"]
+[ext_resource type="Script" uid="uid://cxktrvmf0g666" path="res://scripts/misiones/elemento_mision.gd" id="5_amleg"]
+
+[sub_resource type="Resource" id="Resource_hkrkb"]
+script = ExtResource("3_xmyjb")
+objetivo = Vector2i(24, 24)
+descripcion = "Terminar en sendero 25, valle 25 (25, 25)"
+metadata/_custom_type_script = "uid://pv2d7rfe0lwx"
+
+[sub_resource type="Resource" id="Resource_diutr"]
+script = ExtResource("4_qvr2x")
+cantidad = 12
+descripcion = "Recolectar 12 monedas"
+metadata/_custom_type_script = "uid://2g81v5mgvo8i"
+
+[sub_resource type="Resource" id="Resource_jkcw5"]
+script = ExtResource("5_amleg")
+pos = Vector2i(0, 3)
+metadata/_custom_type_script = "uid://cxktrvmf0g666"
+
+[sub_resource type="Resource" id="Resource_5ul05"]
+script = ExtResource("5_amleg")
+pos = Vector2i(0, 4)
+metadata/_custom_type_script = "uid://cxktrvmf0g666"
+
+[sub_resource type="Resource" id="Resource_1tlos"]
+script = ExtResource("5_amleg")
+pos = Vector2i(0, 6)
+metadata/_custom_type_script = "uid://cxktrvmf0g666"
+
+[sub_resource type="Resource" id="Resource_qec44"]
+script = ExtResource("5_amleg")
+pos = Vector2i(0, 7)
+metadata/_custom_type_script = "uid://cxktrvmf0g666"
+
+[sub_resource type="Resource" id="Resource_3uvnt"]
+script = ExtResource("5_amleg")
+pos = Vector2i(0, 13)
+metadata/_custom_type_script = "uid://cxktrvmf0g666"
+
+[sub_resource type="Resource" id="Resource_54tap"]
+script = ExtResource("5_amleg")
+pos = Vector2i(0, 17)
+metadata/_custom_type_script = "uid://cxktrvmf0g666"
+
+[sub_resource type="Resource" id="Resource_g7acl"]
+script = ExtResource("5_amleg")
+pos = Vector2i(0, 24)
+metadata/_custom_type_script = "uid://cxktrvmf0g666"
+
+[sub_resource type="Resource" id="Resource_vj811"]
+script = ExtResource("5_amleg")
+pos = Vector2i(2, 24)
+metadata/_custom_type_script = "uid://cxktrvmf0g666"
+
+[sub_resource type="Resource" id="Resource_3iwd4"]
+script = ExtResource("5_amleg")
+pos = Vector2i(4, 24)
+metadata/_custom_type_script = "uid://cxktrvmf0g666"
+
+[sub_resource type="Resource" id="Resource_7rqgo"]
+script = ExtResource("5_amleg")
+metadata/_custom_type_script = "uid://cxktrvmf0g666"
+
+[sub_resource type="Resource" id="Resource_gn6ad"]
+script = ExtResource("5_amleg")
+pos = Vector2i(15, 24)
+metadata/_custom_type_script = "uid://cxktrvmf0g666"
+
+[sub_resource type="Resource" id="Resource_odtpd"]
+script = ExtResource("5_amleg")
+pos = Vector2i(24, 24)
+metadata/_custom_type_script = "uid://cxktrvmf0g666"
+
+[sub_resource type="Resource" id="Resource_vni3a"]
+script = ExtResource("1_i8n3u")
+elementos_mapa = Array[ExtResource("5_amleg")]([SubResource("Resource_jkcw5"), SubResource("Resource_5ul05"), SubResource("Resource_1tlos"), SubResource("Resource_qec44"), SubResource("Resource_3uvnt"), SubResource("Resource_54tap"), SubResource("Resource_g7acl"), SubResource("Resource_vj811"), SubResource("Resource_3iwd4"), SubResource("Resource_7rqgo"), SubResource("Resource_gn6ad"), SubResource("Resource_odtpd")])
+condiciones_victoria = Array[ExtResource("2_1tpfy")]([SubResource("Resource_hkrkb"), SubResource("Resource_diutr")])
+metadata/_custom_type_script = "uid://bwftnkpaxkcgc"
+
+[resource]
+script = ExtResource("2_c280p")
+id = "a2eebc99-9c0b-4ef8-bb6d-6bb9bd380a23"
+numero = 13
+titulo = "Tutorial 13: Bucles 1"
+descripcion = "¡Repito! Mejorado. Usando el Orbe del Ciclo Infinito puedes repetir acciones mientras se esté cumpliendo una condición, pero ten cuidado, es un arma de doble filo, si no se utiliza bien ¡Puedes caer en un bucle infinito!. Recorre todo el sendero 1 hasta el final, luego, gira a la derecha y recorre todo el valle 25. ¡Asegurate de no chocar con los límites del mapa! Utiliza los sensores 'posSendero' y 'posValle' para evaluar tu posicion actual. En todo tu recorrido tienes que ir recolectando las monedas que encuentres."
+dificultad_mision = "Media"
+es_tutorial = true
+casos_de_prueba = Array[ExtResource("1_i8n3u")]([SubResource("Resource_vni3a")])
+metadata/_custom_type_script = "uid://7dwqqmri6ibf"

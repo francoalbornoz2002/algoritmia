@@ -2,8 +2,8 @@ class_name JugadorGrid extends CharacterBody2D
 
 # Configuración
 const TIEMPO_MOVIMIENTO = 0.8 # Sincronizado con la animación (8 frames * 0.1s)
-const TIEMPO_GIRO = 0.5
-const TIEMPO_PAUSA_INSTRUCCION = 0.1
+const TIEMPO_GIRO = 0.3
+const TIEMPO_PAUSA_INSTRUCCION = 0.8
 const TIEMPO_ACCION = 0.8 # Tiempo de espera para recolectar/atacar
 
 @export var camara: Camera2D
@@ -18,6 +18,7 @@ var direccion_actual: Vector2i = Vector2i(0, 1) # (0, 1) es ARRIBA lógico
 var inventario = {"monedas": 0, "llaves": 0, "cofres": 0}
 var analista: AnalistaDificultad = null
 var _tween_movimiento: Tween = null
+var _ultimo_fue_avanzar: bool = false
 
 # --- SEÑALES ---
 signal game_over_triggered(mensaje)
@@ -51,13 +52,19 @@ func avanzar():
 	var celda_destino = posicion_actual + direccion_actual
 	_reproducir_anim("caminar")
 	await mover_a_celda(celda_destino)
-	await get_tree().create_timer(TIEMPO_PAUSA_INSTRUCCION).timeout
 	_actualizar_idle()
+	_ultimo_fue_avanzar = true
 	return true
 
 func girar_derecha():
 	if esta_actuando: return
 	esta_actuando = true
+
+	# PAUSA INICIAL: Detenerse antes de girar
+	_actualizar_idle()
+	if _ultimo_fue_avanzar:
+		await get_tree().create_timer(TIEMPO_PAUSA_INSTRUCCION).timeout
+	
 	
 	# 1. CHEQUEO ANTES DE GIRAR
 	if await _verificar_peligro_inminente(false):
@@ -72,9 +79,9 @@ func girar_derecha():
 	
 	# 3. Actualizar animación a la nueva dirección (Idle)
 	_actualizar_idle()
-	await get_tree().create_timer(TIEMPO_GIRO).timeout
-	esta_actuando = false
+	_ultimo_fue_avanzar = false
 	await get_tree().create_timer(TIEMPO_PAUSA_INSTRUCCION).timeout
+	esta_actuando = false
 
 # --- PRIMITIVAS DEL PSEUDOCÓDIGO (Mapa / Teletransporte Seguro) ---
 func intentar_teletransportar(celda_destino: Vector2i):
@@ -103,20 +110,21 @@ func recoger_moneda():
 	if analista: analista.registrar_accion("recogerMoneda")
 	if esta_actuando: return
 	esta_actuando = true
+	_actualizar_idle()
 	
-	# 1. Consultamos qué hay en mi celda actual
-	var objeto = GridManager.obtener_objeto_en_celda(posicion_actual)
+	# 1. Buscamos específicamente una MONEDA en la celda actual
+	var objeto = GridManager.buscar_objeto_por_tipo(posicion_actual, ElementoTablero.Tipo.MONEDA)
 	
 	# 2. Validaciones (Game Over)
 	if objeto == null:
-		consola_mensaje_enviado.emit("Intentaste recoger una moneda, pero aquí no hay nada.", "ADVERTENCIA")
-		await get_tree().create_timer(0.5).timeout
-		esta_actuando = false
-		return
-	
-	if objeto.tipo != ElementoTablero.Tipo.MONEDA:
-		var nombre_real = ElementoTablero.obtener_nombre_tipo(objeto.tipo)
-		consola_mensaje_enviado.emit("Intentaste recoger una moneda, pero aquí hay un " + nombre_real + ".", "ADVERTENCIA")
+		# Feedback mejorado: Si no hay moneda, vemos si hay otra cosa para dar un mensaje útil
+		var otro = GridManager.obtener_objeto_en_celda(posicion_actual)
+		if otro:
+			var nombre_real = ElementoTablero.obtener_nombre_tipo(otro.tipo)
+			consola_mensaje_enviado.emit("Intentaste recoger una moneda, pero aquí hay un " + nombre_real + ".", "ADVERTENCIA")
+		else:
+			consola_mensaje_enviado.emit("Intentaste recoger una moneda, pero aquí no hay nada.", "ADVERTENCIA")
+			
 		await get_tree().create_timer(0.5).timeout
 		esta_actuando = false
 		return
@@ -126,7 +134,7 @@ func recoger_moneda():
 	print("¡Moneda recogida! Monedas totales: ", inventario["monedas"])
 	
 	# Actualizar GridManager (ya no hay objeto aquí)
-	GridManager.quitar_objeto(posicion_actual)
+	GridManager.quitar_objeto(posicion_actual, objeto)
 	
 	# Visualmente borrar el objeto
 	objeto.recoger()
@@ -140,25 +148,25 @@ func recoger_llave():
 	if analista: analista.registrar_accion("recogerLlave")
 	if esta_actuando: return
 	esta_actuando = true
+	_actualizar_idle()
 	
-	var objeto = GridManager.obtener_objeto_en_celda(posicion_actual)
+	var objeto = GridManager.buscar_objeto_por_tipo(posicion_actual, ElementoTablero.Tipo.LLAVE)
 	
 	if objeto == null:
-		consola_mensaje_enviado.emit("Intentaste recoger una llave, pero aquí no hay nada.", "ADVERTENCIA")
-		await get_tree().create_timer(0.5).timeout
-		esta_actuando = false
-		return
-	
-	if objeto.tipo != ElementoTablero.Tipo.LLAVE:
-		var nombre_real = ElementoTablero.obtener_nombre_tipo(objeto.tipo)
-		consola_mensaje_enviado.emit("Intentaste recoger una llave, pero aquí hay un " + nombre_real + ".", "ADVERTENCIA")
+		var otro = GridManager.obtener_objeto_en_celda(posicion_actual)
+		if otro:
+			var nombre_real = ElementoTablero.obtener_nombre_tipo(otro.tipo)
+			consola_mensaje_enviado.emit("Intentaste recoger una llave, pero aquí hay un " + nombre_real + ".", "ADVERTENCIA")
+		else:
+			consola_mensaje_enviado.emit("Intentaste recoger una llave, pero aquí no hay nada.", "ADVERTENCIA")
+			
 		await get_tree().create_timer(0.5).timeout
 		esta_actuando = false
 		return
 	
 	print("¡Llave recogida! Llaves totales: ", inventario["llaves"] + 1)
 	inventario["llaves"] += 1
-	GridManager.quitar_objeto(posicion_actual)
+	GridManager.quitar_objeto(posicion_actual, objeto)
 	objeto.recoger()
 	
 	await get_tree().create_timer(TIEMPO_ACCION).timeout
@@ -169,13 +177,12 @@ func abrir_cofre():
 	if analista: analista.registrar_accion("abrirCofre")
 	if esta_actuando: return
 	esta_actuando = true
+	_actualizar_idle()
 	
-	var objeto = GridManager.obtener_objeto_en_celda(posicion_actual)
+	var objeto = GridManager.buscar_objeto_por_tipo(posicion_actual, ElementoTablero.Tipo.COFRE)
 	
 	# VALIDACIÓN 1: ¿Hay Cofre?
-	if objeto == null or objeto.tipo != ElementoTablero.Tipo.COFRE:
-		var nombre_real = ""
-		if objeto: nombre_real = ElementoTablero.obtener_nombre_tipo(objeto.tipo)
+	if objeto == null:
 		consola_mensaje_enviado.emit("Intentaste abrir un cofre, pero aquí no hay cofre.", "ADVERTENCIA")
 		await get_tree().create_timer(0.5).timeout
 		esta_actuando = false
@@ -194,7 +201,7 @@ func abrir_cofre():
 	inventario["monedas"] += 5 # SUMA +5 MONEDAS (GDD)
 	inventario["cofres"] += 1
 	
-	GridManager.quitar_objeto(posicion_actual)
+	GridManager.quitar_objeto(posicion_actual, objeto)
 	objeto.abrir_cofre() # Usa la función del ElementoTablero
 	
 	await get_tree().create_timer(TIEMPO_ACCION).timeout
@@ -205,30 +212,39 @@ func atacar():
 	if analista: analista.registrar_accion("atacar")
 	if esta_actuando: return
 	esta_actuando = true
+
+	# PAUSA INICIAL
+	_actualizar_idle()
+	if _ultimo_fue_avanzar:
+		await get_tree().create_timer(TIEMPO_PAUSA_INSTRUCCION).timeout
 	
 	# 1. Calculamos la celda que está inmediatamente en frente
 	var celda_objetivo = posicion_actual + direccion_actual
-	var objeto = GridManager.obtener_objeto_en_celda(celda_objetivo)
+	var objeto = GridManager.buscar_objeto_por_tipo(celda_objetivo, ElementoTablero.Tipo.ENEMIGO)
 	
 	# 2. Validar
-	if objeto == null or objeto.tipo != ElementoTablero.Tipo.ENEMIGO:
+	if objeto == null:
 		consola_mensaje_enviado.emit("Atacaste al aire. No hay enemigos.", "ADVERTENCIA")
 		# Ejecutamos la animación igual para dar feedback visual
 		_reproducir_anim("atacar")
 		await get_tree().create_timer(TIEMPO_ACCION).timeout
 		_actualizar_idle()
 		esta_actuando = false
+		await get_tree().create_timer(TIEMPO_ACCION).timeout
 		return
 	
 	# 3. Éxito: Eliminar Enemigo
 	print("¡Enemigo atacado y derrotado!")
 	_reproducir_anim("atacar")
-	GridManager.quitar_objeto(celda_objetivo)
-	objeto.recoger() # Usamos la animación de desaparecer temporalmente
+	# Sincronización: Esperamos 0.3s para que el golpe "conecte" visualmente antes de borrar al enemigo
+	GridManager.quitar_objeto(celda_objetivo, objeto)
+	objeto.recoger(0.3)
+	_ultimo_fue_avanzar = false
 	
 	# Pausa para ver la acción
 	await get_tree().create_timer(TIEMPO_ACCION).timeout
 	_actualizar_idle()
+	await get_tree().create_timer(TIEMPO_ACCION).timeout
 	esta_actuando = false
 
 # --- PRIMITIVAS DEL PSEUDOCÓDIGO (Saltar) ---
@@ -236,16 +252,23 @@ func saltar():
 	if analista: analista.registrar_accion("saltar")
 	if esta_actuando: return
 	esta_actuando = true
+
+	# PAUSA INICIAL
+	_actualizar_idle()
+	if _ultimo_fue_avanzar:
+		await get_tree().create_timer(TIEMPO_PAUSA_INSTRUCCION).timeout
 	
 	# 1. Celda que está inmediatamente en frente (el Obstáculo)
 	var celda_obstaculo = posicion_actual + direccion_actual
-	var obstaculo = GridManager.obtener_objeto_en_celda(celda_obstaculo)
+	var obstaculo = GridManager.buscar_objeto_por_tipo(celda_obstaculo, ElementoTablero.Tipo.OBSTACULO)
+	var enemigo = GridManager.buscar_objeto_por_tipo(celda_obstaculo, ElementoTablero.Tipo.ENEMIGO)
 	
 	# NUEVO: Si es enemigo, muere con animación
-	if obstaculo and obstaculo.tipo == ElementoTablero.Tipo.ENEMIGO:
-		if obstaculo.has_method("reproducir_ataque"):
-			obstaculo.reproducir_ataque()
+	if enemigo:
+		if enemigo.has_method("reproducir_ataque"):
+			enemigo.reproducir_ataque()
 		
+		await get_tree().create_timer(0.3).timeout
 		var tween = create_tween()
 		tween.tween_property(self , "scale", Vector2.ZERO, 0.5)
 		await get_tree().create_timer(0.5).timeout
@@ -255,7 +278,7 @@ func saltar():
 		return
 
 	# 2. Validar
-	if obstaculo == null or obstaculo.tipo != ElementoTablero.Tipo.OBSTACULO:
+	if obstaculo == null:
 		consola_mensaje_enviado.emit("No hay obstáculo para saltar.", "ADVERTENCIA")
 		# Pequeño salto en el lugar (feedback visual)
 		_reproducir_anim("caminar")
@@ -266,6 +289,7 @@ func saltar():
 			tween_arc.tween_property(sprite_personaje, "position:y", 0, TIEMPO_MOVIMIENTO / 2).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
 		await get_tree().create_timer(TIEMPO_MOVIMIENTO).timeout
 		_actualizar_idle()
+		await get_tree().create_timer(TIEMPO_MOVIMIENTO).timeout
 		esta_actuando = false
 		return true
 		
@@ -303,7 +327,10 @@ func saltar():
 	# Actualizamos la posición lógica al final
 	posicion_actual = celda_destino
 	await _tween_movimiento.finished # Esperar animación
+	# PAUSA FINAL (Aterrizaje)
 	_actualizar_idle()
+	_ultimo_fue_avanzar = false
+	await get_tree().create_timer(TIEMPO_PAUSA_INSTRUCCION).timeout
 	esta_actuando = false
 	return true
 
@@ -312,16 +339,14 @@ func activar_puente():
 	if analista: analista.registrar_accion("activarPuente")
 	if esta_actuando: return
 	esta_actuando = true
+	_actualizar_idle()
 	
 	# 1. Celda en frente
 	var celda_en_frente = posicion_actual + direccion_actual
-	var objeto = GridManager.obtener_objeto_en_celda(celda_en_frente)
+	var objeto = GridManager.buscar_objeto_por_tipo(celda_en_frente, ElementoTablero.Tipo.PUENTE)
 	
 	# VALIDACIÓN 1: ¿Hay Puente?
-	# Game Over si no hay puente o si hay otro objeto
-	if objeto == null or objeto.tipo != ElementoTablero.Tipo.PUENTE:
-		var nombre_real = ""
-		if objeto: nombre_real = ElementoTablero.obtener_nombre_tipo(objeto.tipo)
+	if objeto == null:
 		consola_mensaje_enviado.emit("No hay puente aquí para activar.", "ADVERTENCIA")
 		await get_tree().create_timer(0.5).timeout
 		esta_actuando = false
@@ -366,57 +391,46 @@ func imprimir(argumentos: Array):
 
 # Sensor para saber si hay una moneda en la celda actual
 func hay_moneda() -> bool:
-	# 1. Obtenemos el objeto en la celda
-	var objeto = GridManager.obtener_objeto_en_celda(posicion_actual)
-	
-	# 2. Verificamos:
-	#    a) Que el objeto exista (no sea null)
-	#    b) Que su propiedad 'tipo' sea MONEDA
-	var res = (objeto != null and objeto.tipo == ElementoTablero.Tipo.MONEDA)
-	
+	var objeto = GridManager.buscar_objeto_por_tipo(posicion_actual, ElementoTablero.Tipo.MONEDA)
+	var res = (objeto != null)
 	if analista: analista.registrar_validacion("moneda", res)
 	return res
 
 # Sensor para saber si hay una llave en la celda actual
 func hay_llave() -> bool:
-	var objeto = GridManager.obtener_objeto_en_celda(posicion_actual)
-	var res = (objeto != null and objeto.tipo == ElementoTablero.Tipo.LLAVE)
-	
+	var objeto = GridManager.buscar_objeto_por_tipo(posicion_actual, ElementoTablero.Tipo.LLAVE)
+	var res = (objeto != null)
 	if analista: analista.registrar_validacion("llave", res)
 	return res
 
 # Sensor para saber si hay un cofre en la celda actual
 func hay_cofre() -> bool:
-	var objeto = GridManager.obtener_objeto_en_celda(posicion_actual)
-	var res = (objeto != null and objeto.tipo == ElementoTablero.Tipo.COFRE)
-	
+	var objeto = GridManager.buscar_objeto_por_tipo(posicion_actual, ElementoTablero.Tipo.COFRE)
+	var res = (objeto != null)
 	if analista: analista.registrar_validacion("cofre", res)
 	return res
 
 # Sensor para saber si hay un enemigo en la celda adyacente (en la dirección actual)
 func hay_enemigo() -> bool:
 	var pos_target = posicion_actual + direccion_actual
-	var objeto = GridManager.obtener_objeto_en_celda(pos_target)
-	
-	var res = (objeto != null and objeto.tipo == ElementoTablero.Tipo.ENEMIGO)
+	var objeto = GridManager.buscar_objeto_por_tipo(pos_target, ElementoTablero.Tipo.ENEMIGO)
+	var res = (objeto != null)
 	if analista: analista.registrar_validacion("enemigo", res)
 	return res
 
 # Sensor para saber si hay un obstáculo en la celda adyacente
 func hay_obstaculo() -> bool:
 	var pos_target = posicion_actual + direccion_actual
-	var objeto = GridManager.obtener_objeto_en_celda(pos_target)
-	
-	var res = (objeto != null and objeto.tipo == ElementoTablero.Tipo.OBSTACULO)
+	var objeto = GridManager.buscar_objeto_por_tipo(pos_target, ElementoTablero.Tipo.OBSTACULO)
+	var res = (objeto != null)
 	if analista: analista.registrar_validacion("obstaculo", res)
 	return res
 
 # Sensor para saber si hay un puente en la celda adyacente
 func hay_puente() -> bool:
 	var pos_target = posicion_actual + direccion_actual
-	var objeto = GridManager.obtener_objeto_en_celda(pos_target)
-	
-	var res = (objeto != null and objeto.tipo == ElementoTablero.Tipo.PUENTE)
+	var objeto = GridManager.buscar_objeto_por_tipo(pos_target, ElementoTablero.Tipo.PUENTE)
+	var res = (objeto != null)
 	if analista: analista.registrar_validacion("puente", res)
 	return res
 
@@ -452,7 +466,6 @@ func mover_a_celda(celda_destino: Vector2i):
 		return
 	
 	# 2. Iniciar movimiento
-	print("avanzando...")
 	posicion_actual = celda_destino # Actualizamos lógica ya
 	var destino_pixel = GridManager.grid_to_world(celda_destino)
 	
@@ -461,7 +474,6 @@ func mover_a_celda(celda_destino: Vector2i):
 	_tween_movimiento = create_tween()
 	_tween_movimiento.tween_property(self , "position", destino_pixel, TIEMPO_MOVIMIENTO)
 	await _tween_movimiento.finished
-	print("ya avanzó...")
 	esta_actuando = false
 
 func teletransportar_a(celda_destino: Vector2i):
@@ -478,6 +490,7 @@ func teletransportar_a(celda_destino: Vector2i):
 	# Resetear dirección al inicio (Mirando arriba)
 	direccion_actual = Vector2i(0, 1)
 	_actualizar_idle()
+	_ultimo_fue_avanzar = false
 
 # --- NUEVA FUNCIÓN DE VERIFICACIÓN (Peligro Enemigo/Obstáculo) ---
 func _verificar_peligro_inminente(es_avance: bool = false) -> bool:
@@ -488,34 +501,31 @@ func _verificar_peligro_inminente(es_avance: bool = false) -> bool:
 	if not GridManager.es_celda_valida(celda_en_frente):
 		return false
 		
-	var objeto = GridManager.obtener_objeto_en_celda(celda_en_frente)
-	
-	if objeto:
-		# --- Peligro 1: Enemigo al frente (Choque) ---
-		if objeto.tipo == ElementoTablero.Tipo.ENEMIGO:
-			# Si llegamos aquí, el jugador intentó avanzar, saltar, o girar (si lo permitiéramos)
-			# mientras tenía un enemigo en frente.
-			if objeto.has_method("reproducir_ataque"):
-				objeto.reproducir_ataque()
-			
-			var tween = create_tween()
-			tween.tween_property(self , "scale", Vector2.ZERO, 0.5)
-			await get_tree().create_timer(0.5).timeout
-			
-			game_over("¡El enemigo te ha detectado y atacado! Debes usar 'atacar'.")
-			return true
-			
-		# --- Peligro 2: Obstáculo al frente (Choque) ---
-		elif objeto.tipo == ElementoTablero.Tipo.OBSTACULO:
-			if es_avance:
-				game_over("¡Choque con Obstáculo! Debes usar la instrucción 'saltar'.")
-				return true
-			
-		# --- Peligro 3: Puente Inactivo al frente ---
-		elif objeto.tipo == ElementoTablero.Tipo.PUENTE:
-			if not objeto.esta_activo and es_avance:
-				game_over("¡Puente inactivo! Debes activarlo con la instrucción 'activarPuente'.")
-				return true
+	# --- Peligro 1: Enemigo al frente (Choque) ---
+	var enemigo = GridManager.buscar_objeto_por_tipo(celda_en_frente, ElementoTablero.Tipo.ENEMIGO)
+	if enemigo:
+		if enemigo.has_method("reproducir_ataque"):
+			enemigo.reproducir_ataque()
+		
+		await get_tree().create_timer(0.3).timeout # Sincronización muerte
+		var tween = create_tween()
+		tween.tween_property(self , "scale", Vector2.ZERO, 0.5)
+		await get_tree().create_timer(0.5).timeout
+		
+		game_over("¡El enemigo te ha detectado y atacado! Debes usar 'atacar'.")
+		return true
+
+	# --- Peligro 2: Obstáculo al frente (Choque) ---
+	var obstaculo = GridManager.buscar_objeto_por_tipo(celda_en_frente, ElementoTablero.Tipo.OBSTACULO)
+	if obstaculo and es_avance:
+		game_over("¡Choque con Obstáculo! Debes usar la instrucción 'saltar'.")
+		return true
+
+	# --- Peligro 3: Puente Inactivo al frente ---
+	var puente = GridManager.buscar_objeto_por_tipo(celda_en_frente, ElementoTablero.Tipo.PUENTE)
+	if puente and not puente.esta_activo and es_avance:
+		game_over("¡Puente inactivo! Debes activarlo con la instrucción 'activarPuente'.")
+		return true
 
 	return false
 

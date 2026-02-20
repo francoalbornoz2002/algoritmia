@@ -316,6 +316,15 @@ func spawn_elemento(pos: Vector2i, tipo):
 		var coords_tile = Vector2i(1, 3)
 		mapa_agua.set_cell(pos_mapa, 0, coords_tile)
 
+	# --- Lógica de Offset Visual (Si ya hay objeto) ---
+	var objetos_en_celda = GridManager.obtener_objetos_en_celda(pos)
+	if not objetos_en_celda.is_empty():
+		var existente = objetos_en_celda[0]
+		# Desplazamos el existente a la izquierda
+		existente.position.x -= 8
+		# Desplazamos el nuevo a la derecha
+		nuevo_elemento.position.x += 8
+
 	# Registramos en la memoria del GridManager
 	GridManager.registrar_objeto(pos, nuevo_elemento)
 

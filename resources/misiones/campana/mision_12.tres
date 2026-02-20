@@ -1,0 +1,77 @@
+[gd_resource type="Resource" script_class="DefinicionMision" format=3 uid="uid://dbexb3a0j7f4l"]
+
+[ext_resource type="Script" uid="uid://bwftnkpaxkcgc" path="res://scripts/misiones/caso_prueba_mision.gd" id="1_0e56t"]
+[ext_resource type="Script" uid="uid://7dwqqmri6ibf" path="res://scripts/misiones/definicion_mision.gd" id="2_nrbay"]
+[ext_resource type="Script" uid="uid://7rau7grlkedi" path="res://scripts/misiones/condicion_mision.gd" id="2_q052s"]
+[ext_resource type="Script" uid="uid://pv2d7rfe0lwx" path="res://scripts/misiones/condiciones/condicion_llegar_a.gd" id="3_if3td"]
+[ext_resource type="Script" uid="uid://2g81v5mgvo8i" path="res://scripts/misiones/condiciones/condicion_recolectar.gd" id="4_hg1bj"]
+[ext_resource type="Script" uid="uid://cxktrvmf0g666" path="res://scripts/misiones/elemento_mision.gd" id="5_l4q74"]
+
+[sub_resource type="Resource" id="Resource_8for1"]
+script = ExtResource("3_if3td")
+objetivo = Vector2i(0, 10)
+descripcion = "Terminar en sendero 1, valle 11 (1, 11)"
+metadata/_custom_type_script = "uid://pv2d7rfe0lwx"
+
+[sub_resource type="Resource" id="Resource_owip5"]
+script = ExtResource("4_hg1bj")
+cantidad = 5
+descripcion = "Recolectar 5 monedas"
+metadata/_custom_type_script = "uid://2g81v5mgvo8i"
+
+[sub_resource type="Resource" id="Resource_q052s"]
+script = ExtResource("5_l4q74")
+metadata/_custom_type_script = "uid://cxktrvmf0g666"
+
+[sub_resource type="Resource" id="Resource_57fao"]
+script = ExtResource("5_l4q74")
+pos = Vector2i(0, 1)
+metadata/_custom_type_script = "uid://cxktrvmf0g666"
+
+[sub_resource type="Resource" id="Resource_8334m"]
+script = ExtResource("5_l4q74")
+pos = Vector2i(0, 3)
+metadata/_custom_type_script = "uid://cxktrvmf0g666"
+
+[sub_resource type="Resource" id="Resource_g6vpy"]
+script = ExtResource("5_l4q74")
+pos = Vector2i(0, 5)
+metadata/_custom_type_script = "uid://cxktrvmf0g666"
+
+[sub_resource type="Resource" id="Resource_tif2t"]
+script = ExtResource("5_l4q74")
+pos = Vector2i(0, 7)
+metadata/_custom_type_script = "uid://cxktrvmf0g666"
+
+[sub_resource type="Resource" id="Resource_u8w5t"]
+script = ExtResource("1_0e56t")
+elementos_mapa = Array[ExtResource("5_l4q74")]([SubResource("Resource_q052s"), SubResource("Resource_57fao"), SubResource("Resource_8334m"), SubResource("Resource_g6vpy"), SubResource("Resource_tif2t")])
+condiciones_victoria = Array[ExtResource("2_q052s")]([SubResource("Resource_8for1"), SubResource("Resource_owip5")])
+metadata/_custom_type_script = "uid://bwftnkpaxkcgc"
+
+[sub_resource type="Resource" id="Resource_0orhd"]
+script = ExtResource("3_if3td")
+objetivo = Vector2i(0, 10)
+descripcion = "Terminar en sendero 1, valle 11 (1, 11)"
+metadata/_custom_type_script = "uid://pv2d7rfe0lwx"
+
+[sub_resource type="Resource" id="Resource_dabg3"]
+script = ExtResource("4_hg1bj")
+cantidad = 0
+descripcion = "Recolectar 0 monedas"
+metadata/_custom_type_script = "uid://2g81v5mgvo8i"
+
+[sub_resource type="Resource" id="Resource_4xu8v"]
+script = ExtResource("1_0e56t")
+condiciones_victoria = Array[ExtResource("2_q052s")]([SubResource("Resource_0orhd"), SubResource("Resource_dabg3")])
+metadata/_custom_type_script = "uid://bwftnkpaxkcgc"
+
+[resource]
+script = ExtResource("2_nrbay")
+id = "f1eebc99-9c0b-4ef8-bb6d-6bb9bd380a22"
+numero = 12
+titulo = "Tutorial 12: Repetir"
+descripcion = "¡Repito! Puedes usar el Ritual de la Perseverancia para repetir una serie de acciones un numero conocido y finito de veces. ¡Pruébalo! Avanza 10 lugares recolectando las monedas que haya por el camino."
+es_tutorial = true
+casos_de_prueba = Array[ExtResource("1_0e56t")]([SubResource("Resource_u8w5t"), SubResource("Resource_4xu8v")])
+metadata/_custom_type_script = "uid://7dwqqmri6ibf"

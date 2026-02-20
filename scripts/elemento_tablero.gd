@@ -113,8 +113,11 @@ func reproducir_ataque():
 			anim_player.play(nombre_anim)
 
 # Función para "consumir" el objeto (ej: recoger moneda)
-func recoger():
+func recoger(delay: float = 0.0):
 	# Animación simple de desaparecer
+	if delay > 0:
+		await get_tree().create_timer(delay).timeout
+		
 	var tween = create_tween()
 	tween.tween_property(self , "scale", Vector2.ZERO, 0.2)
 	tween.tween_callback(queue_free)
