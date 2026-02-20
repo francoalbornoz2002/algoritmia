@@ -284,8 +284,7 @@ func _preparar_caso_prueba(indice: int):
 	logs_consola.clear()
 	
 	# 2. Reiniciar Jugador
-	jugador.inventario.monedas = 0
-	jugador.inventario.llaves = 0
+	jugador.reiniciar_inventario()
 	jugador.teletransportar_a(caso.inicio_jugador)
 	# TODO: Soportar dirección inicial si se define en el caso
 	

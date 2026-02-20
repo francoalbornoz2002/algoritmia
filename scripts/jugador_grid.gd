@@ -39,6 +39,9 @@ func _ready():
 		camara.limit_right = (GridManager.COLUMNAS_MAX * GridManager.TAMANO_CELDA) + 1
 		camara.limit_bottom = (GridManager.FILAS_MAX * GridManager.TAMANO_CELDA) + 1
 
+func reiniciar_inventario():
+	inventario = {"monedas": 0, "llaves": 0, "cofres": 0}
+
 # --- ACCIONES PRINCIPALES ---
 
 func avanzar():

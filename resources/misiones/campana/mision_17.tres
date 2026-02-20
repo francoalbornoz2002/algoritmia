@@ -1,0 +1,193 @@
+[gd_resource type="Resource" script_class="DefinicionMision" format=3 uid="uid://docjw5b2px6ff"]
+
+[ext_resource type="Script" uid="uid://bwftnkpaxkcgc" path="res://scripts/misiones/caso_prueba_mision.gd" id="1_s7ad8"]
+[ext_resource type="Script" uid="uid://7rau7grlkedi" path="res://scripts/misiones/condicion_mision.gd" id="2_4q5hy"]
+[ext_resource type="Script" uid="uid://7dwqqmri6ibf" path="res://scripts/misiones/definicion_mision.gd" id="2_5sf7c"]
+[ext_resource type="Script" uid="uid://2g81v5mgvo8i" path="res://scripts/misiones/condiciones/condicion_recolectar.gd" id="3_xmuit"]
+[ext_resource type="Script" uid="uid://cquibwshmqt00" path="res://scripts/misiones/condiciones/condicion_eliminar_enemigos.gd" id="4_gwfhc"]
+[ext_resource type="Script" uid="uid://pv2d7rfe0lwx" path="res://scripts/misiones/condiciones/condicion_llegar_a.gd" id="5_4iiia"]
+[ext_resource type="Script" uid="uid://cxktrvmf0g666" path="res://scripts/misiones/elemento_mision.gd" id="6_4djmp"]
+
+[sub_resource type="Resource" id="Resource_dsdty"]
+script = ExtResource("3_xmuit")
+cantidad = 4
+descripcion = "Tener 4 monedas"
+metadata/_custom_type_script = "uid://2g81v5mgvo8i"
+
+[sub_resource type="Resource" id="Resource_kcawc"]
+script = ExtResource("4_gwfhc")
+descripcion = "Derrotar a todos los enemigos"
+metadata/_custom_type_script = "uid://cquibwshmqt00"
+
+[sub_resource type="Resource" id="Resource_0rh3n"]
+script = ExtResource("3_xmuit")
+tipo = "cofres"
+descripcion = "Abrir 1 cofre"
+metadata/_custom_type_script = "uid://2g81v5mgvo8i"
+
+[sub_resource type="Resource" id="Resource_01p82"]
+script = ExtResource("5_4iiia")
+objetivo = Vector2i(0, 24)
+metadata/_custom_type_script = "uid://pv2d7rfe0lwx"
+
+[sub_resource type="Resource" id="Resource_6evda"]
+script = ExtResource("6_4djmp")
+metadata/_custom_type_script = "uid://cxktrvmf0g666"
+
+[sub_resource type="Resource" id="Resource_7x4rn"]
+script = ExtResource("6_4djmp")
+pos = Vector2i(0, 2)
+metadata/_custom_type_script = "uid://cxktrvmf0g666"
+
+[sub_resource type="Resource" id="Resource_pjwne"]
+script = ExtResource("6_4djmp")
+tipo = 1
+pos = Vector2i(0, 4)
+metadata/_custom_type_script = "uid://cxktrvmf0g666"
+
+[sub_resource type="Resource" id="Resource_434bn"]
+script = ExtResource("6_4djmp")
+tipo = 2
+pos = Vector2i(0, 6)
+metadata/_custom_type_script = "uid://cxktrvmf0g666"
+
+[sub_resource type="Resource" id="Resource_0r4yn"]
+script = ExtResource("6_4djmp")
+tipo = 3
+pos = Vector2i(0, 8)
+metadata/_custom_type_script = "uid://cxktrvmf0g666"
+
+[sub_resource type="Resource" id="Resource_cqxlp"]
+script = ExtResource("6_4djmp")
+tipo = 4
+pos = Vector2i(0, 10)
+metadata/_custom_type_script = "uid://cxktrvmf0g666"
+
+[sub_resource type="Resource" id="Resource_eqpla"]
+script = ExtResource("6_4djmp")
+tipo = 5
+pos = Vector2i(0, 14)
+metadata/_custom_type_script = "uid://cxktrvmf0g666"
+
+[sub_resource type="Resource" id="Resource_g0ou8"]
+script = ExtResource("6_4djmp")
+pos = Vector2i(0, 17)
+metadata/_custom_type_script = "uid://cxktrvmf0g666"
+
+[sub_resource type="Resource" id="Resource_1g8y8"]
+script = ExtResource("6_4djmp")
+pos = Vector2i(0, 18)
+metadata/_custom_type_script = "uid://cxktrvmf0g666"
+
+[sub_resource type="Resource" id="Resource_hfawr"]
+script = ExtResource("6_4djmp")
+pos = Vector2i(0, 19)
+metadata/_custom_type_script = "uid://cxktrvmf0g666"
+
+[sub_resource type="Resource" id="Resource_55mxl"]
+script = ExtResource("1_s7ad8")
+elementos_mapa = Array[ExtResource("6_4djmp")]([SubResource("Resource_6evda"), SubResource("Resource_7x4rn"), SubResource("Resource_pjwne"), SubResource("Resource_434bn"), SubResource("Resource_0r4yn"), SubResource("Resource_cqxlp"), SubResource("Resource_eqpla"), SubResource("Resource_g0ou8"), SubResource("Resource_1g8y8"), SubResource("Resource_hfawr")])
+condiciones_victoria = Array[ExtResource("2_4q5hy")]([SubResource("Resource_dsdty"), SubResource("Resource_kcawc"), SubResource("Resource_0rh3n"), SubResource("Resource_01p82")])
+metadata/_custom_type_script = "uid://bwftnkpaxkcgc"
+
+[sub_resource type="Resource" id="Resource_vb5sd"]
+script = ExtResource("4_gwfhc")
+descripcion = "Derrotar a todos los enemigos"
+metadata/_custom_type_script = "uid://cquibwshmqt00"
+
+[sub_resource type="Resource" id="Resource_voia2"]
+script = ExtResource("3_xmuit")
+tipo = "cofres"
+descripcion = "Abrir 1 cofre"
+metadata/_custom_type_script = "uid://2g81v5mgvo8i"
+
+[sub_resource type="Resource" id="Resource_bhml2"]
+script = ExtResource("5_4iiia")
+objetivo = Vector2i(0, 24)
+metadata/_custom_type_script = "uid://pv2d7rfe0lwx"
+
+[sub_resource type="Resource" id="Resource_22edf"]
+script = ExtResource("6_4djmp")
+tipo = 1
+pos = Vector2i(0, 4)
+metadata/_custom_type_script = "uid://cxktrvmf0g666"
+
+[sub_resource type="Resource" id="Resource_st0la"]
+script = ExtResource("6_4djmp")
+tipo = 2
+pos = Vector2i(0, 6)
+metadata/_custom_type_script = "uid://cxktrvmf0g666"
+
+[sub_resource type="Resource" id="Resource_mvagt"]
+script = ExtResource("6_4djmp")
+tipo = 3
+pos = Vector2i(0, 8)
+metadata/_custom_type_script = "uid://cxktrvmf0g666"
+
+[sub_resource type="Resource" id="Resource_7ga6e"]
+script = ExtResource("6_4djmp")
+tipo = 4
+pos = Vector2i(0, 10)
+metadata/_custom_type_script = "uid://cxktrvmf0g666"
+
+[sub_resource type="Resource" id="Resource_nh4c7"]
+script = ExtResource("6_4djmp")
+tipo = 5
+pos = Vector2i(0, 14)
+metadata/_custom_type_script = "uid://cxktrvmf0g666"
+
+[sub_resource type="Resource" id="Resource_yftx7"]
+script = ExtResource("1_s7ad8")
+elementos_mapa = Array[ExtResource("6_4djmp")]([SubResource("Resource_22edf"), SubResource("Resource_st0la"), SubResource("Resource_mvagt"), SubResource("Resource_7ga6e"), SubResource("Resource_nh4c7")])
+condiciones_victoria = Array[ExtResource("2_4q5hy")]([SubResource("Resource_vb5sd"), SubResource("Resource_voia2"), SubResource("Resource_bhml2")])
+metadata/_custom_type_script = "uid://bwftnkpaxkcgc"
+
+[sub_resource type="Resource" id="Resource_5py0w"]
+script = ExtResource("4_gwfhc")
+descripcion = "Derrotar a todos los enemigos"
+metadata/_custom_type_script = "uid://cquibwshmqt00"
+
+[sub_resource type="Resource" id="Resource_u2pib"]
+script = ExtResource("5_4iiia")
+objetivo = Vector2i(0, 24)
+metadata/_custom_type_script = "uid://pv2d7rfe0lwx"
+
+[sub_resource type="Resource" id="Resource_m4n7e"]
+script = ExtResource("6_4djmp")
+tipo = 2
+pos = Vector2i(0, 6)
+metadata/_custom_type_script = "uid://cxktrvmf0g666"
+
+[sub_resource type="Resource" id="Resource_qlpc2"]
+script = ExtResource("6_4djmp")
+tipo = 3
+pos = Vector2i(0, 8)
+metadata/_custom_type_script = "uid://cxktrvmf0g666"
+
+[sub_resource type="Resource" id="Resource_alo3e"]
+script = ExtResource("6_4djmp")
+tipo = 4
+pos = Vector2i(0, 10)
+metadata/_custom_type_script = "uid://cxktrvmf0g666"
+
+[sub_resource type="Resource" id="Resource_ka4sg"]
+script = ExtResource("6_4djmp")
+tipo = 5
+pos = Vector2i(0, 14)
+metadata/_custom_type_script = "uid://cxktrvmf0g666"
+
+[sub_resource type="Resource" id="Resource_rbdt7"]
+script = ExtResource("1_s7ad8")
+elementos_mapa = Array[ExtResource("6_4djmp")]([SubResource("Resource_m4n7e"), SubResource("Resource_qlpc2"), SubResource("Resource_alo3e"), SubResource("Resource_ka4sg")])
+condiciones_victoria = Array[ExtResource("2_4q5hy")]([SubResource("Resource_5py0w"), SubResource("Resource_u2pib")])
+metadata/_custom_type_script = "uid://bwftnkpaxkcgc"
+
+[resource]
+script = ExtResource("2_5sf7c")
+id = "e6eebc99-9c0b-4ef8-bb6d-6bb9bd380a27"
+numero = 17
+titulo = "Mision Prueba"
+descripcion = "Recorre todo el sendero 1, recolectando monedas, llaves, abriendo cofres, activando puentes (o rodearlos si no puedes), derrotando enemigos y evadiendo obstáculos."
+dificultad_mision = "Difícil"
+casos_de_prueba = Array[ExtResource("1_s7ad8")]([SubResource("Resource_55mxl"), SubResource("Resource_yftx7"), SubResource("Resource_rbdt7")])
+metadata/_custom_type_script = "uid://7dwqqmri6ibf"

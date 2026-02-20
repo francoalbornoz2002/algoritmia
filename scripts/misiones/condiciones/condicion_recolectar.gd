@@ -12,4 +12,7 @@ func _init(t: String = "monedas", cant: int = 1):
 		descripcion = "Tener " + str(cant) + " " + tipo
 
 func verificar(j, _g, _e, _l) -> bool:
-	return j.inventario.get(tipo, 0) >= cantidad
+	var actual = j.inventario.get(tipo, 0)
+	if cantidad == 0:
+		return actual == 0
+	return actual >= cantidad
