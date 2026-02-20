@@ -225,7 +225,7 @@ func _on_sincronizacion_finalizada(_exito):
 	# Feedback Visual
 	if _exito:
 		if label_detalle_sync:
-			label_detalle_sync.text = "¡Datos guardados en la nube!"
+			label_detalle_sync.text = "¡Datos sincronizados en la web!"
 			label_detalle_sync.add_theme_color_override("font_color", Color.GREEN)
 	else:
 		if label_detalle_sync:

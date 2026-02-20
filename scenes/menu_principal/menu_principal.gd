@@ -56,7 +56,7 @@ func _mostrar_datos_alumno():
 func _iniciar_sincronizacion_con_ui():
 	print("MenuPrincipal: [SYNC] Iniciando proceso de sincronización con UI...")
 	if overlay_sincronizacion: overlay_sincronizacion.show()
-	if label_mensaje_sync: label_mensaje_sync.text = "Sincronizando datos con la web..."
+	if label_mensaje_sync: label_mensaje_sync.text = "Sincronizando dificultades desde la web..."
 	if label_error_sync: label_error_sync.text = ""
 	if boton_aceptar_sync: boton_aceptar_sync.hide()
 	
@@ -109,7 +109,7 @@ func _on_sync_completed(result, response_code, _headers, body):
 			print("MenuPrincipal: [SYNC] JSON válido (Array de %d elementos). Enviando a DBManager..." % json.size())
 			if DatabaseManager.actualizar_dificultades_desde_web(json):
 				exito = true
-				mensaje_detalle = "Se actualizaron %d dificultades." % json.size()
+				mensaje_detalle = "Se actualizaron %d dificultades desde la web." % json.size()
 			else:
 				mensaje_detalle = "Error al guardar en base de datos."
 		else:
@@ -180,10 +180,11 @@ func _cerrar_modal_especial():
 
 func _iniciar_mision_especial():
 	# --- HARDCODE: Misión Especial de Prueba ---
+	var timestamp = Time.get_datetime_string_from_system().replace("T", " ")
 	var mision = DefinicionMision.new()
 	mision.id = DatabaseManager.generar_uuid_v4()
-	mision.titulo = "Misión de Retorno al Juego"
-	mision.descripcion = "¡Has vuelto! Completa este desafío para obtener DOBLE experiencia y estrellas. Recorre el Sendero 3. Tu objetivo es recolectar todas las monedas, eliminar a cualquier enemigo y eludir los obstáculos."
+	mision.titulo = "Misión de Retorno [%s]" % timestamp
+	mision.descripcion = "¡Has vuelto! Completa este desafío para obtener DOBLE experiencia y estrellas. Recorre el Sendero 3. Tu objetivo es recolectar todas las monedas, eliminar a cualquier enemigo y eludir los obstáculos.\n(Generada: %s)" % timestamp
 	mision.es_mision_especial = true
 	mision.tamano_mapa = Vector2i(25, 25)
 	mision.dificultad_mision = "Medio"

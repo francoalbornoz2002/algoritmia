@@ -38,7 +38,7 @@ region = Rect2(11, 107, 90, 74)
 atlas = ExtResource("16_victoria")
 region = Rect2(123, 107, 90, 74)
 
-[sub_resource type="AtlasTexture" id="AtlasTexture_vic3"]
+[sub_resource type="AtlasTexture" id="AtlasTexture_wr2c0"]
 atlas = ExtResource("16_victoria")
 region = Rect2(235, 107, 90, 74)
 
@@ -1081,6 +1081,10 @@ region = Rect2(203, 155, 26, 26)
 atlas = ExtResource("17_sync")
 region = Rect2(81, 49, 14, 14)
 
+[sub_resource type="AtlasTexture" id="AtlasTexture_vic3"]
+atlas = ExtResource("16_victoria")
+region = Rect2(235, 107, 90, 74)
+
 [node name="MisionJuego" type="Node2D" unique_id=1305528108 node_paths=PackedStringArray("tablero", "mapa_visual", "mapa_agua", "jugador", "entidades_container", "label_mision", "label_dificultad", "label_descripcion", "code_edit", "boton_ejecutar", "boton_volver", "consola_visual", "ejecutor", "timer_reinicio", "capa_victoria", "panel_victoria_rect", "label_titulo_victoria", "label_xp_victoria", "boton_continuar_victoria", "dialogo_confirmar_salida", "overlay_sync", "spinner_sync", "label_detalle_sync", "boton_aceptar_sync")]
 script = ExtResource("1_kmg2i")
 tablero = NodePath("CapaUI/ContenedorJuego/SubViewport/Tablero")
@@ -1102,7 +1106,7 @@ panel_victoria_rect = NodePath("CapaVictoria/Control/PanelVictoria")
 label_titulo_victoria = NodePath("CapaVictoria/Control/PanelVictoria/VBoxContainer/LabelTitulo")
 label_xp_victoria = NodePath("CapaVictoria/Control/PanelVictoria/VBoxContainer/LabelXP")
 boton_continuar_victoria = NodePath("CapaVictoria/Control/PanelVictoria/VBoxContainer/BotonContinuar")
-texturas_estrellas = Array[Texture2D]([SubResource("AtlasTexture_vic1"), SubResource("AtlasTexture_vic2"), SubResource("AtlasTexture_vic3")])
+texturas_estrellas = Array[Texture2D]([SubResource("AtlasTexture_vic1"), SubResource("AtlasTexture_vic2"), SubResource("AtlasTexture_wr2c0")])
 dialogo_confirmar_salida = NodePath("CapaUI/DialogoConfirmarSalida")
 overlay_sync = NodePath("CapaUI/OverlaySincronizacion")
 spinner_sync = NodePath("CapaUI/OverlaySincronizacion/VBoxContainer/Spinner")
