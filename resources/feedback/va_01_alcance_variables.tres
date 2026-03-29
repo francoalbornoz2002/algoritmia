@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="FeedbackDificultad" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/feedback/feedback_dificultad.gd" id="1_script_feedback"]
+
+[resource]
+script = ExtResource("1_script_feedback")
+codigo_dificultad = "VA-01"
+titulo = "¡Cuidado con el alcance (Scope)!"
+texto_formativo = "Intentaste usar una variable fuera del bloque donde fue creada, o la estás redefiniendo constantemente dentro de un bucle perdiendo su valor. Recuerda declarar tus variables globales arriba si necesitas que mantengan su valor en todo el programa."
+codigo_incorrecto = "Mientras posValle < 25 hacer:
+	var monedas: entero
+	monedas:= monedas + 1
+imprimir(monedas) -- ERROR: Ya no existe aquí"
+codigo_correcto = "var monedas: entero
+Inicio
+	Mientras posValle < 25 hacer:
+		monedas:= monedas + 1
+	imprimir(monedas)"

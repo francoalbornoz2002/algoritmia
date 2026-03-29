@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="FeedbackDificultad" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/feedback/feedback_dificultad.gd" id="1_script_feedback"]
+
+[resource]
+script = ExtResource("1_script_feedback")
+codigo_dificultad = "VA-03"
+titulo = "¡Variables olvidadas o inútiles!"
+texto_formativo = "Has declarado variables que nunca usas, o les asignas un valor que nunca es leído ni aporta al algoritmo. ¡Mantén tu código limpio! Si no ocupas una variable para tomar decisiones o repetir acciones, es mejor no declararla."
+codigo_incorrecto = "var miVariable: entero
+var variableInutil: entero
+Inicio
+	miVariable:= 5"
+codigo_correcto = "var miVariable: entero
+Inicio
+	miVariable:= 5
+	Repetir miVariable:
+		avanzar"

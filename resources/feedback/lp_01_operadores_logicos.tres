@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="FeedbackDificultad" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/feedback/feedback_dificultad.gd" id="1_script_feedback"]
+
+[resource]
+script = ExtResource("1_script_feedback")
+codigo_dificultad = "LP-01"
+titulo = "¡Confusión con operadores lógicos!"
+texto_formativo = "Notamos que usaste [b]OR[/b] cuando probablemente necesitabas [b]AND[/b] (o viceversa). Recuerda: [b]AND[/b] exige que TODAS las condiciones se cumplan al mismo tiempo para actuar, mientras que [b]OR[/b] actuará si al menos UNA de ellas se cumple."
+codigo_incorrecto = "Si hayCofre OR tengoLlave entonces:
+	abrirCofre"
+codigo_correcto = "Si hayCofre AND tengoLlave entonces:
+	abrirCofre"

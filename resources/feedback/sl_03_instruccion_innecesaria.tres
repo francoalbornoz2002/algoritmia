@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="FeedbackDificultad" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/feedback/feedback_dificultad.gd" id="1_script_feedback"]
+
+[resource]
+script = ExtResource("1_script_feedback")
+codigo_dificultad = "SL-03"
+titulo = "¡Acciones fuera de contexto!"
+texto_formativo = "Intentaste realizar acciones especiales (como atacar o saltar) sin comprobar si realmente era necesario. Recuerda usar el Emblema del Juicio ([b]Si[/b]) junto a los sensores correspondientes para actuar solo cuando el entorno lo requiera."
+codigo_incorrecto = "atacar
+saltar"
+codigo_correcto = "Si hayEnemigo entonces:
+	atacar
+Si hayObstaculo entonces:
+	saltar"

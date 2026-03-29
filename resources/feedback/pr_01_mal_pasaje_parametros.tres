@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="FeedbackDificultad" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/feedback/feedback_dificultad.gd" id="1_script_feedback"]
+
+[resource]
+script = ExtResource("1_script_feedback")
+codigo_dificultad = "PR-01"
+titulo = "¡Cuidado con los parámetros!"
+texto_formativo = "Intentaste llamar a un [b]proceso[/b] pero le enviaste más o menos datos de los que pedía. Revisa siempre la definición de tu proceso para saber exactamente cuántos y qué tipo de parámetros debes enviarle entre los paréntesis."
+codigo_incorrecto = "proceso sumar(E num1: entero, E num2: entero)
+	imprimir(num1 + num2)
+
+Inicio
+	sumar(10) -- ERROR: Falta un parámetro"
+codigo_correcto = "proceso sumar(E num1: entero, E num2: entero)
+	imprimir(num1 + num2)
+
+Inicio
+	sumar(10, 5) -- Se envían ambos datos"

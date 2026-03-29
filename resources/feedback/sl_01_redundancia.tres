@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="FeedbackDificultad" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/feedback/feedback_dificultad.gd" id="1_script_feedback"]
+
+[resource]
+script = ExtResource("1_script_feedback")
+codigo_dificultad = "SL-01"
+titulo = "¡Demasiada repetición!"
+texto_formativo = "Notamos que escribes la misma instrucción varias veces seguidas. ¡Ahorra energía y líneas de código utilizando el Ritual de la Perseverancia ([b]Repetir[/b]) o el Orbe del Ciclo Infinito ([b]Mientras[/b])!"
+codigo_incorrecto = "avanzar
+avanzar
+avanzar"
+codigo_correcto = "Repetir 3:
+	avanzar"

@@ -34,6 +34,9 @@ var analista_dificultad: AnalistaDificultad
 @export var label_detalle_sync: Label
 @export var boton_aceptar_sync: Button
 
+# --- FEEDBACK FORMATIVO ---
+var modal_feedback: FeedbackFormativo = null
+
 # Estado del juego
 var ejecutando_codigo: bool = false
 var sandbox: bool = false
@@ -89,8 +92,8 @@ func _ready():
 	if boton_volver and not boton_volver.pressed.is_connected(_on_boton_volver_pressed):
 		boton_volver.pressed.connect(_on_boton_volver_pressed)
 	
-	if boton_continuar_victoria and not boton_continuar_victoria.pressed.is_connected(_volver_al_menu):
-		boton_continuar_victoria.pressed.connect(_volver_al_menu)
+	if boton_continuar_victoria and not boton_continuar_victoria.pressed.is_connected(_on_victoria_continuar_pressed):
+		boton_continuar_victoria.pressed.connect(_on_victoria_continuar_pressed)
 	
 	timer_reinicio.one_shot = true
 	if not timer_reinicio.timeout.is_connected(_on_reiniciar_mision):
@@ -107,6 +110,13 @@ func _ready():
 	
 	if boton_aceptar_sync and not boton_aceptar_sync.pressed.is_connected(_on_boton_aceptar_sync_pressed):
 		boton_aceptar_sync.pressed.connect(_on_boton_aceptar_sync_pressed)
+	
+	# --- PREPARAR MODAL DE FEEDBACK ---
+	var escena_feedback = preload("res://scenes/ui/feedback_formativo/FeedbackFormativo.tscn")
+	if escena_feedback:
+		modal_feedback = escena_feedback.instantiate()
+		add_child(modal_feedback)
+		modal_feedback.feedback_completado.connect(_volver_al_menu)
 	
 	if not sandbox and not es_tutorial:
 		analista_dificultad = AnalistaDificultad.new()
@@ -719,6 +729,24 @@ func mostrar_popup_victoria(estrellas: int, xp: int):
 	_victoria_tween.tween_property(panel_victoria_rect, "scale", Vector2(1.0, 1.0), 0.5).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	_victoria_tween.tween_property(panel_victoria_rect, "modulate", Color(1, 1, 1, 1), 0.3).set_trans(Tween.TRANS_LINEAR)
 	_victoria_tween.play()
+
+func _on_victoria_continuar_pressed():
+	# Ocultamos la pantalla de victoria
+	if capa_victoria:
+		capa_victoria.visible = false
+	
+	# Recopilamos las dificultades cometidas en esta sesión
+	var codigos_dificultad = []
+	if analista_dificultad:
+		for codigo in analista_dificultad.contador_incidencias_acumuladas:
+			if analista_dificultad.contador_incidencias_acumuladas[codigo] > 0:
+				codigos_dificultad.append(codigo)
+	
+	# Llamamos al modal de feedback. Si está vacío, él mismo emite la señal de salida.
+	if modal_feedback:
+		modal_feedback.mostrar_feedbacks(codigos_dificultad)
+	else:
+		_volver_al_menu()
 
 func _volver_al_menu():
 	# Redirigimos al flujo de salida seguro

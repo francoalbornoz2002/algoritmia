@@ -24,6 +24,7 @@ config/icon="uid://bs6w6bpa5g3y6"
 DatabaseManager="*res://database_manager.gd"
 GestorSincronizacion="*res://scripts/gestor_sincronizacion.gd"
 GameData="*res://scripts/game_data.gd"
+GestorFeedback="*res://gestor_feedback.gd"
 
 [display]
 

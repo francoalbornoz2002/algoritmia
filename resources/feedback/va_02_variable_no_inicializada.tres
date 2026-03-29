@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="FeedbackDificultad" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/feedback/feedback_dificultad.gd" id="1_script_feedback"]
+
+[resource]
+script = ExtResource("1_script_feedback")
+codigo_dificultad = "VA-02"
+titulo = "¡Variable sin inicializar!"
+texto_formativo = "Estás usando una variable para tomar una decisión o hacer un cálculo matemático, pero... ¡está vacía (null)! Asegúrate siempre de asignarle un valor inicial (como 0 o 1) antes de intentar leer su valor por primera vez."
+codigo_incorrecto = "var contador: entero
+Inicio
+	Mientras contador < 10 hacer:
+		avanzar
+		contador++"
+codigo_correcto = "var contador: entero
+Inicio
+	contador:= 0
+	Mientras contador < 10 hacer:
+		avanzar
+		contador++"

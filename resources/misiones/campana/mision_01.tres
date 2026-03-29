@@ -21,6 +21,5 @@ script = ExtResource("4_kca2w")
 id = "9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d"
 titulo = "Tutorial 1: Movimiento Básico"
 descripcion = "¡Comienza el viaje! Comencemos por lo básico. Utiliza las primitivas \"avanzar\" y \"derecha\" para dibujar un cuadrado y terminar donde comenzaste."
-es_tutorial = true
 casos_de_prueba = Array[ExtResource("1_6ks05")]([SubResource("Resource_2opwu")])
 metadata/_custom_type_script = "uid://7dwqqmri6ibf"

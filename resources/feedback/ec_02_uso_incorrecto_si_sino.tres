@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="FeedbackDificultad" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/feedback/feedback_dificultad.gd" id="1_script_feedback"]
+
+[resource]
+script = ExtResource("1_script_feedback")
+codigo_dificultad = "EC-02"
+titulo = "¡Bloques SI-SINO redundantes!"
+texto_formativo = "Notamos acciones redundantes en tu condicional. Si una instrucción se ejecuta tanto en el [b]Si[/b] como en el [b]Sino[/b], ¡sácala de la estructura! El bloque [b]Sino[/b] solo debe contener acciones exclusivas para cuando la condición principal no se cumpla."
+codigo_incorrecto = "Si hayMoneda entonces:
+	recogerMoneda
+	avanzar
+Sino
+	avanzar"
+codigo_correcto = "Si hayMoneda entonces:
+	recogerMoneda
+avanzar"

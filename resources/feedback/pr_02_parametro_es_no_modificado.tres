@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="FeedbackDificultad" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/feedback/feedback_dificultad.gd" id="1_script_feedback"]
+
+[resource]
+script = ExtResource("1_script_feedback")
+codigo_dificultad = "PR-02"
+titulo = "¡Parámetro de E/S intacto!"
+texto_formativo = "Declaraste un parámetro como Entrada/Salida ([b]ES[/b]) en tu proceso, pero nunca modificas su valor dentro de él. Si solo necesitas leer el valor de la variable sin cambiarlo para enviarlo de vuelta, declárala simplemente como Entrada ([b]E[/b])."
+codigo_incorrecto = "proceso sumar(E num1: entero, ES resultado: entero)
+	var suma: entero
+	suma:= num1 + 10 -- Guarda en otra variable"
+codigo_correcto = "proceso sumar(E num1: entero, ES resultado: entero)
+	-- Modificamos directamente la variable de E/S
+	resultado:= num1 + 10"

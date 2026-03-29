@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="FeedbackDificultad" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/feedback/feedback_dificultad.gd" id="1_script_feedback"]
+
+[resource]
+script = ExtResource("1_script_feedback")
+codigo_dificultad = "EC-01"
+titulo = "¡Cuidado con los bucles!"
+texto_formativo = "Parece que has creado un bucle mal controlado o infinito. Revisa bien la condición de tu estructura [b]Mientras[/b] o [b]Repetir[/b]. Asegúrate de evaluar la variable correcta y de que la condición pueda volverse falsa en algún momento para no quedar atrapado."
+codigo_incorrecto = "-- Recorrer el sendero
+Mientras posSendero < 25 hacer:
+	avanzar"
+codigo_correcto = "-- Recorrer el sendero
+Mientras posValle < 25 hacer:
+	avanzar"

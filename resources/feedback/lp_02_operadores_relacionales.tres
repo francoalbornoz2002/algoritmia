@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="FeedbackDificultad" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/feedback/feedback_dificultad.gd" id="1_script_feedback"]
+
+[resource]
+script = ExtResource("1_script_feedback")
+codigo_dificultad = "LP-02"
+titulo = "¡Cuidado con las comparaciones!"
+texto_formativo = "Hay problemas al usar operadores relacionales (<, >, <=, >=). Si evalúas un límite (por ejemplo, 25), usar [b]<=[/b] hará que tu personaje intente avanzar estando ya en el borde y termine chocando. ¡Usa [b]<[/b] o [b]!=[/b] para detenerte justo a tiempo!"
+codigo_incorrecto = "Mientras posValle <= 25 hacer:
+	avanzar"
+codigo_correcto = "Mientras posValle < 25 hacer:
+	avanzar"

@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="FeedbackDificultad" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/feedback/feedback_dificultad.gd" id="1_script_feedback"]
+
+[resource]
+script = ExtResource("1_script_feedback")
+codigo_dificultad = "EC-03"
+titulo = "¡Cuidado con la anidación!"
+texto_formativo = "Estás anidando estructuras [b]Si[/b] dentro de otras de forma innecesaria o confusa. ¡Simplifica tu lógica! Combina proposiciones usando operadores como [b]AND[/b] / [b]OR[/b] o evalúa las distintas condiciones en bloques separados."
+codigo_incorrecto = "Si ~hayEnemigo entonces:
+	Si ~hayObstaculo entonces:
+		avanzar
+	Sino
+		saltar
+Sino
+	atacar"
+codigo_correcto = "Si ~hayEnemigo AND ~hayObstaculo entonces:
+	avanzar
+Si hayEnemigo entonces:
+	atacar
+Si hayObstaculo entonces:
+	saltar"

@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="FeedbackDificultad" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/feedback/feedback_dificultad.gd" id="1_script_feedback"]
+
+[resource]
+script = ExtResource("1_script_feedback")
+codigo_dificultad = "PR-03"
+titulo = "¡Parámetros olvidados!"
+texto_formativo = "Definiste un proceso que pide ciertos parámetros, pero dentro de su código hay algunos de ellos que nunca utilizas. ¡Mantén tu código limpio! Pide solo los datos que realmente vayas a ocupar."
+codigo_incorrecto = "proceso reportar(E msj1: entero, E msj2: entero)
+	imprimir(msj1) -- msj2 nunca se usó"
+codigo_correcto = "proceso reportar(E msj1: entero, E msj2: entero)
+	imprimir(msj1)
+	imprimir(msj2)"

@@ -1,0 +1,124 @@
+[gd_scene format=3 uid="uid://c5y6x0y7x0y7x"]
+
+[ext_resource type="Script" uid="uid://be7kjdr3p1my4" path="res://scenes/ui/feedback_formativo/feedback_formativo.gd" id="1_script_feedback"]
+[ext_resource type="Texture2D" uid="uid://bo8u6t8y4wkqr" path="res://assets/ui/varios.png" id="2_01j3d"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_01j3d"]
+atlas = ExtResource("2_01j3d")
+region = Rect2(5, 96, 38, 37)
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_m07rh"]
+texture = SubResource("AtlasTexture_01j3d")
+texture_margin_left = 7.0
+texture_margin_top = 12.0
+texture_margin_right = 7.0
+texture_margin_bottom = 5.0
+
+[node name="FeedbackFormativo" type="CanvasLayer" unique_id=1731106890 node_paths=PackedStringArray("panel_principal", "lbl_titulo", "lbl_texto_formativo", "code_edit_incorrecto", "code_edit_correcto", "btn_entendido")]
+layer = 110
+script = ExtResource("1_script_feedback")
+panel_principal = NodePath("")
+lbl_titulo = NodePath("Control/PanelContainer/VBoxContainer/Titulo")
+lbl_texto_formativo = NodePath("Control/PanelContainer/VBoxContainer/TextoFormativo")
+code_edit_incorrecto = NodePath("Control/PanelContainer/VBoxContainer/HBoxContainer/VBoxIncorrecto/CodeEditIncorrecto")
+code_edit_correcto = NodePath("Control/PanelContainer/VBoxContainer/HBoxContainer/VBoxCorrecto/CodeEditCorrecto")
+btn_entendido = NodePath("Control/PanelContainer/VBoxContainer/BotonEntendido")
+
+[node name="Control" type="Control" parent="." unique_id=1573197639]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+metadata/_edit_lock_ = true
+
+[node name="FondoOscuro" type="ColorRect" parent="Control" unique_id=2048683325]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 0.7)
+metadata/_edit_lock_ = true
+
+[node name="PanelContainer" type="Panel" parent="Control" unique_id=1499751435]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -350.0
+offset_top = -250.0
+offset_right = 350.0
+offset_bottom = 250.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxTexture_m07rh")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Control/PanelContainer" unique_id=715317184]
+layout_mode = 0
+offset_left = 18.0
+offset_top = 18.0
+offset_right = 682.0
+offset_bottom = 495.0
+theme_override_constants/separation = 40
+
+[node name="Titulo" type="Label" parent="Control/PanelContainer/VBoxContainer" unique_id=616805564]
+layout_mode = 2
+theme_override_font_sizes/font_size = 22
+text = "Título del Consejo"
+horizontal_alignment = 1
+
+[node name="TextoFormativo" type="RichTextLabel" parent="Control/PanelContainer/VBoxContainer" unique_id=1410953276]
+layout_mode = 2
+theme_override_colors/default_color = Color(0.11372549, 0.14901961, 0.15686275, 1)
+theme_override_colors/font_shadow_color = Color(0.47843137, 0.47843137, 0.47843137, 1)
+bbcode_enabled = true
+text = "Texto explicativo sobre cómo mejorar y por qué es importante, usando [b]BBCode[/b] para resaltar."
+fit_content = true
+
+[node name="HBoxContainer" type="HBoxContainer" parent="Control/PanelContainer/VBoxContainer" unique_id=1375760886]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 20
+alignment = 1
+
+[node name="VBoxIncorrecto" type="VBoxContainer" parent="Control/PanelContainer/VBoxContainer/HBoxContainer" unique_id=395372965]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="LabelIncorrecto" type="Label" parent="Control/PanelContainer/VBoxContainer/HBoxContainer/VBoxIncorrecto" unique_id=1041144940]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.4, 0.4, 1)
+text = "Cómo NO hacerlo ❌"
+
+[node name="CodeEditIncorrecto" type="CodeEdit" parent="Control/PanelContainer/VBoxContainer/HBoxContainer/VBoxIncorrecto" unique_id=1755906569]
+custom_minimum_size = Vector2(0, 100)
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_colors/font_color = Color(0.141176, 0.160784, 0.176471, 1)
+editable = false
+
+[node name="VBoxCorrecto" type="VBoxContainer" parent="Control/PanelContainer/VBoxContainer/HBoxContainer" unique_id=432083522]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="LabelCorrecto" type="Label" parent="Control/PanelContainer/VBoxContainer/HBoxContainer/VBoxCorrecto" unique_id=862499950]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.4, 1, 0.4, 1)
+text = "Cómo SÍ hacerlo ✅"
+
+[node name="CodeEditCorrecto" type="CodeEdit" parent="Control/PanelContainer/VBoxContainer/HBoxContainer/VBoxCorrecto" unique_id=1004047624]
+custom_minimum_size = Vector2(0, 100)
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_colors/font_color = Color(0.141176, 0.160784, 0.176471, 1)
+editable = false
+
+[node name="BotonEntendido" type="Button" parent="Control/PanelContainer/VBoxContainer" unique_id=1202216219]
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 2
+text = "¡Entendido!"
