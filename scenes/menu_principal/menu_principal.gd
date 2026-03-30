@@ -142,25 +142,22 @@ func _on_boton_aceptar_sync_pressed():
 	_verificar_inactividad()
 
 func _verificar_inactividad():
-	# HARDCODE: Forzamos la misión especial para pruebas
-	_ofrecer_mision_especial()
-
-	## 1. Obtenemos el timestamp de la última vez que jugó (desde la BD local)
-	#var ultima_vez = DatabaseManager.obtener_fecha_ultima_actividad()
-	#
-	## Si devuelve 0, es la primera vez que juega, así que no aplicamos lógica de inactividad
-	#if ultima_vez == 0:
-		#return
-	#
-	## 2. Obtenemos el tiempo actual (Unix Timestamp en segundos)
-	#var ahora = Time.get_unix_time_from_system()
-	#var diferencia = ahora - ultima_vez
-	#
-	## 3. Verificamos si pasaron 48 horas
-	## 48 horas * 60 minutos * 60 segundos = 172800 segundos
-	#if diferencia > 172800:
-		## ¡Bingo! Usuario inactivo detectado.
-		#_ofrecer_mision_especial()
+	# 1. Obtenemos el timestamp de la última vez que jugó (desde la BD local)
+	var ultima_vez = DatabaseManager.obtener_fecha_ultima_actividad()
+	
+	# Si devuelve 0, es la primera vez que juega, así que no aplicamos lógica de inactividad
+	if ultima_vez == 0:
+		return
+	
+	# 2. Obtenemos el tiempo actual (Unix Timestamp en segundos)
+	var ahora = Time.get_unix_time_from_system()
+	var diferencia = ahora - ultima_vez
+	
+	# 3. Verificamos si pasaron 48 horas
+	# 48 horas * 60 minutos * 60 segundos = 172800 segundos
+	if diferencia > 172800:
+		# ¡Bingo! Usuario inactivo detectado.
+		_ofrecer_mision_especial()
 
 func _ofrecer_mision_especial():
 	print("--- Detectada inactividad > 48hs. Ofreciendo misión especial ---")
@@ -179,53 +176,13 @@ func _cerrar_modal_especial():
 		capa_modal_especial.hide()
 
 func _iniciar_mision_especial():
-	# --- HARDCODE: Misión Especial de Prueba ---
-	var timestamp = Time.get_datetime_string_from_system().replace("T", " ")
-	var mision = DefinicionMision.new()
-	mision.id = DatabaseManager.generar_uuid_v4()
-	mision.titulo = "Misión de Retorno [%s]" % timestamp
-	mision.descripcion = "¡Has vuelto! Completa este desafío para obtener DOBLE experiencia y estrellas. Recorre el Sendero 3. Tu objetivo es recolectar todas las monedas, eliminar a cualquier enemigo y eludir los obstáculos.\n(Generada: %s)" % timestamp
-	mision.es_mision_especial = true
-	mision.tamano_mapa = Vector2i(25, 25)
-	mision.dificultad_mision = "Medio"
-
-	# CASO 1: 5 monedas y 2 enemigos en Sendero 3 (x=2)
-	var caso1 = CasoPruebaMision.new()
-	caso1.inicio_jugador = Vector2i(2, 0) # Sendero 3, Valle 1
-	
-	# Distribuimos 5 monedas
-	for y in [2, 5, 8, 11, 14]:
-		caso1.agregar_elemento(ElementoTablero.Tipo.MONEDA, Vector2i(2, y))
-	
-	# 2 Enemigos
-	caso1.agregar_elemento(ElementoTablero.Tipo.ENEMIGO, Vector2i(2, 4))
-	caso1.agregar_elemento(ElementoTablero.Tipo.ENEMIGO, Vector2i(2, 10))
-	
-	caso1.agregar_condicion(CondicionRecolectar.new("monedas", 5))
-	caso1.agregar_condicion(CondicionEliminarEnemigos.new())
-	mision.casos_de_prueba.append(caso1)
-
-	# CASO 2: Sin monedas, solo enemigos y obstáculos (espacio de 2)
-	var caso2 = CasoPruebaMision.new()
-	caso2.inicio_jugador = Vector2i(2, 0)
-	
-	# Enemigos y Obstáculos con 2 espacios de separación (y=3, 6, 9, 12)
-	caso2.agregar_elemento(ElementoTablero.Tipo.ENEMIGO, Vector2i(2, 3))
-	caso2.agregar_elemento(ElementoTablero.Tipo.OBSTACULO, Vector2i(2, 6))
-	caso2.agregar_elemento(ElementoTablero.Tipo.ENEMIGO, Vector2i(2, 9))
-	caso2.agregar_elemento(ElementoTablero.Tipo.OBSTACULO, Vector2i(2, 12))
-	
-	caso2.agregar_condicion(CondicionEliminarEnemigos.new())
-	mision.casos_de_prueba.append(caso2)
-
-	# Comentamos la generación original para las pruebas
-	# var mision_especial = GeneradorMisiones.generar_mision_especial_inactividad()
+	# 1. Llamamos al generador para que cree la misión proceduralmente
+	var mision_especial = GeneradorMisiones.generar_mision_especial_inactividad()
 	
 	# 2. La guardamos en nuestra "mochila" global
-	GameData.mision_seleccionada = mision
+	GameData.mision_seleccionada = mision_especial
 	
-	print("Iniciando misión especial HARDCODED: ", mision.titulo)
-	# --- FIN HARDCODE ---
+	print("Iniciando misión especial generada: ", mision_especial.titulo)
 
 	# 3. Cambiamos a la escena de juego
 	get_tree().change_scene_to_file("res://scenes/mision_juego/mision_juego.tscn")
