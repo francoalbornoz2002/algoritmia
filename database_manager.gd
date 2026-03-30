@@ -298,6 +298,56 @@ func obtener_ids_misiones_completadas() -> Array:
 		ids.append(row["id_mision"])
 	return ids
 
+## Devuelve un diccionario con los totales de progreso para el modal de estadísticas.
+func obtener_estadisticas_progreso() -> Dictionary:
+	var stats = {
+		"campana_completadas": 0,
+		"campana_total": 0,
+		"total_estrellas": 0,
+		"total_exp": 0,
+		"total_intentos": 0,
+		"total_partidas": 0
+	}
+	
+	# 1. Total misiones disponibles en la campaña
+	if db.query("SELECT COUNT(*) as total FROM misiones;"):
+		if not db.query_result.is_empty():
+			stats["campana_total"] = int(db.query_result[0]["total"])
+			
+	# 2. Sumarización de Misiones Normales Completadas
+	var sql_normales = "SELECT COUNT(id_mision) as cant, COALESCE(SUM(estrellas), 0) as est, COALESCE(SUM(exp), 0) as xp, COALESCE(SUM(intentos), 0) as int FROM misiones_completadas_local;"
+	if db.query(sql_normales) and not db.query_result.is_empty():
+		var row = db.query_result[0]
+		stats["campana_completadas"] += int(row["cant"])
+		stats["total_partidas"] += int(row["cant"])
+		stats["total_estrellas"] += int(row["est"])
+		stats["total_exp"] += int(row["xp"])
+		stats["total_intentos"] += int(row["int"])
+
+	# 3. Sumarización de Misiones Especiales Completadas
+	var sql_especiales = "SELECT COUNT(id) as cant, COALESCE(SUM(estrellas), 0) as est, COALESCE(SUM(exp), 0) as xp, COALESCE(SUM(intentos), 0) as int FROM misiones_especiales_local;"
+	if db.query(sql_especiales) and not db.query_result.is_empty():
+		var row = db.query_result[0]
+		stats["total_partidas"] += int(row["cant"])
+		stats["total_estrellas"] += int(row["est"])
+		stats["total_exp"] += int(row["xp"])
+		stats["total_intentos"] += int(row["int"])
+		
+	return stats
+
+## Devuelve un Array de diccionarios con las dificultades activas (grado distinto a Ninguno)
+func obtener_dificultades_activas() -> Array:
+	var sql = """
+		SELECT d.nombre, d.descripcion, dal.grado 
+		FROM dificultad_alumno_local dal
+		JOIN dificultades d ON dal.id_dificultad = d.id
+		WHERE dal.grado != 'Ninguno' AND dal.grado IS NOT NULL;
+	"""
+	if not db.query(sql):
+		print("ERROR (DBManager): No se pudieron obtener dificultades activas. ", db.error_message)
+		return []
+	return db.query_result
+
 ## Escribe una misión completada en la BD local.
 ## Usa "INSERT OR REPLACE" para sobrescribir si ya existía (ej: la jugó offline 2 veces).
 ## Marca "sincronizado" como 'false' (0).

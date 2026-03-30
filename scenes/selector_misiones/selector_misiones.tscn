@@ -13,7 +13,7 @@ region = Rect2(321, 160, 30, 31)
 atlas = ExtResource("4_5rqnv")
 region = Rect2(7, 0, 98, 149)
 
-[node name="SelectorMisiones" type="Control" unique_id=2020590789 node_paths=PackedStringArray("grid_container", "modal_control", "lbl_titulo", "lbl_dificultad", "lbl_descripcion", "btn_jugar_modal")]
+[node name="SelectorMisiones" type="Control" unique_id=2020590789 node_paths=PackedStringArray("grid_container", "modal_control", "lbl_titulo", "lbl_dificultad", "lbl_descripcion", "btn_jugar_modal", "boton_estadisticas")]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -27,6 +27,7 @@ lbl_titulo = NodePath("CapaModal/ControlModal/PanelFondo/VBoxContainer/Titulo")
 lbl_dificultad = NodePath("CapaModal/ControlModal/PanelFondo/VBoxContainer/Dificultad")
 lbl_descripcion = NodePath("CapaModal/ControlModal/PanelFondo/VBoxContainer/Descripcion")
 btn_jugar_modal = NodePath("CapaModal/ControlModal/PanelFondo/VBoxContainer/BotonJugar")
+boton_estadisticas = NodePath("BotonEstadisticas")
 tex_nivel_icono = SubResource("AtlasTexture_5rqnv")
 metadata/_edit_lock_ = true
 
@@ -59,31 +60,18 @@ offset_bottom = 39.0
 focus_mode = 0
 text = "Volver"
 
-[node name="MisDificultades" type="Button" parent="." unique_id=242929148]
+[node name="BotonEstadisticas" type="Button" parent="." unique_id=1234567890]
 layout_mode = 1
 anchors_preset = 1
 anchor_left = 1.0
 anchor_right = 1.0
-offset_left = -65.0
+offset_left = -160.0
 offset_top = 8.0
 offset_right = -8.0
 offset_bottom = 39.0
 grow_horizontal = 0
 focus_mode = 0
-text = "MD"
-
-[node name="MiProgreso" type="Button" parent="." unique_id=2001971542]
-layout_mode = 1
-anchors_preset = 1
-anchor_left = 1.0
-anchor_right = 1.0
-offset_left = -129.0
-offset_top = 8.0
-offset_right = -72.0
-offset_bottom = 39.0
-grow_horizontal = 0
-focus_mode = 0
-text = "MP"
+text = "📊 Mis Estadísticas"
 
 [node name="PanelContainer" type="PanelContainer" parent="." unique_id=95483200]
 layout_mode = 1
@@ -240,5 +228,6 @@ focus_mode = 0
 flat = true
 
 [connection signal="pressed" from="Volver" to="." method="_on_volver_pressed"]
+[connection signal="pressed" from="BotonEstadisticas" to="." method="_on_boton_estadisticas_pressed"]
 [connection signal="pressed" from="CapaModal/ControlModal/PanelFondo/VBoxContainer/BotonJugar" to="." method="_on_jugar_modal_pressed"]
 [connection signal="pressed" from="CapaModal/ControlModal/PanelFondo/BotonCerrar" to="." method="_on_cerrar_modal_pressed"]

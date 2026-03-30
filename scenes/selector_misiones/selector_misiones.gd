@@ -10,6 +10,10 @@ extends Control
 @export var lbl_descripcion: Label
 @export var btn_jugar_modal: Button
 
+# --- MODAL ESTADÍSTICAS ---
+@export var boton_estadisticas: Button
+var _estadisticas_modal_instancia: EstadisticasModal = null
+
 # --- TEXTURAS PERSONALIZADAS ---
 @export_group("Estilo Visual")
 @export var tex_nivel_icono: Texture2D # El círculo de grilla_niveles.png
@@ -23,6 +27,12 @@ extends Control
 var _mision_seleccionada_temp: DefinicionMision = null
 
 func _ready():
+	# Instanciamos el modal de estadísticas y lo añadimos a la escena
+	var escena_estadisticas = preload("res://scenes/ui/estadisticas_modal/EstadisticasModal.tscn")
+	if escena_estadisticas:
+		_estadisticas_modal_instancia = escena_estadisticas.instantiate()
+		add_child(_estadisticas_modal_instancia)
+
 	if modal_control: modal_control.hide()
 	_cargar_misiones()
 
@@ -121,6 +131,17 @@ func _on_jugar_modal_pressed():
 	
 	GameData.mision_seleccionada = _mision_seleccionada_temp
 	get_tree().change_scene_to_file("res://scenes/mision_juego/mision_juego.tscn")
+
+func _on_boton_estadisticas_pressed():
+	if not _estadisticas_modal_instancia:
+		return
+		
+	# 1. Obtenemos los datos desde la base de datos
+	var stats_progreso = DatabaseManager.obtener_estadisticas_progreso()
+	var dificultades_activas = DatabaseManager.obtener_dificultades_activas()
+	
+	# 2. Se los pasamos al modal para que él se encargue de mostrarlos
+	_estadisticas_modal_instancia.mostrar(stats_progreso, dificultades_activas)
 
 func _on_volver_pressed() -> void:
 	get_tree().change_scene_to_file("res://scenes/menu_principal/menu_principal.tscn")
