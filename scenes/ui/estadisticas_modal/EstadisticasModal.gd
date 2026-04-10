@@ -43,9 +43,9 @@ func _poblar_progreso(stats: Dictionary):
 	# Usamos BBCode para colorear los números
 	var color_valor = "[color=#F2B912]" # Dorado
 	
-	lbl_campana.text = "[center]🏆 [b]Campaña[/b] 🏆\n%s%d%%[/color] (%d/%d Misiones)[/center]" % [color_valor, porcentaje, stats.campana_completadas, stats.campana_total]
-	lbl_estrellas.text = "[center]⭐ [b]Estrellas[/b] ⭐\n%s%d[/color] (%.1f Prom.)[/center]" % [color_valor, stats.total_estrellas, prom_estrellas]
-	lbl_exp.text = "[center]✨ [b]Experiencia[/b] ✨\n%s%d[/color] EXP[/center]" % [color_valor, stats.total_exp]
+	lbl_campana.text = "[center]🎖 [b]Campaña[/b] 🎖\n%s%d%%[/color] (%d/%d Misiones)[/center]" % [color_valor, porcentaje, stats.campana_completadas, stats.campana_total]
+	lbl_estrellas.text = "[center]🌟 [b]Estrellas[/b] 🌟\n%s%d[/color] (%.1f Prom.)[/center]" % [color_valor, stats.total_estrellas, prom_estrellas]
+	lbl_exp.text = "[center]🔰 [b]Experiencia[/b] 🔰\n%s%d[/color] EXP[/center]" % [color_valor, stats.total_exp]
 	lbl_intentos.text = "[center]🔄 [b]Intentos[/b] 🔄\n%s%d[/color] (%.1f Prom.)[/center]" % [color_valor, stats.total_intentos, prom_intentos]
 
 func _poblar_dificultades(dificultades: Array):

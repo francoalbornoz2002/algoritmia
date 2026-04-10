@@ -133,21 +133,21 @@ alignment = 1
 [node name="LabelCampana" type="RichTextLabel" parent="ControlModal/PanelFondo/HBoxContainer/ColProgreso/PanelStats/Margen/ListaStats" unique_id=1570788978]
 layout_mode = 2
 bbcode_enabled = true
-text = "[center]🏆 [b]Campaña[/b] 🏆
+text = "[center]🎖 [b]Campaña[/b] 🎖
 0% (0/0 Misiones)[/center]"
 fit_content = true
 
 [node name="LabelEstrellas" type="RichTextLabel" parent="ControlModal/PanelFondo/HBoxContainer/ColProgreso/PanelStats/Margen/ListaStats" unique_id=1036104739]
 layout_mode = 2
 bbcode_enabled = true
-text = "[center]⭐ [b]Estrellas[/b] ⭐
+text = "[center]🌟 [b]Estrellas[/b] 🌟
 0 (0.0 Prom.)[/center]"
 fit_content = true
 
 [node name="LabelExp" type="RichTextLabel" parent="ControlModal/PanelFondo/HBoxContainer/ColProgreso/PanelStats/Margen/ListaStats" unique_id=1159326726]
 layout_mode = 2
 bbcode_enabled = true
-text = "[center]✨ [b]Experiencia[/b] ✨
+text = "[center]🔰 [b]Experiencia[/b] 🔰
 0 EXP[/center]"
 fit_content = true
 
