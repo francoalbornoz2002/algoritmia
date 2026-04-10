@@ -65,4 +65,4 @@ func _ready():
 	syntax_highlighter = highlighter
 
 	# Texto por defecto
-	text = "Inicio\n\t# Escribe tu algoritmo aquí\n\tvar puntos = 10\n\t\n\tSi hayMoneda entonces\n\t\trecogerMoneda\n\tFin\nFin"
+	text = "Inicio\n\n\t# Escribe tu algoritmo aquí\n\nFin"

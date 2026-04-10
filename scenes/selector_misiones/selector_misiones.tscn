@@ -182,7 +182,6 @@ theme_override_constants/separation = 10
 [node name="Titulo" type="Label" parent="CapaModal/ControlModal/PanelFondo/VBoxContainer" unique_id=566420730]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.05490196, 0.4627451, 0.3882353, 1)
-theme_override_constants/outline_size = 2
 theme_override_font_sizes/font_size = 22
 text = "Título de la Misión"
 horizontal_alignment = 1
@@ -190,21 +189,18 @@ vertical_alignment = 1
 
 [node name="Dificultad" type="Label" parent="CapaModal/ControlModal/PanelFondo/VBoxContainer" unique_id=1725535791]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.364706, 0.25098, 0.188235, 1)
+theme_override_colors/font_color = Color(0.8509804, 0.6509804, 0.0627451, 1)
+theme_override_constants/outline_size = 2
 theme_override_font_sizes/font_size = 14
 text = "Dificultad: Fácil"
 horizontal_alignment = 1
 
-[node name="Descripcion" type="Label" parent="CapaModal/ControlModal/PanelFondo/VBoxContainer" unique_id=233551957]
+[node name="Descripcion" type="RichTextLabel" parent="CapaModal/ControlModal/PanelFondo/VBoxContainer" unique_id=1643039280]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
-theme_override_colors/font_color = Color(0.11372549, 0.14901961, 0.15686275, 1)
-theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
-theme_override_colors/font_outline_color = Color(0.47843137, 0.47843137, 0.47843137, 1)
-theme_override_font_sizes/font_size = 14
+theme_override_font_sizes/normal_font_size = 15
 text = "Descripción detallada de la misión..."
-autowrap_mode = 3
 justification_flags = 160
 
 [node name="BotonJugar" type="Button" parent="CapaModal/ControlModal/PanelFondo/VBoxContainer" unique_id=866610285]

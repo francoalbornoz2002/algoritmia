@@ -66,6 +66,109 @@ CREATE TABLE IF NOT EXISTS "dificultad_alumno_local" (
 	FOREIGN KEY ("id_dificultad") REFERENCES "dificultades" ("id") ON UPDATE NO ACTION ON DELETE NO ACTION
 );
 
+INSERT OR REPLACE INTO
+    "dificultades" (
+        "id",
+        "nombre",
+        "descripcion",
+        "tema"
+    )
+VALUES
+    -- TEMA: Secuencia
+    (
+        'a1001001-0000-0000-0000-000000000001',
+        'Redundancia de instrucciones',
+        'El alumno ejecuta dos o más veces la misma instrucción atómica sin necesidad en lugar de usar una estructura de control como Repetir o Mientras.',
+        'Secuencia y Lógica Básica'
+    ),
+    (
+        'a1001001-0000-0000-0000-000000000002',
+        'No valida un objeto antes de recogerlo',
+        'Intenta recoger un objeto (moneda, llave) sin verificar primero si existe (hayMoneda, hayLlave), lo que causaría un error en ejecución.',
+        'Secuencia y Lógica Básica'
+    ),
+    (
+        'a1001001-0000-0000-0000-000000000003',
+        'Uso de instrucciones innecesarias',
+        'Ejecución de acciones sin validar el contexto (atacar sin enemigo, saltar sin obstáculo), generando acciones vacías o errores lógicos.',
+        'Secuencia y Lógica Básica'
+    ),
+    -- TEMA: Logica (Lógica Proposicional)
+    (
+        'b2002002-0000-0000-0000-000000000001',
+        'Mal uso o confusión con operadores lógicos',
+        'Problemas para formular condiciones compuestas con AND, OR, NOT (confusión de semántica, orden o negaciones).',
+        'Lógica Proposicional'
+    ),
+    (
+        'b2002002-0000-0000-0000-000000000002',
+        'Mal uso o confusión con operadores relacionales',
+        'Problemas usando <, >, <=, >=, =, != (límites mal puestos, comparaciones imposibles o redundantes).',
+        'Lógica Proposicional'
+    ),
+    (
+        'b2002002-0000-0000-0000-000000000003',
+        'Problemas para formular proposiciones compuestas',
+        'Dificultad generalizada al combinar operadores lógicos y relacionales para crear condiciones complejas.',
+        'Lógica Proposicional'
+    ),
+    -- TEMA: Estructuras (Estructuras de Control)
+    (
+        'c3003003-0000-0000-0000-000000000001',
+        'Bucles mal controlados o infinitos',
+        'El alumno escribe un bucle cuya condición nunca cambia, es imposible o siempre verdadera, generando ciclos infinitos o código muerto.',
+        'Estructuras de Control'
+    ),
+    (
+        'c3003003-0000-0000-0000-000000000002',
+        'Uso incorrecto del bloque SI–SINO',
+        'Construcción errónea de condicionales, generando acciones redundantes, bloques vacíos o uso de SINO cuando se requería otro SI.',
+        'Estructuras de Control'
+    ),
+    (
+        'c3003003-0000-0000-0000-000000000003',
+        'Condicionales mal anidados',
+        'Usa condicionales dentro de otros de forma innecesaria, confusa o incorrecta, aumentando la complejidad ciclomática sin necesidad.',
+        'Estructuras de Control'
+    ),
+    -- TEMA: Variables
+    (
+        'd4004004-0000-0000-0000-000000000001',
+        'Confusión entre variables locales y globales',
+        'Redefiniciones indebidas, uso de variable fuera de su ámbito (scope) o pérdida de valores por reinicialización en bucles.',
+        'Variables'
+    ),
+    (
+        'd4004004-0000-0000-0000-000000000002',
+        'Uso de variables sin inicializar',
+        'Uso de una variable para operaciones o comparaciones antes de asignarle un valor inicial.',
+        'Variables'
+    ),
+    (
+        'd4004004-0000-0000-0000-000000000003',
+        'Uso inconsistente de variables',
+        'Declara variables pero no las utiliza, o no aportan efecto al algoritmo (no participan en decisiones ni cambian de valor).',
+        'Variables'
+    ),
+    -- TEMA: Procedimientos
+    (
+        'e5005005-0000-0000-0000-000000000001',
+        'Mal pasaje de parámetros',
+        'Llama a procedimientos con cantidad incorrecta de argumentos o tipos de datos incompatibles con la definición.',
+        'Procedimientos'
+    ),
+    (
+        'e5005005-0000-0000-0000-000000000002',
+        'No modifica el parámetro de entrada/salida',
+        'El alumno declara un parámetro como E/S (referencia) pero éste nunca se modifica dentro del cuerpo del procedimiento.',
+        'Procedimientos'
+    ),
+    (
+        'e5005005-0000-0000-0000-000000000003',
+        'No utiliza todos los parámetros del procedimiento',
+        'El alumno declara un procedimiento con parámetros, pero alguno de ellos nunca es usado dentro del cuerpo del algoritmo.',
+        'Procedimientos'
+    );
 """
 
 
@@ -188,6 +291,28 @@ func poblar_datos_login(datos_login: Dictionary) -> bool:
 			db.query("ROLLBACK;")
 			return false
 
+	# -----------------
+	# 4.5. INSERTAR MISIONES ESPECIALES COMPLETADAS (Loop)
+	# -----------------
+	var misiones_especiales = datos_login.get("misionesEspecialesCompletadas", [])
+	var sql_mision_especial = "INSERT INTO misiones_especiales_local (id, nombre, descripcion, estrellas, exp, intentos, fecha_completado, sincronizado) VALUES (?, ?, ?, ?, ?, ?, ?, ?);"
+	
+	for mision_esp in misiones_especiales:
+		var bindings_mision_esp = [
+			mision_esp["id"],
+			mision_esp["nombre"],
+			mision_esp["descripcion"],
+			mision_esp["estrellas"],
+			mision_esp["exp"],
+			mision_esp["intentos"],
+			mision_esp["fechaCompletado"],
+			true # Marcamos como sincronizado
+		]
+		if not db.query_with_bindings(sql_mision_especial, bindings_mision_esp):
+			print("ERROR (DBManager): No se pudo insertar misión especial completada. ", db.error_message)
+			db.query("ROLLBACK;")
+			return false
+			
 	# -----------------
 	# 5. INSERTAR DIFICULTADES ALUMNO (Loop)
 	# -----------------

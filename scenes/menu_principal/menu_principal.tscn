@@ -252,7 +252,6 @@ text = "Aceptar"
 
 [node name="CapaModalEspecial" type="CanvasLayer" parent="." unique_id=987654321]
 layer = 10
-visible = false
 
 [node name="ControlModal" type="Control" parent="CapaModalEspecial" unique_id=987654322]
 layout_mode = 3

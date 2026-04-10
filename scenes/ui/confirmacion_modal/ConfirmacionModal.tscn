@@ -1,0 +1,110 @@
+[gd_scene format=3 uid="uid://c6g7f5w8h4x7q"]
+
+[ext_resource type="Script" uid="uid://bmu7kstkso2c0" path="res://scenes/ui/confirmacion_modal/ConfirmacionModal.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://bo8u6t8y4wkqr" path="res://assets/ui/varios.png" id="2_texture"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_panel"]
+atlas = ExtResource("2_texture")
+region = Rect2(5, 96, 38, 37)
+
+[node name="ConfirmacionModal" type="CanvasLayer" unique_id=54684967 node_paths=PackedStringArray("panel_principal", "lbl_titulo", "lbl_mensaje", "btn_confirmar", "btn_forzar", "btn_cancelar")]
+layer = 12
+script = ExtResource("1_script")
+panel_principal = NodePath("ControlModal/PanelFondo")
+lbl_titulo = NodePath("ControlModal/PanelFondo/VBoxContainer/Titulo")
+lbl_mensaje = NodePath("ControlModal/PanelFondo/VBoxContainer/Mensaje")
+btn_confirmar = NodePath("ControlModal/PanelFondo/VBoxContainer/HBoxBotones/BotonConfirmar")
+btn_forzar = NodePath("ControlModal/PanelFondo/VBoxContainer/HBoxBotones/BotonForzar")
+btn_cancelar = NodePath("ControlModal/PanelFondo/VBoxContainer/HBoxBotones/BotonCancelar")
+
+[node name="ControlModal" type="Control" parent="." unique_id=2092147241]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="FondoOscuro" type="ColorRect" parent="ControlModal" unique_id=1578613422]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 0.6)
+
+[node name="PanelFondo" type="NinePatchRect" parent="ControlModal" unique_id=46755181]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -302.0
+offset_top = -150.0
+offset_right = 302.0
+offset_bottom = 150.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = SubResource("AtlasTexture_panel")
+region_rect = Rect2(0, 0, 38, 37)
+patch_margin_left = 7
+patch_margin_top = 16
+patch_margin_right = 7
+patch_margin_bottom = 5
+
+[node name="VBoxContainer" type="VBoxContainer" parent="ControlModal/PanelFondo" unique_id=1046932691]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 17.0
+offset_top = 20.0
+offset_right = -17.0
+offset_bottom = -20.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 10
+alignment = 1
+
+[node name="Titulo" type="Label" parent="ControlModal/PanelFondo/VBoxContainer" unique_id=243415795]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.054902, 0.462745, 0.388235, 1)
+theme_override_colors/font_shadow_color = Color(0.05490196, 0.4627451, 0.3882353, 1)
+theme_override_constants/outline_size = 3
+theme_override_font_sizes/font_size = 24
+text = "Título de Confirmación"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Mensaje" type="RichTextLabel" parent="ControlModal/PanelFondo/VBoxContainer" unique_id=1164539415]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_font_sizes/normal_font_size = 20
+theme_override_font_sizes/bold_font_size = 20
+bbcode_enabled = true
+text = "Este es el mensaje de confirmación. Puede contener [b]BBCode[/b] para resaltar [color=#D9A610]advertencias[/color]."
+fit_content = true
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="HBoxBotones" type="HBoxContainer" parent="ControlModal/PanelFondo/VBoxContainer" unique_id=359503777]
+layout_mode = 2
+theme_override_constants/separation = 30
+alignment = 1
+
+[node name="BotonCancelar" type="Button" parent="ControlModal/PanelFondo/VBoxContainer/HBoxBotones" unique_id=2125563288]
+custom_minimum_size = Vector2(150, 45)
+layout_mode = 2
+text = "Cancelar"
+
+[node name="BotonForzar" type="Button" parent="ControlModal/PanelFondo/VBoxContainer/HBoxBotones" unique_id=1014763659]
+custom_minimum_size = Vector2(180, 45)
+layout_mode = 2
+text = "Acción Forzada"
+
+[node name="BotonConfirmar" type="Button" parent="ControlModal/PanelFondo/VBoxContainer/HBoxBotones" unique_id=554154708]
+custom_minimum_size = Vector2(180, 45)
+layout_mode = 2
+text = "Confirmar"

@@ -17,7 +17,11 @@ compatibility/default_parent_skeleton_in_mesh_instance_3d=true
 config/name="Algoritmia"
 run/main_scene="uid://d1h87sddhjkje"
 config/features=PackedStringArray("4.6", "GL Compatibility")
-config/icon="uid://bs6w6bpa5g3y6"
+boot_splash/bg_color=Color(0.12712786, 0.12712786, 0.1271278, 1)
+boot_splash/stretch_mode=0
+boot_splash/image="uid://drot46kxl8wx6"
+config/icon="uid://drot46kxl8wx6"
+boot_splash/minimum_display_time=2000
 
 [autoload]
 
@@ -28,6 +32,7 @@ GestorFeedback="*res://gestor_feedback.gd"
 
 [display]
 
+mouse_cursor/custom_image="uid://bokq7f1eamanu"
 window/canvas_textures/default_texture_filter=1
 
 [editor_plugins]

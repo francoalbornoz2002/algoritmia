@@ -7,7 +7,7 @@ extends Control
 @export var modal_control: Control
 @export var lbl_titulo: Label
 @export var lbl_dificultad: Label
-@export var lbl_descripcion: Label
+@export var lbl_descripcion: RichTextLabel
 @export var btn_jugar_modal: Button
 
 # --- MODAL ESTADÍSTICAS ---

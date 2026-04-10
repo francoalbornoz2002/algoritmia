@@ -13,6 +13,8 @@ extends Control
 @export var btn_aceptar_especial: Button
 @export var btn_cancelar_especial: Button
 
+var _confirmacion_modal_instancia: ConfirmacionModal = null
+
 # URL base del backend (ajustar si cambia el puerto/host)
 const API_BASE_URL = "http://localhost:3000/api"
 
@@ -20,6 +22,16 @@ var _tiempo_inicio_sync: int = 0
 var _spinner_tween: Tween
 
 func _ready():
+	# --- Instanciar Modales ---
+	var escena_confirmacion = preload("res://scenes/ui/confirmacion_modal/ConfirmacionModal.tscn")
+	if escena_confirmacion:
+		_confirmacion_modal_instancia = escena_confirmacion.instantiate()
+		add_child(_confirmacion_modal_instancia)
+		# Conectamos las señales del modal a las funciones que ejecutan la lógica
+		_confirmacion_modal_instancia.confirmed.connect(_on_logout_confirmed)
+		_confirmacion_modal_instancia.force_action.connect(_on_logout_forced)
+		# La señal "cancelled" no necesita conexión, ya que el modal se oculta solo.
+
 	# Verificamos inactividad al iniciar el menú
 	_mostrar_datos_alumno()
 	
@@ -38,12 +50,41 @@ func _ready():
 	if btn_cancelar_especial:
 		btn_cancelar_especial.pressed.connect(_cerrar_modal_especial)
 	
-	# Iniciamos sincronización si hay alumno logueado
-	if DatabaseManager.obtener_id_alumno_actual() != "":
+	# --- Lógica de Sincronización al Inicio ---
+	if GameData.recien_logueado:
+		# Venimos de un login exitoso, mostramos el resumen de datos descargados
+		_mostrar_resumen_login()
+	elif DatabaseManager.obtener_id_alumno_actual() != "":
+		# Ya había una sesión, hacemos la sincronización normal de dificultades
 		_iniciar_sincronizacion_con_ui()
 	else:
-		# Si es invitado (no hay sync), verificamos inactividad directamente
+		# Es invitado, no hay sincronización, verificamos inactividad directamente
 		_verificar_inactividad()
+
+func _mostrar_resumen_login():
+	# Reseteamos el flag para que no se muestre de nuevo si volvemos al menú
+	GameData.recien_logueado = false
+	
+	if overlay_sincronizacion: overlay_sincronizacion.show()
+	if spinner: spinner.hide()
+	if boton_aceptar_sync: boton_aceptar_sync.show()
+	
+	if label_mensaje_sync: label_mensaje_sync.text = "¡Inicio de sesión exitoso!"
+	
+	if label_error_sync:
+		label_error_sync.add_theme_color_override("font_color", Color(0.2, 0.8, 0.2)) # Verde
+		
+		var stats = GameData.stats_login
+		var misiones = stats.get("misiones", 0)
+		var especiales = stats.get("especiales", 0)
+		var dificultades = stats.get("dificultades", 0)
+		
+		var texto_detalle = "Se sincronizaron desde la web:\n"
+		texto_detalle += "- %d misiones completadas\n" % misiones
+		texto_detalle += "- %d misiones especiales completadas\n" % especiales
+		texto_detalle += "- %d dificultades" % dificultades
+		
+		label_error_sync.text = texto_detalle
 
 func _mostrar_datos_alumno():
 	var alumno = DatabaseManager.obtener_alumno_actual()
@@ -198,42 +239,31 @@ func _on_salir_pressed() -> void:
 	get_tree().quit()
 
 func _on_cerrar_sesion_pressed() -> void:
+	if not _confirmacion_modal_instancia: return
+	
 	# 1. Verificar si hay datos pendientes en las tablas locales
 	var misiones_p = DatabaseManager.obtener_misiones_pendientes().size()
 	var especiales_p = DatabaseManager.obtener_misiones_especiales_pendientes().size()
 	var dificultades_p = DatabaseManager.obtener_dificultades_pendientes().size()
 	var total_pendientes = misiones_p + especiales_p + dificultades_p
 	
-	# 2. Crear diálogo de confirmación
-	var confirm = ConfirmationDialog.new()
-	confirm.title = "Cerrar Sesión"
-	
+	# 2. Preparar textos para el modal
+	var titulo = "Cerrar Sesión"
 	var mensaje = "¿Estás seguro de que deseas cerrar la sesión?\n"
 	mensaje += "Esto borrará todos tus datos locales de progreso y dificultades.\n"
 	
+	var texto_confirmar = "Sí, cerrar sesión"
+	var show_force = false
+	var texto_forzar = ""
+	
 	if total_pendientes > 0:
-		mensaje += "\n[ADVERTENCIA]: Tienes %d elementos sin sincronizar.\n" % total_pendientes
+		mensaje += "\n[color=yellow][b]ADVERTENCIA:[/b] Tienes %d elementos sin sincronizar.[/color]\n" % total_pendientes
 		mensaje += "¿Deseas sincronizar ahora antes de salir?"
-		confirm.get_ok_button().text = "Sincronizar y Salir"
-		
-		# Botón extra para salir sin sincronizar (borrado inmediato)
-		var btn_forzar = confirm.add_button("Salir de todos modos", false, "force_logout")
-		btn_forzar.pressed.connect(func():
-			confirm.hide()
-			_ejecutar_cierre_sesion(false)
-		)
-	else:
-		confirm.get_ok_button().text = "Sí, cerrar sesión"
+		texto_confirmar = "Sincronizar y Salir"
+		show_force = true
+		texto_forzar = "Salir de todos modos"
 	
-	confirm.dialog_text = mensaje
-	confirm.get_cancel_button().text = "Cancelar"
-	confirm.initial_position = Window.WINDOW_INITIAL_POSITION_CENTER_PRIMARY_SCREEN
-	
-	# El botón OK ejecutará la sincronización si hay pendientes
-	confirm.confirmed.connect(func(): _ejecutar_cierre_sesion(total_pendientes > 0))
-	
-	add_child(confirm)
-	confirm.popup()
+	_confirmacion_modal_instancia.mostrar(titulo, mensaje, texto_confirmar, show_force, texto_forzar)
 
 func _ejecutar_cierre_sesion(debe_sincronizar: bool):
 	if debe_sincronizar:
@@ -246,6 +276,18 @@ func _ejecutar_cierre_sesion(debe_sincronizar: bool):
 		# Aquí podrías añadir un overlay de "Sincronizando..." si lo deseas
 	else:
 		_finalizar_limpieza_y_redireccion()
+
+func _on_logout_confirmed():
+	# El botón principal "Confirmar" siempre intenta sincronizar si hay datos.
+	var misiones_p = DatabaseManager.obtener_misiones_pendientes().size()
+	var especiales_p = DatabaseManager.obtener_misiones_especiales_pendientes().size()
+	var dificultades_p = DatabaseManager.obtener_dificultades_pendientes().size()
+	var total_pendientes = misiones_p + especiales_p + dificultades_p
+	_ejecutar_cierre_sesion(total_pendientes > 0)
+
+func _on_logout_forced():
+	# El botón "Forzar" nunca sincroniza.
+	_ejecutar_cierre_sesion(false)
 
 func _al_terminar_sincronizacion_final(_exito: bool):
 	# Desconectamos para evitar ejecuciones accidentales en el futuro

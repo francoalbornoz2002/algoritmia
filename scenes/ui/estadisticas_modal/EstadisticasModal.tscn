@@ -73,7 +73,7 @@ anchor_right = 1.0
 offset_top = 13.0
 offset_bottom = 44.0
 grow_horizontal = 2
-theme_override_constants/outline_size = 2
+theme_override_constants/outline_size = 4
 theme_override_font_sizes/font_size = 36
 text = "Mi Perfil Algorítmico"
 horizontal_alignment = 1
@@ -100,6 +100,7 @@ theme_override_constants/separation = 15
 [node name="TituloProgreso" type="Label" parent="ControlModal/PanelFondo/HBoxContainer/ColProgreso" unique_id=1792771791]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.05490196, 0.4627451, 0.3882353, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
 theme_override_font_sizes/font_size = 24
 text = "📈 Mi Progreso"
 horizontal_alignment = 1
@@ -126,7 +127,7 @@ theme_override_constants/margin_bottom = 25
 
 [node name="ListaStats" type="VBoxContainer" parent="ControlModal/PanelFondo/HBoxContainer/ColProgreso/PanelStats/Margen" unique_id=484053909]
 layout_mode = 2
-theme_override_constants/separation = 50
+theme_override_constants/separation = 40
 alignment = 1
 
 [node name="LabelCampana" type="RichTextLabel" parent="ControlModal/PanelFondo/HBoxContainer/ColProgreso/PanelStats/Margen/ListaStats" unique_id=1570788978]
@@ -138,15 +139,13 @@ fit_content = true
 
 [node name="LabelEstrellas" type="RichTextLabel" parent="ControlModal/PanelFondo/HBoxContainer/ColProgreso/PanelStats/Margen/ListaStats" unique_id=1036104739]
 layout_mode = 2
-theme_override_colors/default_color = Color(1, 1, 1, 1)
 bbcode_enabled = true
 text = "[center]⭐ [b]Estrellas[/b] ⭐
-0 (Promedio: 0.0)[/center]"
+0 (0.0 Prom.)[/center]"
 fit_content = true
 
 [node name="LabelExp" type="RichTextLabel" parent="ControlModal/PanelFondo/HBoxContainer/ColProgreso/PanelStats/Margen/ListaStats" unique_id=1159326726]
 layout_mode = 2
-theme_override_colors/default_color = Color(1, 1, 1, 1)
 bbcode_enabled = true
 text = "[center]✨ [b]Experiencia[/b] ✨
 0 EXP[/center]"
@@ -154,10 +153,9 @@ fit_content = true
 
 [node name="LabelIntentos" type="RichTextLabel" parent="ControlModal/PanelFondo/HBoxContainer/ColProgreso/PanelStats/Margen/ListaStats" unique_id=297870483]
 layout_mode = 2
-theme_override_colors/default_color = Color(1, 1, 1, 1)
 bbcode_enabled = true
 text = "[center]🔄 [b]Intentos[/b] 🔄
-0 (Promedio: 0.0)[/center]"
+0 (0.0 Prom.)[/center]"
 fit_content = true
 
 [node name="ColDificultades" type="VBoxContainer" parent="ControlModal/PanelFondo/HBoxContainer" unique_id=1113425253]

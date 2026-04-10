@@ -108,6 +108,14 @@ func _on_http_request_completed(result: int, response_code: int, headers: Packed
 		var exito_db = DatabaseManager.poblar_datos_login(response_data)
 		
 		if exito_db:
+			# Guardamos las estadísticas para el modal del menú principal
+			GameData.recien_logueado = true
+			GameData.stats_login = {
+				"misiones": response_data.get("misionesCompletadas", []).size(),
+				"especiales": response_data.get("misionesEspecialesCompletadas", []).size(),
+				"dificultades": response_data.get("dificultadesAlumno", []).size()
+			}
+			
 			print("Base de datos poblada. Cargando menú principal...")
 			# Cambiamos al menú principal del juego.
 			get_tree().change_scene_to_file("res://scenes/menu_principal/menu_principal.tscn")
