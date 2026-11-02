@@ -25,19 +25,19 @@ metadata/_custom_type_script = "uid://2g81v5mgvo8i"
 
 [sub_resource type="Resource" id="Resource_vxfva"]
 script = ExtResource("5_er8af")
-objetivo = Vector2i(24, 14)
-descripcion = "Terminar en sendero 25, valle 15 (25, 15)"
+objetivo = Vector2i(10, 9)
+descripcion = "Terminar en sendero 11, valle 10 (11, 10)"
 metadata/_custom_type_script = "uid://pv2d7rfe0lwx"
 
 [sub_resource type="Resource" id="Resource_1t543"]
 script = ExtResource("6_qnv1a")
-pos = Vector2i(0, 14)
+pos = Vector2i(0, 9)
 metadata/_custom_type_script = "uid://cxktrvmf0g666"
 
 [sub_resource type="Resource" id="Resource_7j4r4"]
 script = ExtResource("6_qnv1a")
 tipo = 1
-pos = Vector2i(0, 14)
+pos = Vector2i(0, 9)
 metadata/_custom_type_script = "uid://cxktrvmf0g666"
 
 [sub_resource type="Resource" id="Resource_2xtxw"]
@@ -58,21 +58,9 @@ tipo = 3
 pos = Vector2i(0, 7)
 metadata/_custom_type_script = "uid://cxktrvmf0g666"
 
-[sub_resource type="Resource" id="Resource_v6r1p"]
-script = ExtResource("6_qnv1a")
-tipo = 3
-pos = Vector2i(0, 10)
-metadata/_custom_type_script = "uid://cxktrvmf0g666"
-
-[sub_resource type="Resource" id="Resource_11no7"]
-script = ExtResource("6_qnv1a")
-tipo = 3
-pos = Vector2i(0, 13)
-metadata/_custom_type_script = "uid://cxktrvmf0g666"
-
 [sub_resource type="Resource" id="Resource_d2hhj"]
 script = ExtResource("1_s08u3")
-elementos_mapa = Array[ExtResource("6_qnv1a")]([SubResource("Resource_1t543"), SubResource("Resource_7j4r4"), SubResource("Resource_2xtxw"), SubResource("Resource_1ut8j"), SubResource("Resource_k6hrc"), SubResource("Resource_v6r1p"), SubResource("Resource_11no7")])
+elementos_mapa = Array[ExtResource("6_qnv1a")]([SubResource("Resource_1t543"), SubResource("Resource_7j4r4"), SubResource("Resource_2xtxw"), SubResource("Resource_1ut8j"), SubResource("Resource_k6hrc")])
 condiciones_victoria = Array[ExtResource("2_af3af")]([SubResource("Resource_fb0y7"), SubResource("Resource_bdf6l"), SubResource("Resource_yt3uh"), SubResource("Resource_vxfva")])
 metadata/_custom_type_script = "uid://bwftnkpaxkcgc"
 
@@ -82,7 +70,8 @@ metadata/_custom_type_script = "uid://cquibwshmqt00"
 
 [sub_resource type="Resource" id="Resource_shahy"]
 script = ExtResource("5_er8af")
-descripcion = "Terminar en sendero 1, valle 1 (1, 1)"
+objetivo = Vector2i(0, 14)
+descripcion = "Terminar en sendero 1, valle 15 (1, 15)"
 metadata/_custom_type_script = "uid://pv2d7rfe0lwx"
 
 [sub_resource type="Resource" id="Resource_lq20q"]
@@ -103,21 +92,9 @@ tipo = 3
 pos = Vector2i(0, 7)
 metadata/_custom_type_script = "uid://cxktrvmf0g666"
 
-[sub_resource type="Resource" id="Resource_gscg5"]
-script = ExtResource("6_qnv1a")
-tipo = 3
-pos = Vector2i(0, 10)
-metadata/_custom_type_script = "uid://cxktrvmf0g666"
-
-[sub_resource type="Resource" id="Resource_lyyww"]
-script = ExtResource("6_qnv1a")
-tipo = 3
-pos = Vector2i(0, 13)
-metadata/_custom_type_script = "uid://cxktrvmf0g666"
-
 [sub_resource type="Resource" id="Resource_jh264"]
 script = ExtResource("1_s08u3")
-elementos_mapa = Array[ExtResource("6_qnv1a")]([SubResource("Resource_lq20q"), SubResource("Resource_lxtqu"), SubResource("Resource_3e1q7"), SubResource("Resource_gscg5"), SubResource("Resource_lyyww")])
+elementos_mapa = Array[ExtResource("6_qnv1a")]([SubResource("Resource_lq20q"), SubResource("Resource_lxtqu"), SubResource("Resource_3e1q7")])
 condiciones_victoria = Array[ExtResource("2_af3af")]([SubResource("Resource_dsj73"), SubResource("Resource_shahy")])
 metadata/_custom_type_script = "uid://bwftnkpaxkcgc"
 
@@ -126,8 +103,7 @@ script = ExtResource("2_53u5s")
 id = "c4eebc99-9c0b-4ef8-bb6d-6bb9bd380a25"
 numero = 15
 titulo = "Tutorial 15: Bucles 3 (OR)"
-descripcion = "O esto o lo otro... una de dos. Tambien puedes usar el conectivo OR en el Orbe del Ciclo Infinito para evaluar si al menos una de las proposiciones se cumple para continuar. Recorre todo el sendero 1 hasta encontrar una moneda y una llave en la misma casilla, es algo raro de ver asi que habrán enemigos al asecho. Cuando las encuentres, recógelas, gira a la derecha y recorre el valle hasta el final. Si no las encuentras hasta el final del sendero, da media vuelta  y vuelve al inicio."
+descripcion = "O esto o lo otro... una de dos. Tambien puedes usar el conectivo OR en el Orbe del Ciclo Infinito para evaluar si al menos una de las proposiciones se cumple para continuar. Recorre todo el sendero 1 hasta encontrar una moneda y una llave en la misma casilla, es algo raro de ver asi que habrán enemigos al asecho. Cuando las encuentres, recógelas, gira a la derecha y avanza 10 casillas. Si no las encuentras hasta el final del sendero, da media vuelta y retrocede 10 casillas."
 dificultad_mision = "Media"
-es_tutorial = true
 casos_de_prueba = Array[ExtResource("1_s08u3")]([SubResource("Resource_d2hhj"), SubResource("Resource_jh264")])
 metadata/_custom_type_script = "uid://7dwqqmri6ibf"

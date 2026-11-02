@@ -2,7 +2,7 @@
 
 [ext_resource type="Texture2D" uid="uid://cqi56hhs1vqf4" path="res://assets/ui/botones.png" id="1_xu03x"]
 [ext_resource type="Texture2D" uid="uid://bo8u6t8y4wkqr" path="res://assets/ui/varios.png" id="2_7hr4l"]
-[ext_resource type="FontFile" uid="uid://c1rri638e47ue" path="res://assets/Monocraft.ttf" id="2_7i3wi"]
+[ext_resource type="FontFile" uid="uid://c1rri638e47ue" path="res://assets/Monocraft.ttf" id="3_7hr4l"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_7hr4l"]
 atlas = ExtResource("1_xu03x")
@@ -68,7 +68,7 @@ texture_margin_right = 4.0
 region_rect = Rect2(208, 196, 48, 40)
 
 [resource]
-default_font = ExtResource("2_7i3wi")
+default_font = ExtResource("3_7hr4l")
 default_font_size = 16
 Button/constants/outline_size = 4
 Button/font_sizes/font_size = 18

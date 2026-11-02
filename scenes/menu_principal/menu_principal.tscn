@@ -197,6 +197,7 @@ expand_mode = 1
 stretch_mode = 5
 
 [node name="HTTPRequestSync" type="HTTPRequest" parent="." unique_id=529401836]
+timeout = 5.0
 
 [node name="OverlaySincronizacion" type="ColorRect" parent="." unique_id=991234567]
 visible = false
