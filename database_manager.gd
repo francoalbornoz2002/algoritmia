@@ -12,7 +12,6 @@ CREATE TABLE IF NOT EXISTS "alumno" (
 	"id" TEXT NOT NULL UNIQUE,
 	"nombre" TEXT NOT NULL,
 	"apellido" TEXT NOT NULL,
-	"genero" TEXT NOT NULL,
 	"ultima_actividad" TEXT,
 	PRIMARY KEY ("id")
 );
@@ -255,14 +254,13 @@ func poblar_datos_login(datos_login: Dictionary) -> bool:
 	# 3. INSERTAR ALUMNO (1 fila)
 	# -----------------
 	var alumno = datos_login["alumno"]
-	var sql_alumno = "INSERT INTO alumno (id, nombre, apellido, genero, ultima_actividad) VALUES (?, ?, ?, ?, ?);"
+	var sql_alumno = "INSERT INTO alumno (id, nombre, apellido, ultima_actividad) VALUES (?, ?, ?, ?);"
 	
 	# Mapeamos camelCase (JSON) a los bindings
 	var bindings_alumno = [
 		alumno["id"],
 		alumno["nombre"],
 		alumno["apellido"],
-		alumno["genero"],
 		alumno["ultimaActividad"] # Mapeo de 'ultimaActividad'
 	]
 	
