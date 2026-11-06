@@ -123,8 +123,8 @@ func _sincronizar_dificultades_web():
 	print("MenuPrincipal: [SYNC] ID encontrado: ", id_alumno)
 	print("MenuPrincipal: [SYNC] Preparando petición HTTP...")
 	
-	# 2. Construimos URL: /alumnos/:id/sync-difficulties
-	var url = "%s/alumnos/%s/sync-difficulties" % [API_BASE_URL, id_alumno]
+	# 2. Construimos URL: /dificultades/:id/sincronizar
+	var url = "%s/dificultades/%s/sincronizar" % [API_BASE_URL, id_alumno]
 	print("MenuPrincipal: [SYNC] URL destino: ", url)
 	
 	# 3. Hacemos la petición

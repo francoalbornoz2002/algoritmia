@@ -1,8 +1,8 @@
 extends Node
 
 # --- URLs del Backend ---
-const URL_LOTE_MISIONES = "http://localhost:3000/api/progreso/sincronizar"
-const URL_LOTE_DIFICULTADES = "http://localhost:3000/api/dificultades/sincronizar"
+const URL_LOTE_MISIONES = "http://localhost:3000/api/progreso/registrar"
+const URL_LOTE_DIFICULTADES = "http://localhost:3000/api/dificultades/registrar"
 
 # --- Señales ---
 signal sincronizacion_finalizada(exito: bool)
